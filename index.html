@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1to3 Labs — Tools & Games</title>
+<meta name="description" content="1to3 Labs — A collection of useful tools and fun games. Free to use, built with care. BMI calculator, color picker, compass, speed meter and more.">
+<meta name="keywords" content="online tools, free tools, BMI calculator, color code picker, compass, internet speed, angle meter, light meter, volume meter, browser games, gomoku, go game">
+<meta property="og:title" content="1to3 Labs — Tools & Games">
+<meta property="og:description" content="A collection of useful tools and fun games. Free to use, built with care.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://1to3.cc">
+<link rel="canonical" href="https://1to3.cc">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #06080D;
+    --bg2: #0C0F18;
+    --bg3: #111520;
+    --border: rgba(255,255,255,0.07);
+    --border-blue: rgba(56,189,248,0.25);
+    --text: #D8E0EE;
+    --text2: rgba(255,255,255,0.38);
+    --text3: rgba(255,255,255,0.18);
+    --blue: #38BDF8;
+    --blue-dim: rgba(56,189,248,0.08);
+    --green: #34D399;
+    --amber: #FBBF24;
+    --pink: #F472B4;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { text-decoration: none; color: inherit; }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(6,8,13,0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 56px;
+  }
+
+  .logo {
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: .2em;
+    color: var(--blue);
+  }
+
+  .logo span { color: var(--text2); font-weight: 300; }
+
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    font-size: 12px;
+    letter-spacing: .1em;
+    color: var(--text2);
+  }
+
+  .nav-links a:hover { color: var(--blue); transition: color .2s; }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 80px 32px 64px;
+    text-align: center;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(56,189,248,0.06) 0%, transparent 65%);
+    top: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .hero-inner { position: relative; max-width: 640px; margin: 0 auto; }
+
+  .hero-tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: .3em;
+    color: var(--blue);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-blue);
+    padding: 5px 14px;
+    border-radius: 20px;
+    background: var(--blue-dim);
+  }
+
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 46px);
+    font-weight: 300;
+    line-height: 1.35;
+    letter-spacing: -.02em;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--blue);
+  }
+
+  .hero-sub {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.9;
+    margin-bottom: 36px;
+  }
+
+  .cursor {
+    display: inline-block;
+    color: var(--blue);
+    animation: blink 1.1s step-end infinite;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 36px;
+  }
+
+  .stat-n {
+    font-size: 26px;
+    font-weight: 300;
+    color: var(--blue);
+    line-height: 1;
+  }
+
+  .stat-l {
+    font-size: 9px;
+    letter-spacing: .2em;
+    color: var(--text3);
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  .stat-div { width: 1px; background: var(--border); }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    letter-spacing: .08em;
+    color: var(--blue);
+    border: 1px solid var(--border-blue);
+    padding: 10px 22px;
+    border-radius: 5px;
+    background: var(--blue-dim);
+    transition: background .2s, border-color .2s;
+  }
+
+  .btn-primary:hover {
+    background: rgba(56,189,248,0.14);
+    border-color: rgba(56,189,248,0.5);
+  }
+
+  /* FILTER */
+  .filter-wrap {
+    max-width: 900px;
+    margin: 0 auto 32px;
+    padding: 0 32px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    font-size: 11px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    letter-spacing: .06em;
+    cursor: pointer;
+    transition: all .2s;
+    background: transparent;
+    font-family: var(--font);
+  }
+
+  .chip:hover { border-color: rgba(56,189,248,0.3); color: var(--blue); }
+  .chip.active { border-color: var(--blue); color: var(--blue); background: var(--blue-dim); }
+
+  /* SECTIONS */
+  .section {
+    max-width: 900px;
+    margin: 0 auto 52px;
+    padding: 0 32px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: .28em;
+    color: var(--text3);
+    text-transform: uppercase;
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* TOOL CARDS */
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+
+  .tool-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bg2);
+    transition: border-color .25s, transform .25s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tool-card:hover {
+    border-color: rgba(56,189,248,0.3);
+    transform: translateY(-2px);
+  }
+
+  .tool-card.featured {
+    border-color: var(--border-blue);
+    background: linear-gradient(135deg, rgba(56,189,248,0.05) 0%, var(--bg2) 100%);
+  }
+
+  .card-screenshot {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    object-position: top;
+    display: block;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .card-body { padding: 14px 15px; flex: 1; }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 7px;
+  }
+
+  .card-cat {
+    font-size: 9px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+
+  .card-cat.blue { color: rgba(56,189,248,0.7); }
+  .card-cat.green { color: rgba(52,211,153,0.7); }
+  .card-cat.amber { color: rgba(251,191,36,0.7); }
+  .card-cat.pink { color: rgba(244,114,182,0.7); }
+
+  .card-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--blue);
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+
+  .card-dot.green { background: var(--green); }
+  .card-dot.amber { background: var(--amber); }
+  .card-dot.pink { background: var(--pink); }
+
+  @keyframes pulse {
+    0%,100%{ opacity:.5; transform:scale(1); }
+    50%{ opacity:1; transform:scale(1.3); }
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #E8EEF8;
+    margin-bottom: 5px;
+    line-height: 1.4;
+  }
+
+  .card-desc {
+    font-size: 11px;
+    color: var(--text2);
+    line-height: 1.75;
+  }
+
+  .card-footer {
+    padding: 10px 15px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-link {
+    font-size: 10px;
+    letter-spacing: .1em;
+    color: var(--blue);
+    text-transform: uppercase;
+  }
+
+  .card-arrow { font-size: 12px; color: var(--text3); }
+
+  /* GAME CARDS */
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+  }
+
+  .game-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bg2);
+    transition: border-color .25s, transform .25s;
+    cursor: pointer;
+  }
+
+  .game-card:hover {
+    border-color: rgba(251,191,36,0.3);
+    transform: translateY(-2px);
+  }
+
+  .game-screenshot {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    object-position: top;
+    display: block;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .game-body { padding: 14px 15px; }
+
+  .game-tag {
+    font-size: 9px;
+    letter-spacing: .2em;
+    color: rgba(251,191,36,0.7);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .game-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #E8EEF8;
+    margin-bottom: 4px;
+  }
+
+  .game-desc {
+    font-size: 11px;
+    color: var(--text2);
+    line-height: 1.75;
+    margin-bottom: 12px;
+  }
+
+  .game-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    letter-spacing: .1em;
+    color: rgba(251,191,36,0.8);
+    border: 1px solid rgba(251,191,36,0.2);
+    padding: 6px 14px;
+    border-radius: 4px;
+    background: rgba(251,191,36,0.05);
+    text-transform: uppercase;
+    transition: background .2s;
+  }
+
+  .game-btn:hover { background: rgba(251,191,36,0.1); }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .footer-l { font-size: 11px; color: var(--text3); }
+  .footer-r { display: flex; gap: 20px; font-size: 11px; color: var(--text3); }
+  .footer-r a:hover { color: var(--blue); }
+
+  /* LAZY LOAD FADE */
+  .card-screenshot, .game-screenshot {
+    opacity: 0;
+    transition: opacity .4s ease;
+  }
+  .card-screenshot.loaded, .game-screenshot.loaded { opacity: 1; }
+
+  /* HIDDEN */
+  .hidden { display: none !important; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    nav { padding: 0 16px; }
+    .hero { padding: 56px 16px 44px; }
+    .filter-wrap, .section { padding: 0 16px; }
+    .tools-grid, .games-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .card-screenshot { height: 140px; }
+    .game-screenshot { height: 160px; }
+    footer { flex-direction: column; gap: 12px; text-align: center; }
+  }
+
+  @media (max-width: 400px) {
+    .tools-grid, .games-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">1TO3 <span>LABS</span></div>
+  <div class="nav-links">
+    <a href="#tools">Tools</a>
+    <a href="#games">Games</a>
+    <a href="#about">About</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-tag">Free · Open · Always Updating</div>
+    <h1>
+      Tools &amp; games<br>
+      built for <em>everyday life</em><span class="cursor">_</span>
+    </h1>
+    <p class="hero-sub">
+      A growing collection of practical tools and fun games.<br>
+      No installs. No sign-ups. Just open and use.
+    </p>
+    <div class="stats">
+      <div>
+        <div class="stat-n">8</div>
+        <div class="stat-l">Tools</div>
+      </div>
+      <div class="stat-div"></div>
+      <div>
+        <div class="stat-n">3</div>
+        <div class="stat-l">Games</div>
+      </div>
+      <div class="stat-div"></div>
+      <div>
+        <div class="stat-n">∞</div>
+        <div class="stat-l">Free</div>
+      </div>
+    </div>
+    <a href="#tools" class="btn-primary">Explore all projects →</a>
+  </div>
+</section>
+
+<!-- FILTER -->
+<div class="filter-wrap">
+  <button class="chip active" onclick="filter('all')">All</button>
+  <button class="chip" onclick="filter('tools')">Tools</button>
+  <button class="chip" onclick="filter('games')">Games</button>
+  <button class="chip" onclick="filter('health')">Health</button>
+  <button class="chip" onclick="filter('measure')">Measurement</button>
+  <button class="chip" onclick="filter('design')">Design</button>
+</div>
+
+<!-- TOOLS SECTION -->
+<section class="section" id="tools" data-section="tools">
+  <div class="section-header">
+    <div class="section-label">Tools</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="tools-grid">
+
+    <a href="tools/note.html" class="tool-card featured" data-tags="tools">
+      <img class="card-screenshot" data-src="screenshots/note.webp" alt="Note & Reminder Timer screenshot" loading="lazy">
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="card-cat blue">Productivity</span>
+          <span class="card-dot"></span>
+        </div>
+        <div class="card-title">Note & Reminder Timer</div>
+        <div class="card-desc">Write notes, set countdowns, get reminded. Stay on top of every task.</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-link">Open Tool</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="tools/bmi.html" class="tool-card" data-tags="tools health">
+      <img class="card-screenshot" data-src="screenshots/bmi.webp" alt="BMI Calculator screenshot" loading="lazy">
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="card-cat green">Health</span>
+          <span class="card-dot green"></span>
+        </div>
+        <div class="card-title">BMI Calculator</div>
+        <div class="card-desc">Calculate your Body Mass Index instantly. Visualize your healthy weight range.</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-link">Open Tool</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="tools/color.html" class="tool-card" data-tags="tools design">
+      <img class="card-screenshot" data-src="screenshots/color.webp" alt="Color Code Picker screenshot" loading="lazy">
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="card-cat pink">Design</span>
+          <span class="card-dot pink"></span>
+        </div>
+        <div class="card-title">Color Code Picker</div>
+        <div class="card-desc">Pick any color, convert between HEX, RGB and HSL. One tap to copy.</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-link">Open Tool</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="tools/volume.html" class="tool-card" data-tags="tools measure">
+      <img class="card-screenshot" data-src="screenshots/volume.webp" alt="Volume Meter screenshot" loading="lazy">
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="card-cat blue">Measurement</span>
+          <span class="card-dot"></span>
+        </div>
+        <div class="card-title">Volume Meter</div>
+        <div class="card-desc">Real-time ambient sound level detection using your device microphone.</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-link">Open Tool</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="tools/light.html" class="tool-card" data-tags="tools measure">
+      <img class="card-screenshot" data-src="screenshots/light.webp" alt="Light Meter screenshot" loading="lazy">
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="card-cat amber">Measurement</span>
+          <span class="card-dot amber"></span>
+        </div>
+        <div class="card-title">Light Meter</div>
+        <div class="card-desc">Measure ambient brightness in real time using your device light sensor.</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-link">Open Tool</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="tools/internet-speed.html" class="tool-card" data-tags="tools measure">
+      <img class="card-screenshot" data-src="screenshots/internet-speed.webp" alt="Internet Speed Test screenshot" loading="lazy">
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="card-cat blue">Measurement</span>
+          <span class="card-dot"></span>
+        </div>
+        <div class="card-title">Internet Speed Test</div>
+        <div class="card-desc">Test your download and upload speed directly in the browser. No app needed.</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-link">Open Tool</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="tools/angle.html" class="tool-card" data-tags="tools measure">
+      <img class="card-screenshot" data-src="screenshots/angle.webp" alt="Angle Meter screenshot" loading="lazy">
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="card-cat green">Measurement</span>
+          <span class="card-dot green"></span>
+        </div>
+        <div class="card-title">Angle Meter</div>
+        <div class="card-desc">Measure tilt and angle precisely using your device gyroscope sensor.</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-link">Open Tool</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="tools/compass.html" class="tool-card" data-tags="tools measure">
+      <img class="card-screenshot" data-src="screenshots/compass.webp" alt="Compass screenshot" loading="lazy">
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="card-cat amber">Navigation</span>
+          <span class="card-dot amber"></span>
+        </div>
+        <div class="card-title">Compass</div>
+        <div class="card-desc">Digital compass using your device magnetic sensor. Find your direction anywhere.</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-link">Open Tool</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- GAMES SECTION -->
+<section class="section" id="games" data-section="games">
+  <div class="section-header">
+    <div class="section-label">Games</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="games-grid">
+
+    <a href="games/dragon.html" class="game-card" data-tags="games">
+      <img class="game-screenshot" data-src="screenshots/dragon.webp" alt="Dragon Snake Game screenshot" loading="lazy">
+      <div class="game-body">
+        <div class="game-tag">Game · Arcade</div>
+        <div class="game-title">Dragon</div>
+        <div class="game-desc">A dragon-themed twist on the classic snake game. Smooth controls, addictive gameplay.</div>
+        <span class="game-btn">Play Now →</span>
+      </div>
+    </a>
+
+    <a href="games/gomoku.html" class="game-card" data-tags="games">
+      <img class="game-screenshot" data-src="screenshots/gomoku.webp" alt="Gomoku Five in a Row screenshot" loading="lazy">
+      <div class="game-body">
+        <div class="game-tag">Game · Strategy</div>
+        <div class="game-title">Gomoku</div>
+        <div class="game-desc">Five in a row with custom piece skins. Classic strategy game, beautifully redesigned.</div>
+        <span class="game-btn">Play Now →</span>
+      </div>
+    </a>
+
+    <a href="games/go.html" class="game-card" data-tags="games">
+      <img class="game-screenshot" data-src="screenshots/go.webp" alt="Go Game screenshot" loading="lazy">
+      <div class="game-body">
+        <div class="game-tag">Game · Strategy</div>
+        <div class="game-title">Go</div>
+        <div class="game-desc">The ancient game of Go with customizable rules and piece styles. For all skill levels.</div>
+        <span class="game-btn">Play Now →</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="section" id="about">
+  <div class="section-header">
+    <div class="section-label">About</div>
+    <div class="section-line"></div>
+  </div>
+  <div style="border:1px solid var(--border);border-radius:10px;padding:28px 28px;background:var(--bg2);max-width:580px;">
+    <div style="font-size:11px;letter-spacing:.2em;color:var(--blue);margin-bottom:12px;text-transform:uppercase;">1to3 Labs</div>
+    <p style="font-size:14px;color:rgba(255,255,255,0.55);line-height:1.9;margin-bottom:16px;">
+      A personal laboratory for building useful things. Every tool here solves a real problem I encountered. Every game is something I wanted to play.
+    </p>
+    <p style="font-size:14px;color:rgba(255,255,255,0.55);line-height:1.9;">
+      All projects are free, run entirely in your browser, and require no account or installation. New projects are added regularly.
+    </p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-l">© 2026 1to3 Labs · All rights reserved</div>
+  <div class="footer-r">
+    <a href="https://github.com/airipa/1to3" target="_blank" rel="noopener">GitHub</a>
+    <a href="#tools">Tools</a>
+    <a href="#games">Games</a>
+  </div>
+</footer>
+
+<script>
+  /* Lazy load images */
+  const imgs = document.querySelectorAll('[data-src]');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const img = e.target;
+        img.src = img.dataset.src;
+        img.onload = () => img.classList.add('loaded');
+        img.onerror = () => { img.style.opacity='1'; img.style.background='#111520'; };
+        observer.unobserve(img);
+      }
+    });
+  }, { rootMargin: '100px' });
+  imgs.forEach(img => observer.observe(img));
+
+  /* Filter */
+  function filter(tag) {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    event.target.classList.add('active');
+
+    const allCards = document.querySelectorAll('[data-tags]');
+    const toolSection = document.querySelector('[data-section="tools"]');
+    const gameSection = document.querySelector('[data-section="games"]');
+
+    allCards.forEach(card => {
+      const tags = card.dataset.tags || '';
+      if (tag === 'all' || tags.includes(tag)) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+
+    if (tag === 'games') {
+      toolSection.style.display = 'none';
+      gameSection.style.display = 'block';
+    } else if (tag === 'tools' || tag === 'health' || tag === 'measure' || tag === 'design') {
+      toolSection.style.display = 'block';
+      gameSection.style.display = 'none';
+    } else {
+      toolSection.style.display = 'block';
+      gameSection.style.display = 'block';
+    }
+  }
+</script>
+</body>
+</html>
