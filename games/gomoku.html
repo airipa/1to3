@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>万象棋局 · 豪华五子棋</title>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--bg:#0e0b08;--fg:#f0e4d0;--muted:#8a7e6c;--accent:#d4a843;--accent2:#e8c860;--card:rgba(28,22,14,0.92);--border:rgba(212,168,67,0.25)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;overflow-x:hidden}
+#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.screen{display:none;position:relative;z-index:1;min-height:100vh;flex-direction:column;align-items:center;justify-content:center}
+.screen.active{display:flex}
+#menuScreen{text-align:center;padding:16px 10px}
+.menu-title{font-family:'Ma Shan Zheng',cursive;font-size:clamp(42px,8vw,76px);background:linear-gradient(135deg,#f5d67b,#d4a843,#a67c2e,#d4a843,#f5d67b);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4s ease infinite;filter:drop-shadow(0 4px 20px rgba(212,168,67,0.4));line-height:1.2}
+@keyframes shimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.menu-sub{font-family:'Ma Shan Zheng',cursive;font-size:clamp(13px,2vw,18px);color:var(--muted);margin-top:3px;letter-spacing:5px}
+.menu-section{margin-top:16px}
+.menu-section h3{font-size:11px;color:var(--muted);letter-spacing:2px;margin-bottom:6px;font-weight:400}
+.option-group{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}
+.opt-btn{padding:6px 14px;border:1px solid var(--border);background:var(--card);color:var(--fg);border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .3s}
+.opt-btn:hover{border-color:var(--accent);background:rgba(212,168,67,0.1)}
+.opt-btn.selected{border-color:var(--accent);background:rgba(212,168,67,0.15);color:var(--accent2);box-shadow:0 0 12px rgba(212,168,67,0.15)}
+.start-btn{margin-top:20px;padding:12px 44px;font-size:17px;font-family:'Ma Shan Zheng',cursive;letter-spacing:3px;background:linear-gradient(135deg,#d4a843,#a67c2e);color:#1a1408;border:none;border-radius:10px;cursor:pointer;transition:all .3s;box-shadow:0 4px 24px rgba(212,168,67,0.3)}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 6px 32px rgba(212,168,67,0.5)}
+.theme-cards{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+#customPanel{display:none;margin-top:10px;width:100%;max-width:580px;background:var(--card);border:1px solid var(--accent);border-radius:12px;padding:14px;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.cp-title{font-family:'Ma Shan Zheng',cursive;font-size:18px;color:var(--accent2);margin-bottom:12px;text-align:center}
+.cp-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.cp-col{flex:1;min-width:240px;background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:10px;padding:12px}
+.cp-col h4{font-size:12px;color:var(--accent2);margin-bottom:8px;font-weight:700;display:flex;align-items:center;gap:6px}
+.cp-col h4 .cp-preview-big{width:32px;height:32px;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.4);vertical-align:middle}
+.cp-mode-btns{display:flex;gap:4px;margin-bottom:10px}
+.cp-mode-btn{flex:1;padding:8px 4px;border:2px solid var(--border);background:transparent;color:var(--muted);border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px}
+.cp-mode-btn i{font-size:16px}
+.cp-mode-btn:hover{border-color:var(--accent);color:var(--fg)}
+.cp-mode-btn.active{background:rgba(212,168,67,0.15);border-color:var(--accent);color:var(--accent2);box-shadow:0 0 12px rgba(212,168,67,0.15)}
+.cp-mode-btn .mode-label{font-size:11px;font-weight:700}
+.cp-edit{min-height:90px}
+.cp-edit>div{display:none}
+.cp-edit>div.active{display:block}
+.cp-input{width:100%;padding:8px 12px;border:1px solid var(--border);background:rgba(0,0,0,0.3);color:var(--fg);border-radius:7px;font-size:24px;font-family:inherit;text-align:center;outline:none;transition:border-color .2s}
+.cp-input:focus{border-color:var(--accent);box-shadow:0 0 8px rgba(212,168,67,0.15)}
+.cp-hint{font-size:10px;color:var(--muted);margin-top:4px;text-align:left;line-height:1.4}
+.cp-clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:24px;height:24px;border:none;background:rgba(255,255,255,0.1);color:var(--muted);border-radius:50%;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.cp-clear:hover{background:rgba(255,255,255,0.2);color:var(--fg)}
+.cp-emoji-grid{display:flex;flex-wrap:wrap;gap:2px;margin-top:6px;max-height:90px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--accent) transparent}
+.cp-emoji-grid::-webkit-scrollbar{width:3px}
+.cp-emoji-grid::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
+.cp-emoji-btn{width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:15px;border:none;background:transparent;border-radius:3px;cursor:pointer;transition:background .15s}
+.cp-emoji-btn:hover{background:rgba(212,168,67,0.2)}
+.cp-emoji-cat{font-size:9px;color:var(--muted);margin-top:5px;margin-bottom:1px;text-align:left;letter-spacing:1px}
+.cp-colors{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.cp-color-label{font-size:10px;color:var(--muted);margin-right:2px}
+.cp-color{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .2s}
+.cp-color:hover{transform:scale(1.2)}
+.cp-color.active{border-color:#fff;box-shadow:0 0 6px rgba(255,255,255,0.3)}
+.cp-upload-label{display:inline-flex;align-items:center;gap:5px;padding:10px 16px;border:2px dashed var(--border);background:transparent;color:var(--muted);border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;transition:all .2s;width:100%;justify-content:center}
+.cp-upload-label:hover{border-color:var(--accent);color:var(--accent2);background:rgba(212,168,67,0.05)}
+.cp-upload-label i{font-size:18px}
+.cp-preview-row{margin-top:8px;display:flex;align-items:center;gap:8px}
+.cp-preview-row canvas{border-radius:50%;box-shadow:0 2px 10px rgba(0,0,0,0.4)}
+.cp-remove-btn{padding:4px 10px;border:1px solid rgba(255,100,100,0.3);background:transparent;color:#f87171;border-radius:5px;cursor:pointer;font-size:10px;font-family:inherit;transition:all .2s}
+.cp-remove-btn:hover{background:rgba(248,113,113,0.1);border-color:#f87171}
+#cropModal{display:none;position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0.85);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);align-items:center;justify-content:center}
+#cropModal.active{display:flex}
+.crop-box{background:var(--card);border:1px solid var(--accent);border-radius:14px;padding:20px;text-align:center;width:320px;max-width:90vw}
+.crop-box h3{font-family:'Ma Shan Zheng',cursive;font-size:20px;color:var(--accent2);margin-bottom:10px}
+#cropCanvas{border-radius:8px;cursor:move;background:#1a1408;display:block;margin:0 auto;touch-action:none}
+.crop-slider{width:100%;margin-top:10px;accent-color:var(--accent)}
+.crop-btns{display:flex;gap:8px;justify-content:center;margin-top:12px}
+#gameScreen{padding:6px;gap:6px}
+.game-header{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:740px;padding:5px 10px;background:var(--card);border:1px solid var(--border);border-radius:8px}
+.player-info{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;transition:all .3s}
+.player-info.active{background:rgba(212,168,67,0.12);box-shadow:0 0 10px rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.2)}
+.player-info .piece-icon{width:26px;height:26px;border-radius:50%}
+.player-info .pname{font-size:11px;font-weight:700}
+.player-info .ptime{font-size:9px;color:var(--muted)}
+.turn-indicator{font-family:'Ma Shan Zheng',cursive;font-size:15px;color:var(--accent2);text-align:center;min-width:55px}
+.game-body{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
+.board-wrapper{position:relative;border-radius:10px;overflow:hidden;box-shadow:0 6px 30px rgba(0,0,0,0.6),0 0 40px rgba(212,168,67,0.1);border:2px solid rgba(212,168,67,0.3)}
+#gameCanvas{display:block;cursor:pointer;max-width:100%;height:auto}
+.side-panel{width:130px;display:flex;flex-direction:column;gap:6px}
+.panel-box{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:7px}
+.panel-box h4{font-size:9px;color:var(--muted);margin-bottom:5px;letter-spacing:1px;font-weight:400}
+.move-list{max-height:140px;overflow-y:auto;font-size:9px;scrollbar-width:thin;scrollbar-color:var(--accent) transparent}
+.move-list::-webkit-scrollbar{width:3px}
+.move-list::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
+.move-item{display:flex;align-items:center;gap:3px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+.move-item .mi-icon{width:12px;height:12px;border-radius:50%}
+.move-item .mi-pos{color:var(--muted);font-size:9px}
+.ctrl-btn{width:100%;padding:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);border-radius:5px;cursor:pointer;font-size:10px;font-family:inherit;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:3px}
+.ctrl-btn:hover{border-color:var(--accent);background:rgba(212,168,67,0.1);color:var(--accent2)}
+.score-display{font-size:15px;font-weight:900;font-family:'Ma Shan Zheng',cursive;color:var(--accent2)}
+.modal-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal-box{background:var(--card);border:1px solid var(--accent);border-radius:12px;padding:24px 32px;text-align:center;box-shadow:0 0 50px rgba(212,168,67,0.25);animation:modalIn .4s ease}
+@keyframes modalIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-box .winner-icon{width:52px;height:52px;margin:0 auto 8px;border-radius:50%}
+.modal-box h2{font-family:'Ma Shan Zheng',cursive;font-size:26px;color:var(--accent2);margin-bottom:4px}
+.modal-box p{color:var(--muted);font-size:12px;margin-bottom:14px}
+.modal-btns{display:flex;gap:8px;justify-content:center}
+.modal-btn{padding:7px 18px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;transition:all .2s}
+.modal-btn.primary{background:linear-gradient(135deg,#d4a843,#a67c2e);color:#1a1408;border:none}
+.modal-btn.secondary{background:transparent;color:var(--fg);border:1px solid var(--border)}
+.modal-btn:hover{transform:translateY(-1px)}
+.toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);padding:6px 16px;background:var(--card);border:1px solid var(--accent);border-radius:6px;color:var(--accent2);font-size:11px;z-index:200;animation:toastIn .3s ease;pointer-events:none}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@media(max-width:700px){.side-panel{width:100%;flex-direction:row;flex-wrap:wrap}.panel-box{flex:1;min-width:100px}.game-body{flex-direction:column;align-items:center}.game-header{flex-wrap:wrap;gap:2px;justify-content:center}.cp-row{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+
+<!-- ===== 菜单界面 ===== -->
+<div id="menuScreen" class="screen active">
+  <div class="menu-title">万象棋局</div>
+  <div class="menu-sub">豪华五子棋</div>
+  <div class="menu-section"><h3>选择棋子主题</h3><div class="theme-cards" id="themeCards"></div></div>
+
+  <!-- 自定义面板 -->
+  <div id="customPanel">
+    <div class="cp-title">自定义你的棋子</div>
+    <div class="cp-row" id="cpContainer">
+      <!-- 玩家1 -->
+      <div class="cp-col" data-player="1">
+        <h4 class="cp-title-h">玩家1 棋子 <span class="cp-preview-big-wrap"></span></h4>
+        <div class="cp-mode-btns">
+          <button class="cp-mode-btn active" data-mode="emoji" onclick="switchCustomMode(1,'emoji')"><i class="fas fa-face-smile"></i><span class="mode-label">Emoji</span></button>
+          <button class="cp-mode-btn" data-mode="text" onclick="switchCustomMode(1,'text')"><i class="fas fa-font"></i><span class="mode-label">文字</span></button>
+          <button class="cp-mode-btn" data-mode="image" onclick="switchCustomMode(1,'image')"><i class="fas fa-image"></i><span class="mode-label">图片</span></button>
+        </div>
+        <div class="cp-panels">
+          <div class="cp-panel active" data-panel="emoji">
+            <div style="position:relative">
+              <input class="cp-input" id="emojiInput1" value="🍎" placeholder="输入emoji" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" oninput="onEmojiInput(1,this.value)">
+              <button class="cp-clear" onclick="clearEmoji(1)"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="cp-hint">点击输入框打开系统emoji键盘，或从下方选取</div>
+            <div id="emojiGrid1"></div>
+          </div>
+          <div class="cp-panel" data-panel="text">
+            <input class="cp-input" id="textInput1" value="龙" placeholder="输入1-2个字" autocomplete="off" autocorrect="off" spellcheck="false" style="font-family:'Ma Shan Zheng','Noto Sans SC',cursive;font-size:28px" oninput="onTextInput(1,this.value)" onfocus="onTextFocus(1,this.value)">
+            <div class="cp-hint">输入文字自动切换为文字棋子模式</div>
+            <div class="cp-colors" id="colors1"><span class="cp-color-label">底色:</span></div>
+          </div>
+          <div class="cp-panel" data-panel="image">
+            <button class="cp-upload-label" onclick="document.getElementById('imgUpload1').click()"><i class="fas fa-cloud-arrow-up"></i> 点击选择图片上传</button>
+            <input type="file" id="imgUpload1" accept="image/*" style="display:none" onchange="onFileSelect(1,this)">
+            <div class="cp-hint">选择后可拖动缩放裁剪成圆形棋子</div>
+            <div class="cp-preview-row" id="imgPreview1"></div>
+          </div>
+        </div>
+      </div>
+      <!-- 玩家2 -->
+      <div class="cp-col" data-player="2">
+        <h4 class="cp-title-h">玩家2 棋子 <span class="cp-preview-big-wrap"></span></h4>
+        <div class="cp-mode-btns">
+          <button class="cp-mode-btn active" data-mode="emoji" onclick="switchCustomMode(2,'emoji')"><i class="fas fa-face-smile"></i><span class="mode-label">Emoji</span></button>
+          <button class="cp-mode-btn" data-mode="text" onclick="switchCustomMode(2,'text')"><i class="fas fa-font"></i><span class="mode-label">文字</span></button>
+          <button class="cp-mode-btn" data-mode="image" onclick="switchCustomMode(2,'image')"><i class="fas fa-image"></i><span class="mode-label">图片</span></button>
+        </div>
+        <div class="cp-panels">
+          <div class="cp-panel active" data-panel="emoji">
+            <div style="position:relative">
+              <input class="cp-input" id="emojiInput2" value="🍊" placeholder="输入emoji" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" oninput="onEmojiInput(2,this.value)">
+              <button class="cp-clear" onclick="clearEmoji(2)"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="cp-hint">点击输入框打开系统emoji键盘，或从下方选取</div>
+            <div id="emojiGrid2"></div>
+          </div>
+          <div class="cp-panel" data-panel="text">
+            <input class="cp-input" id="textInput2" value="虎" placeholder="输入1-2个字" autocomplete="off" autocorrect="off" spellcheck="false" style="font-family:'Ma Shan Zheng','Noto Sans SC',cursive;font-size:28px" oninput="onTextInput(2,this.value)" onfocus="onTextFocus(2,this.value)">
+            <div class="cp-hint">输入文字自动切换为文字棋子模式</div>
+            <div class="cp-colors" id="colors2"><span class="cp-color-label">底色:</span></div>
+          </div>
+          <div class="cp-panel" data-panel="image">
+            <button class="cp-upload-label" onclick="document.getElementById('imgUpload2').click()"><i class="fas fa-cloud-arrow-up"></i> 点击选择图片上传</button>
+            <input type="file" id="imgUpload2" accept="image/*" style="display:none" onchange="onFileSelect(2,this)">
+            <div class="cp-hint">选择后可拖动缩放裁剪成圆形棋子</div>
+            <div class="cp-preview-row" id="imgPreview2"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="menu-section"><h3>游戏模式</h3><div class="option-group" id="modeGroup">
+    <button class="opt-btn selected" data-val="pve" onclick="pickMode('pve')"><i class="fas fa-robot" style="margin-right:3px"></i>单人</button>
+    <button class="opt-btn" data-val="pvp" onclick="pickMode('pvp')"><i class="fas fa-users" style="margin-right:3px"></i>双人</button>
+  </div></div>
+  <div class="menu-section" id="diffSection"><h3>难度</h3><div class="option-group" id="diffGroup">
+    <button class="opt-btn" data-val="easy" onclick="pickDiff('easy')">简单</button>
+    <button class="opt-btn selected" data-val="medium" onclick="pickDiff('medium')">中等</button>
+    <button class="opt-btn" data-val="hard" onclick="pickDiff('hard')">困难</button>
+  </div></div>
+    <div class="menu-section"><h3>棋盘底纹</h3>
+    <div class="option-group" id="boardStyleGroup"></div>
+    <div style="margin-top:4px;display:flex;gap:4px;justify-content:center;flex-wrap:wrap">
+      <button class="opt-btn" onclick="document.getElementById('boardBgFile').click()"><i class="fas fa-image"></i> 上传图片</button>
+      <input type="file" id="boardBgFile" accept="image/*" style="display:none" onchange="onBoardBgFile(this)">
+      <button class="opt-btn" onclick="removeBoardBg()"><i class="fas fa-times"></i> 清除图片</button>
+    </div>
+  </div>
+  <button class="start-btn" onclick="startGame()">开局落子</button>
+</div>
+
+<!-- ===== 游戏界面 ===== -->
+<div id="gameScreen" class="screen">
+  <div class="game-header">
+    <div class="player-info" id="p1Info">
+      <canvas class="piece-icon" id="p1Icon" width="26" height="26"></canvas>
+      <div><div class="pname" id="p1Name"></div><div class="ptime" id="p1Time">00:00</div></div>
+    </div>
+    <div class="turn-indicator" id="turnText">先手落子</div>
+    <div class="player-info" id="p2Info">
+      <canvas class="piece-icon" id="p2Icon" width="26" height="26"></canvas>
+      <div><div class="pname" id="p2Name"></div><div class="ptime" id="p2Time">00:00</div></div>
+    </div>
+  </div>
+  <div class="game-body">
+    <div class="board-wrapper"><canvas id="gameCanvas" width="690" height="690"></canvas></div>
+    <div class="side-panel">
+      <div class="panel-box"><h4>记录</h4><div class="move-list" id="moveList"></div></div>
+      <div class="panel-box"><h4>比分</h4><div style="display:flex;justify-content:center;gap:12px"><div><span id="score1" class="score-display">0</span><div style="font-size:8px;color:var(--muted)" id="scoreName1"></div></div><div style="color:var(--muted);font-size:14px;line-height:22px">:</div><div><span id="score2" class="score-display">0</span><div style="font-size:8px;color:var(--muted)" id="scoreName2"></div></div></div></div>
+      <div class="panel-box"><h4>操作</h4>
+        <button class="ctrl-btn" onclick="undoMove()"><i class="fas fa-undo"></i>悔棋</button>
+        <button class="ctrl-btn" style="margin-top:4px" onclick="restartGame()"><i class="fas fa-redo"></i>重来</button>
+        <button class="ctrl-btn" style="margin-top:4px" onclick="backToMenu()"><i class="fas fa-home"></i>菜单</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 胜利弹窗 ===== -->
+<div class="modal-overlay" id="winModal">
+  <div class="modal-box">
+    <canvas class="winner-icon" id="winIcon" width="52" height="52"></canvas>
+    <h2 id="winTitle"></h2>
+    <p id="winDesc"></p>
+    <div class="modal-btns">
+      <button class="modal-btn primary" onclick="closeModal();restartGame()">再来一局</button>
+      <button class="modal-btn secondary" onclick="closeModal();backToMenu()">返回菜单</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 裁剪弹窗 ===== -->
+<div id="cropModal">
+  <div class="crop-box">
+    <h3>裁剪棋子图片</h3>
+    <p style="color:var(--muted);font-size:11px;margin-bottom:8px">拖动图片 / 滚轮缩放，圆形区域为裁剪范围</p>
+    <canvas id="cropCanvas" width="280" height="280"></canvas>
+    <input type="range" class="crop-slider" id="cropScale" min="20" max="300" value="100" oninput="onCropScale(this)">
+    <div class="crop-btns">
+      <button class="modal-btn primary" onclick="confirmCrop()">确认</button>
+      <button class="modal-btn secondary" onclick="closeCropModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========== 万象棋局 — 完整版 ========== */
+
+// ===== 绘制辅助 =====
+function ellipse(c,x,y,rx,ry){c.beginPath();c.ellipse(x,y,Math.max(.1,rx),Math.max(.1,ry),0,0,Math.PI*2)}
+function shadow3D(c,x,y,rx,ry){c.save();c.filter='blur(6px)';ellipse(c,x+3,y+5,rx,ry);c.fillStyle='rgba(0,0,0,0.35)';c.fill();c.restore()}
+function drawLegacyPiece(c,x,y,r){shadow3D(c,x,y,r*.9,r*.85);c.beginPath();c.arc(x,y+r*.1,r*.7,0,Math.PI*2);
+  const g=c.createRadialGradient(x-r*.15,y-r*.1,r*.1,x,y,r*.7);
+  g.addColorStop(0,'#fef3c7');g.addColorStop(.4,'#fcd34d');g.addColorStop(.8,'#b45309');g.addColorStop(1,'#78350f');c.fillStyle=g;c.fill();
+  for(const s of[-1,1]){c.beginPath();c.ellipse(x+s*r*.55,y+r*.15,r*.17,r*.4,s*(-.2),0,Math.PI*2);const eg=c.createRadialGradient(x+s*r*.55,y+r*.1,r*.05,x+s*r*.55,y+r*.15,r*.4);eg.addColorStop(0,'#a16207');eg.addColorStop(1,'#78350f');c.fillStyle=eg;c.fill()}
+  for(const s of[-1,1]){c.beginPath();c.arc(x+s*r*.2,y-r*.08,r*.1,0,Math.PI*2);c.fillStyle='#fef3c7';c.fill();c.beginPath();c.arc(x+s*r*.2,y-r*.08,r*.05,0,Math.PI*2);c.fillStyle='#1a1a2e';c.fill()}
+  c.beginPath();c.ellipse(x+r*.04,y+r*.28,r*.05,r*.08,0,0,Math.PI*2);c.fillStyle='#f87171';c.fill()}
+
+// ===== 主题与配置 =====
+
+const BOARD_STYLES={
+  wood:{name:'木质',grid:'rgba(40,25,5,0.45)',border:'rgba(140,100,40,0.5)',inner:'rgba(100,70,30,0.6)',star:'rgba(40,25,5,0.5)',coord:'rgba(40,25,5,0.3)',draw:function(c,w,h){
+    var g=c.createLinearGradient(0,0,w,h);g.addColorStop(0,'#c9a44e');g.addColorStop(.3,'#dcb468');g.addColorStop(.7,'#d4a84e');g.addColorStop(1,'#b8892e');c.fillStyle=g;c.fillRect(0,0,w,h);
+    c.save();c.globalAlpha=.04;for(var i=0;i<40;i++){c.beginPath();var y=Math.random()*h;c.moveTo(0,y);c.bezierCurveTo(w*.3,y+(Math.random()-.5)*20,w*.7,y+(Math.random()-.5)*20,w,y);c.strokeStyle='#8b6914';c.lineWidth=Math.random()*2.5+.5;c.stroke()}c.restore()
+  }},
+  slate:{name:'石板',grid:'rgba(60,70,80,0.5)',border:'rgba(100,120,140,0.5)',inner:'rgba(70,85,100,0.6)',star:'rgba(60,70,80,0.5)',coord:'rgba(60,70,80,0.3)',draw:function(c,w,h){
+    var g=c.createRadialGradient(w/2,h/2,0,w/2,h/2,w*.7);g.addColorStop(0,'#8a9ba8');g.addColorStop(.5,'#6b7b8a');g.addColorStop(1,'#4a5568');c.fillStyle=g;c.fillRect(0,0,w,h);
+    c.save();c.globalAlpha=.08;for(var i=0;i<60;i++){c.beginPath();c.arc(Math.random()*w,Math.random()*h,Math.random()*2+1,0,Math.PI*2);c.fillStyle='#2d3748';c.fill()}c.restore()
+  }},
+  bamboo:{name:'竹韵',grid:'rgba(35,65,35,0.5)',border:'rgba(60,100,50,0.5)',inner:'rgba(40,80,35,0.6)',star:'rgba(35,65,35,0.5)',coord:'rgba(35,65,35,0.3)',draw:function(c,w,h){
+    var g=c.createLinearGradient(0,0,w,h);g.addColorStop(0,'#6b8e5a');g.addColorStop(.3,'#7d9f6a');g.addColorStop(.6,'#5a7d4a');g.addColorStop(1,'#4a6d3a');c.fillStyle=g;c.fillRect(0,0,w,h);
+    c.save();c.globalAlpha=.08;for(var i=0;i<15;i++){var x=Math.random()*w;c.beginPath();c.moveTo(x,0);for(var yi=0;yi<h;yi+=4){c.lineTo(x+Math.sin(yi*0.05)*3,yi)}c.strokeStyle='#3d5a2e';c.lineWidth=Math.random()*1.5+.5;c.stroke()}c.restore()
+  }},
+  jade:{name:'墨玉',grid:'rgba(100,180,140,0.4)',border:'rgba(60,140,100,0.5)',inner:'rgba(50,120,80,0.55)',star:'rgba(100,180,140,0.5)',coord:'rgba(100,180,140,0.3)',draw:function(c,w,h){
+    var g=c.createRadialGradient(w*0.3,h*0.3,0,w*0.5,h*0.5,w*0.8);g.addColorStop(0,'#2d4a3e');g.addColorStop(.4,'#1a3a2e');g.addColorStop(.7,'#0f2a1e');g.addColorStop(1,'#06140e');c.fillStyle=g;c.fillRect(0,0,w,h);
+    c.save();c.globalAlpha=.06;for(var i=0;i<20;i++){c.beginPath();c.ellipse(Math.random()*w,Math.random()*h,Math.random()*40+10,Math.random()*5+2,Math.random()*Math.PI,0,Math.PI*2);c.strokeStyle='#3a6a50';c.lineWidth=.5;c.stroke()}c.restore()
+  }},
+  hermes:{name:'爱马仕橙',grid:'rgba(60,20,10,0.4)',border:'rgba(120,50,20,0.5)',inner:'rgba(100,40,15,0.55)',star:'rgba(60,20,10,0.5)',coord:'rgba(60,20,10,0.3)',draw:function(c,w,h){
+    var g=c.createRadialGradient(w/2,h/2,0,w/2,h/2,w*.7);g.addColorStop(0,'#f2804a');g.addColorStop(.5,'#e3632b');g.addColorStop(1,'#c4481a');c.fillStyle=g;c.fillRect(0,0,w,h)
+  }},
+  tiffany:{name:'蒂芙尼蓝',grid:'rgba(15,70,70,0.4)',border:'rgba(20,100,100,0.5)',inner:'rgba(15,80,80,0.55)',star:'rgba(15,70,70,0.5)',coord:'rgba(15,70,70,0.3)',draw:function(c,w,h){
+    var g=c.createRadialGradient(w/2,h/2,0,w/2,h/2,w*.7);g.addColorStop(0,'#b5ece6');g.addColorStop(.5,'#81D8D0');g.addColorStop(1,'#5cbdb5');c.fillStyle=g;c.fillRect(0,0,w,h)
+  }},
+  burgundy:{name:'勃艮第红',grid:'rgba(180,120,120,0.35)',border:'rgba(160,80,80,0.5)',inner:'rgba(140,60,60,0.55)',star:'rgba(180,120,120,0.45)',coord:'rgba(180,120,120,0.25)',draw:function(c,w,h){
+    var g=c.createRadialGradient(w/2,h/2,0,w/2,h/2,w*.8);g.addColorStop(0,'#a04040');g.addColorStop(.4,'#800020');g.addColorStop(.7,'#5a0018');g.addColorStop(1,'#380010');c.fillStyle=g;c.fillRect(0,0,w,h)
+  }},
+  emerald:{name:'祖母绿',grid:'rgba(180,220,180,0.35)',border:'rgba(100,180,120,0.5)',inner:'rgba(80,150,100,0.55)',star:'rgba(180,220,180,0.45)',coord:'rgba(180,220,180,0.25)',draw:function(c,w,h){
+    var g=c.createRadialGradient(w/2,h/2,0,w/2,h/2,w*.8);g.addColorStop(0,'#3a8a5a');g.addColorStop(.4,'#2d6b4a');g.addColorStop(.7,'#1a4a30');g.addColorStop(1,'#0a2818');c.fillStyle=g;c.fillRect(0,0,w,h)
+  }},
+  navy:{name:'深海蓝',grid:'rgba(160,180,220,0.35)',border:'rgba(100,130,180,0.5)',inner:'rgba(80,100,160,0.55)',star:'rgba(160,180,220,0.45)',coord:'rgba(160,180,220,0.25)',draw:function(c,w,h){
+    var g=c.createRadialGradient(w/2,h/2,0,w/2,h/2,w*.8);g.addColorStop(0,'#3a5a8a');g.addColorStop(.4,'#1a3a6a');g.addColorStop(.7,'#0f2248');g.addColorStop(1,'#061028');c.fillStyle=g;c.fillRect(0,0,w,h)
+  }},
+  image:{name:'自定义图片',grid:'rgba(0,0,0,0.35)',border:'rgba(0,0,0,0.4)',inner:'rgba(0,0,0,0.45)',star:'rgba(0,0,0,0.4)',coord:'rgba(0,0,0,0.3)',draw:function(c,w,h){
+    if(typeof boardBgImg!=='undefined'&&boardBgImg){c.drawImage(boardBgImg,0,0,w,h)}else{c.fillStyle='#666';c.fillRect(0,0,w,h)}
+  }}
+};
+const PIECE_THEMES={
+  custom:{name:'自定义',p1:null,p2:null},
+  classic:{name:'经典',p1:{emoji:'🍎'},p2:{emoji:'🍊'}},
+  animal:{name:'动物',p1:{emoji:'🐱'},p2:{emoji:'🐶'}},
+  cute:{name:'可爱',p1:{emoji:'😊'},p2:{emoji:'😜'}},
+  sport:{name:'竞技',p1:{emoji:'⚽'},p2:{emoji:'🏀'}},
+  space:{name:'太空',p1:{emoji:'🚀'},p2:{emoji:'🌙'}}
+};
+const PRESET_COLORS=['#ef4444','#f97316','#eab308','#22c55e','#06b6d4','#3b82f6','#8b5cf6','#ec4899','#f5f5f5','#1e293b'];
+const EMOJI_DATA=[
+  {cat:'表情',list:['😀','😁','😂','🤣','😃','😄','😅','😆','😉','😊','😋','😎','😍','😘','🥰','😏','😒','🙄','😬','😮','😲','😳','🥺','😢','😭','😤','😠','😡','🤬','😈','💀','💩','🤡','👻','👽','👾','🤖']},
+  {cat:'动物',list:['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🦅','🐺','🐴','🦄','🐝','🦋','🐌','🐢','🐍','🐙','🐠','🐬','🦈','🐳']},
+  {cat:'食物',list:['🍎','🍊','🍋','🍌','🍉','🍇','🍓','🍒','🍑','🥝','🍍','🍕','🍔','🍟','🌮','🍣','🍰','🍩','🍪','🍫']},
+  {cat:'物品',list:['⭐','🔥','💎','❤️','🌙','☀️','👑','🎵','🎨','🚀','⚽','🎲','💡','🎃','🤖','💀','🃏','🔮','🧸','🏆','🥇','⚔️','🛡️','🎯','✨','💥','⚡','🌈','🌸','🌹']}
+];
+
+const customCfg={
+  p1:{type:'emoji',emoji:'🍎',text:'龙',color:'#ef4444',imgData:null},
+  p2:{type:'emoji',emoji:'🍊',text:'虎',color:'#06b6d4',imgData:null}
+};
+
+// ===== 预渲染缓存 =====
+const PRE=150;
+const pieceCache={};
+
+function preRenderAll(){reCacheCustom()}
+
+function preOne(fn){const c=document.createElement('canvas');c.width=PRE;c.height=PRE;fn(c.getContext('2d'),PRE/2,PRE/2,PRE*.42);return c}
+
+// ★ 核心：渲染自定义棋子到 canvas（不依赖外部缓存）
+function drawCustomPiece(ctx, cx, cy, r, pNum){
+  const cfg=pNum===1?customCfg.p1:customCfg.p2;
+  if(cfg.type==='image'&&cfg.imgData){
+    ctx.save();
+    ctx.shadowColor='rgba(0,0,0,0.3)';ctx.shadowBlur=4;ctx.shadowOffsetX=1;ctx.shadowOffsetY=2;
+    const s=Math.max((r*1.64)/cfg.imgData.width,(r*1.64)/cfg.imgData.height);
+    ctx.drawImage(cfg.imgData,0,0,cfg.imgData.width,cfg.imgData.height,cx-cfg.imgData.width*s/2,cy-cfg.imgData.height*s/2,cfg.imgData.width*s,cfg.imgData.height*s);
+    ctx.restore()
+  } else if(cfg.type==='text'&&cfg.text){
+    ctx.save();
+    const fs=r*(cfg.text.length>1?0.9:1.2);
+    ctx.font='bold '+fs+'px "Ma Shan Zheng","Noto Sans SC","Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.shadowColor='rgba(0,0,0,0.4)';ctx.shadowBlur=3;ctx.shadowOffsetX=1;ctx.shadowOffsetY=2;
+    ctx.fillStyle=cfg.color||'#888';ctx.fillText(cfg.text,cx,cy+1);
+    ctx.restore()
+  } else if(cfg.type==='emoji'&&cfg.emoji){
+    ctx.save();
+    ctx.font=r*1.1+'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","EmojiOne Color","Android Emoji",sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.shadowColor='rgba(0,0,0,0.3)';ctx.shadowBlur=3;ctx.shadowOffsetY=1;
+    ctx.fillText(cfg.emoji,cx,cy+1);
+    ctx.restore()
+  }
+}
+
+function reCacheCustom(){
+  for(let p=1;p<=2;p++){
+    const c=document.createElement('canvas');c.width=PRE;c.height=PRE;
+    drawCustomPiece(c.getContext('2d'), PRE/2, PRE/2, PRE*0.42, p);
+    pieceCache['custom_'+p]=c;
+  }
+}
+
+// ===== 游戏常量与状态 =====
+const BS=15, CELL=44, PAD=38, PR=CELL*.48;
+const S={
+  board:[], cur:1, theme:'custom',boardStyle:'wood', mode:'pve', diff:'medium',
+  hist:[], over:false, winLine:null, hover:null, aiOn:false,
+  t1:0, t2:0, tInt:null, moves:0, score1:0, score2:0,
+  animFrame:0, animId:null, effects:[], needAnim:false
+};
+
+// ===== 音效 =====
+let audioCtx;
+function snd(t){
+  try{
+    if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.connect(g);g.connect(audioCtx.destination);
+    if(t==='place'){
+      o.type='sine';o.frequency.setValueAtTime(900,audioCtx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(350,audioCtx.currentTime+.1);
+      g.gain.setValueAtTime(.07,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.12);
+      o.start();o.stop(audioCtx.currentTime+.12)
+    } else if(t==='win'){
+      o.type='triangle';o.frequency.setValueAtTime(523,audioCtx.currentTime);
+      o.frequency.setValueAtTime(784,audioCtx.currentTime+.15);
+      o.frequency.setValueAtTime(1047,audioCtx.currentTime+.3);
+      g.gain.setValueAtTime(.08,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.5);
+      o.start();o.stop(audioCtx.currentTime+.5)
+    }
+  }catch(e){}
+}
+
+// ===== 背景动画 =====
+const bgC=document.getElementById('bgCanvas'),bgX=bgC.getContext('2d');let pts=[];
+function initBg(){bgC.width=innerWidth;bgC.height=innerHeight;pts=[];for(let i=0;i<35;i++)pts.push({x:Math.random()*bgC.width,y:Math.random()*bgC.height,r:Math.random()*1.2+.3,vx:(Math.random()-.5)*.15,vy:-Math.random()*.2-.04,a:Math.random()*.18+.04})}
+function drawBg(){bgX.clearRect(0,0,bgC.width,bgC.height);const g=bgX.createRadialGradient(bgC.width/2,bgC.height/2,0,bgC.width/2,bgC.height/2,bgC.width*.7);g.addColorStop(0,'#1a1408');g.addColorStop(1,'#0e0b08');bgX.fillStyle=g;bgX.fillRect(0,0,bgC.width,bgC.height);for(const p of pts){p.x+=p.vx;p.y+=p.vy;if(p.y<-10){p.y=bgC.height+10;p.x=Math.random()*bgC.width}if(p.x<-10)p.x=bgC.width+10;if(p.x>bgC.width+10)p.x=-10;bgX.beginPath();bgX.arc(p.x,p.y,p.r,0,Math.PI*2);bgX.fillStyle='rgba(212,168,67,'+p.a+')';bgX.fill()}requestAnimationFrame(drawBg)}
+addEventListener('resize',initBg);initBg();drawBg();
+
+// ===== Toast =====
+function toast(msg){
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2000)
+}
+
+// ===== 菜单 =====
+
+function pickMode(v){S.mode=v;document.querySelectorAll('#modeGroup .opt-btn').forEach(x=>x.classList.toggle('selected',x.dataset.val===v));document.getElementById('diffSection').style.display=v==='pve'?'':'none'}
+function pickDiff(v){S.diff=v;document.querySelectorAll('#diffGroup .opt-btn').forEach(x=>x.classList.toggle('selected',x.dataset.val===v))}
+function pickTheme(v){
+  S.theme=v;
+  document.querySelectorAll('#themeCards .opt-btn').forEach(x=>x.classList.toggle('selected',x.dataset.val===v));
+  const isC=v==='custom';
+  document.getElementById('customPanel').style.display=isC?'block':'none';
+  if(!isC&&PIECE_THEMES[v]){
+    const t=PIECE_THEMES[v];
+    if(t.p1){customCfg.p1.type='emoji';customCfg.p1.emoji=t.p1.emoji;document.getElementById('emojiInput1').value=t.p1.emoji}
+    if(t.p2){customCfg.p2.type='emoji';customCfg.p2.emoji=t.p2.emoji;document.getElementById('emojiInput2').value=t.p2.emoji}
+  }
+  reCacheCustom();refreshAllPreviews()
+}
+
+// 菜单初始化
+buildBoardStyles();buildThemeCards();pickTheme('custom');
+
+// ===== 自定义面板 =====
+// 模式切换
+function switchCustomMode(p, mode){
+  customCfg['p'+p].type=mode;
+  const co=document.querySelector('.cp-col[data-player="'+p+'"]');
+  if(!co)return;
+  co.querySelectorAll('.cp-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+  co.querySelectorAll('.cp-panel').forEach(pa=>pa.classList.toggle('active',pa.dataset.panel===mode));
+  reCacheCustom();refreshAllPreviews();
+}
+
+// Emoji输入
+function onEmojiInput(p,val){
+  customCfg['p'+p].emoji=val;
+  if(val){customCfg['p'+p].type='emoji';switchCustomMode(p,'emoji')}
+  else {reCacheCustom();refreshAllPreviews()}
+}
+function clearEmoji(p){
+  document.getElementById('emojiInput'+p).value='';
+  customCfg['p'+p].emoji='';
+  reCacheCustom();refreshAllPreviews()
+}
+
+// 文字输入
+function onTextInput(p,val){
+  customCfg['p'+p].text=val;
+  if(val){customCfg['p'+p].type='text';switchCustomMode(p,'text')}
+  else {reCacheCustom();refreshAllPreviews()}
+}
+function onTextFocus(p,val){
+  if(val){customCfg['p'+p].type='text';switchCustomMode(p,'text')}
+}
+
+// Emoji网格
+function buildEmojiGrid(cid,pNum){
+  const c=document.getElementById(cid);if(!c)return;c.innerHTML='';
+  EMOJI_DATA.forEach(cat=>{
+    const lb=document.createElement('div');lb.className='cp-emoji-cat';lb.textContent=cat.cat;c.appendChild(lb);
+    const gr=document.createElement('div');gr.className='cp-emoji-grid';
+    cat.list.forEach(em=>{
+      const b=document.createElement('button');b.className='cp-emoji-btn';b.textContent=em;
+      b.onclick=()=>{onEmojiClick(pNum,em)};gr.appendChild(b)
+    });
+    c.appendChild(gr)
+  })
+}
+function onEmojiClick(p,em){
+  document.getElementById('emojiInput'+p).value=em;
+  customCfg['p'+p].emoji=em;customCfg['p'+p].type='emoji';
+  switchCustomMode(p,'emoji')
+}
+buildEmojiGrid('emojiGrid1',1);
+buildEmojiGrid('emojiGrid2',2);
+
+// 颜色选择
+function initColors(){
+  for(let p=1;p<=2;p++){
+    const colDiv=document.getElementById('colors'+p);
+    PRESET_COLORS.forEach(col=>{
+      const d=document.createElement('div');
+      d.className='cp-color'+(customCfg['p'+p].color===col?' active':'');
+      d.style.background=col;
+      d.onclick=()=>{
+        colDiv.querySelectorAll('.cp-color').forEach(x=>x.classList.remove('active'));
+        d.classList.add('active');customCfg['p'+p].color=col;
+        reCacheCustom();refreshAllPreviews()
+      };
+      colDiv.appendChild(d)
+    })
+  }
+}
+initColors();
+
+// 文件上传
+function onFileSelect(p,input){
+  const f=input.files&&input.files[0];
+  if(f){openCropModal(f,p);input.value=''}
+}
+
+// 刷新预览
+function refreshAllPreviews(){
+  for(let p=1;p<=2;p++){
+    const wrap=document.querySelector('.cp-col[data-player="'+p+'"] .cp-preview-big-wrap');
+    if(wrap){
+      wrap.innerHTML='';
+      const pc=document.createElement('canvas');pc.width=32;pc.height=32;pc.style.cssText='width:32px;height:32px;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.4);vertical-align:middle';
+      if(pieceCache['custom_'+p])pc.getContext('2d').drawImage(pieceCache['custom_'+p],0,0,PRE,PRE,0,0,32,32);
+      wrap.appendChild(pc)
+    }
+    // 图片预览
+    const pv=document.getElementById('imgPreview'+p);
+    if(pv){
+      pv.innerHTML='';
+      if(customCfg['p'+p].type==='image' && customCfg['p'+p].imgData){
+        const c=document.createElement('canvas');c.width=48;c.height=48;c.style.cssText='width:48px;height:48px;border-radius:50%';
+        if(pieceCache['custom_'+p])c.getContext('2d').drawImage(pieceCache['custom_'+p],0,0,PRE,PRE,0,0,48,48);
+        pv.appendChild(c);
+        const rm=document.createElement('button');rm.className='cp-remove-btn';rm.type='button';rm.textContent='移除';
+        rm.onclick=()=>{removeImage(p)};pv.appendChild(rm)
+      }
+    }
+  }
+  refreshCustomPreview();
+}
+
+function refreshCustomPreview(){
+  const tp=document.getElementById('tp_custom');
+  if(tp){
+    tp.innerHTML='';
+    [1,2].forEach(p=>{
+      if(pieceCache['custom_'+p]){
+        const c=document.createElement('canvas');c.width=30;c.height=30;c.style.cssText='width:30px;height:30px';
+        c.getContext('2d').drawImage(pieceCache['custom_'+p],0,0,PRE,PRE,0,0,30,30);
+        tp.appendChild(c);if(p===1){const sp=document.createElement('span');sp.textContent=' ';tp.appendChild(sp)}
+      }
+    })
+  }
+}
+
+function removeImage(p){
+  customCfg['p'+p].imgData=null;
+  customCfg['p'+p].type='emoji';
+  switchCustomMode(p,'emoji')
+}
+
+// ===== 图片裁剪 =====
+let cropState={img:null,player:0,ox:0,oy:0,scale:1,baseScale:1,drag:false,lx:0,ly:0};
+const cropCv=document.getElementById('cropCanvas'),cropCx=cropCv.getContext('2d');
+
+function openCropModal(file,player){
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    const img=new Image();
+    img.onload=()=>{
+      cropState.img=img;cropState.player=player;cropState.ox=0;cropState.oy=0;
+      const cw=cropCv.width,cr=cw*0.36*2;
+      cropState.baseScale=Math.min(cr/Math.max(1,img.width),cr/Math.max(1,img.height));
+      cropState.scale=1;
+      document.getElementById('cropScale').value=100;
+      document.getElementById('cropModal').classList.add('active');
+      drawCrop()
+    };
+    img.src=e.target.result
+  };
+  reader.readAsDataURL(file)
+}
+function closeCropModal(){document.getElementById('cropModal').classList.remove('active');cropState.img=null}
+
+function drawCrop(){
+  const w=cropCv.width,h=cropCv.height;cropCx.clearRect(0,0,w,h);
+  if(!cropState.img)return;
+  const sc=cropState.baseScale*cropState.scale,sw=cropState.img.width*sc,sh=cropState.img.height*sc;
+  const sx=(w-sw)/2+cropState.ox, sy=(h-sh)/2+cropState.oy;
+  cropCx.save();cropCx.fillStyle='#1a1408';cropCx.fillRect(0,0,w,h);
+  cropCx.save();cropCx.beginPath();cropCx.arc(w/2,h/2,w*0.36,0,Math.PI*2);cropCx.clip();
+  cropCx.drawImage(cropState.img,sx,sy,sw,sh);cropCx.restore();
+  cropCx.fillStyle='rgba(0,0,0,0.55)';cropCx.beginPath();cropCx.rect(0,0,w,h);cropCx.arc(w/2,h/2,w*0.36,0,Math.PI*2,true);cropCx.fill();
+  cropCx.beginPath();cropCx.arc(w/2,h/2,w*0.36,0,Math.PI*2);cropCx.strokeStyle='#d4a843';cropCx.lineWidth=2.5;cropCx.setLineDash([6,4]);cropCx.stroke();
+  cropCx.setLineDash([]);cropCx.strokeStyle='rgba(212,168,67,0.3)';cropCx.lineWidth=1;
+  cropCx.beginPath();cropCx.moveTo(w/2,h*0.12);cropCx.lineTo(w/2,h*0.88);cropCx.stroke();
+  cropCx.beginPath();cropCx.moveTo(w*0.12,h/2);cropCx.lineTo(w*0.88,h/2);cropCx.stroke()
+}
+
+cropCv.addEventListener('mousedown',e=>{cropState.drag=true;cropState.lx=e.clientX;cropState.ly=e.clientY});
+cropCv.addEventListener('touchstart',e=>{e.preventDefault();cropState.drag=true;cropState.lx=e.touches[0].clientX;cropState.ly=e.touches[0].clientY},{passive:false});
+window.addEventListener('mousemove',e=>{if(!cropState.drag)return;cropState.ox+=e.clientX-cropState.lx;cropState.oy+=e.clientY-cropState.ly;cropState.lx=e.clientX;cropState.ly=e.clientY;drawCrop()});
+window.addEventListener('touchmove',e=>{if(!cropState.drag)return;cropState.ox+=e.touches[0].clientX-cropState.lx;cropState.oy+=e.touches[0].clientY-cropState.ly;cropState.lx=e.touches[0].clientX;cropState.ly=e.touches[0].clientY;drawCrop()},{passive:false});
+window.addEventListener('mouseup',()=>{cropState.drag=false});
+window.addEventListener('touchend',()=>{cropState.drag=false});
+cropCv.addEventListener('wheel',e=>{e.preventDefault();cropState.scale=Math.max(.2,Math.min(5,cropState.scale*(e.deltaY>0?.95:1.05)));document.getElementById('cropScale').value=Math.round(cropState.scale*100);drawCrop()},{passive:false});
+function onCropScale(el){cropState.scale=el.value/100;drawCrop()}
+
+function confirmCrop(){
+  if(!cropState.img)return;
+  const p=cropState.player, w=cropCv.width,h=cropCv.height;
+  const sc=cropState.baseScale*cropState.scale;
+  const sw=cropState.img.width*sc, sh=cropState.img.height*sc;
+  const sx=(w-sw)/2+cropState.ox, sy=(h-sh)/2+cropState.oy;
+  const r=w*0.36;
+  // 先绘制到临时canvas
+  const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;
+  const tCtx=tmp.getContext('2d');
+  tCtx.drawImage(cropState.img,sx,sy,sw,sh);
+  // 裁剪圆形
+  const out=document.createElement('canvas');out.width=PRE;out.height=PRE;
+  const oCtx=out.getContext('2d');
+  oCtx.beginPath();oCtx.arc(PRE/2,PRE/2,PRE/2,0,Math.PI*2);oCtx.clip();
+  oCtx.drawImage(tmp, w/2-r, h/2-r, r*2, r*2, 0, 0, PRE, PRE);
+  customCfg['p'+p].imgData=out;
+  customCfg['p'+p].type='image';
+  switchCustomMode(p,'image');
+  closeCropModal();
+  toast('✅ 图片裁剪成功')
+}
+
+// ===== 游戏核心 =====
+const cv=document.getElementById('gameCanvas'),cx=cv.getContext('2d');
+
+function getPC(n){
+  return pieceCache['custom_'+n]
+}
+function getTP(n){
+  return {name:n===1?'玩家1':'玩家2',accent:customCfg['p'+n].color||'#d4a843',glow:customCfg['p'+n].color||'#d4a843'}
+}
+
+function render(){
+  const w=cv.width,h=cv.height;
+  const bs=BOARD_STYLES[S.boardStyle||'wood'];bs.draw(cx,w,h);
+  cx.strokeStyle=bs.border;cx.lineWidth=3;cx.strokeRect(PAD-8,PAD-8,(BS-1)*CELL+16,(BS-1)*CELL+16);
+  cx.strokeStyle=bs.inner;cx.lineWidth=2;cx.strokeRect(PAD-4,PAD-4,(BS-1)*CELL+8,(BS-1)*CELL+8);
+  [[3,3],[3,11],[7,7],[11,3],[11,11]].forEach(([r,c])=>{const px=PAD+c*CELL,py=PAD+r*CELL;cx.beginPath();cx.arc(px,py,5,0,Math.PI*2);cx.fillStyle=bs.star;cx.fill();cx.beginPath();cx.arc(px,py,7.5,0,Math.PI*2);cx.strokeStyle=bs.border;cx.lineWidth=1;cx.stroke()});
+  cx.strokeStyle=bs.grid;cx.lineWidth=1;
+  for(let i=0;i<BS;i++){const p=PAD+i*CELL;cx.beginPath();cx.moveTo(PAD,p);cx.lineTo(PAD+(BS-1)*CELL,p);cx.stroke();cx.beginPath();cx.moveTo(p,PAD);cx.lineTo(p,PAD+(BS-1)*CELL);cx.stroke()}
+  cx.font='bold 10px sans-serif';cx.fillStyle=bs.coord;cx.textAlign='center';cx.textBaseline='middle';
+  for(let i=0;i<BS;i++){cx.fillText(String.fromCharCode(65+i),PAD+i*CELL,18);cx.fillText(String(BS-i),18,PAD+i*CELL)}
+  if(S.hover&&!S.over&&!S.aiOn&&S.board[S.hover.r][S.hover.c]===0){
+    const hx=PAD+S.hover.c*CELL,hy=PAD+S.hover.r*CELL,tp=getTP(S.cur);
+    cx.beginPath();cx.arc(hx,hy,PR+4,0,Math.PI*2);
+    const hg=cx.createRadialGradient(hx,hy,PR*.3,hx,hy,PR+4);hg.addColorStop(0,tp.glow+'30');hg.addColorStop(1,tp.glow+'00');
+    cx.fillStyle=hg;cx.fill();
+    const pc=getPC(S.cur);if(pc){cx.save();cx.globalAlpha=.35;cx.drawImage(pc,0,0,PRE,PRE,hx-PR,hy-PR,PR*2,PR*2);cx.restore()}
+  }
+  for(let r=0;r<BS;r++)for(let c=0;c<BS;c++)if(S.board[r][c]){
+    const pc=getPC(S.board[r][c]);if(pc)cx.drawImage(pc,0,0,PRE,PRE,PAD+c*CELL-PR,PAD+r*CELL-PR,PR*2,PR*2)
+  }
+  if(S.hist.length>0){const l=S.hist[S.hist.length-1],lx=PAD+l.c*CELL,ly=PAD+l.r*CELL;cx.beginPath();cx.arc(lx,ly,4,0,Math.PI*2);cx.fillStyle='#ff3333';cx.fill();cx.beginPath();cx.arc(lx,ly,7,0,Math.PI*2);cx.strokeStyle='rgba(255,50,50,0.35)';cx.lineWidth=1.5;cx.stroke()}
+  if(S.winLine)drawWin();
+  drawFX()
+}
+
+function drawWin(){
+  if(!S.winLine||S.winLine.length<2)return;
+  const pl=S.board[S.winLine[0][0]][S.winLine[0][1]],tp=getTP(pl);
+  const f=S.winLine[0],l=S.winLine[S.winLine.length-1],x1=PAD+f[1]*CELL,y1=PAD+f[0]*CELL,x2=PAD+l[1]*CELL,y2=PAD+l[0]*CELL;
+  cx.save();cx.lineCap='round';cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);
+  cx.strokeStyle=tp.glow+'25';cx.lineWidth=30;cx.stroke();cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);
+  cx.strokeStyle=tp.glow+'50';cx.lineWidth=12;cx.stroke();cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);
+  cx.strokeStyle='#ffffffcc';cx.lineWidth=3;cx.shadowColor=tp.glow;cx.shadowBlur=20;cx.stroke();cx.restore();
+  const pulse=Math.sin(S.animFrame*.1)*.35+.65;
+  for(const[r,c]of S.winLine){const px=PAD+c*CELL,py=PAD+r*CELL;cx.save();cx.beginPath();cx.arc(px,py,PR+5+pulse*7,0,Math.PI*2);cx.strokeStyle=tp.glow+Math.floor(pulse*180).toString(16).padStart(2,'0');cx.lineWidth=2.5;cx.stroke();cx.restore()}
+}
+
+function addFX(type,x,y,color,extra){S.effects.push({type,x,y,color,start:performance.now(),dur:extra?.dur||600,data:extra});S.needAnim=true}
+function drawFX(){
+  const now=performance.now();S.effects=S.effects.filter(e=>now-e.start<e.dur);
+  for(const e of S.effects){
+    const t=(now-e.start)/e.dur;
+    if(e.type==='shockwave'){const r=t*CELL*2.5,a=(1-t)*.6;cx.beginPath();cx.arc(e.x,e.y,Math.max(.1,r),0,Math.PI*2);cx.strokeStyle=e.color+Math.floor(a*255).toString(16).padStart(2,'0');cx.lineWidth=3*(1-t);cx.stroke()}
+    else if(e.type==='sparkle'){const n=e.data?.n||8;for(let i=0;i<n;i++){const angle=i*Math.PI*2/n+t*.5,dist=t*CELL*1.8;cx.beginPath();cx.arc(e.x+Math.cos(angle)*dist,e.y+Math.sin(angle)*dist,Math.max(.1,(1-t)*3.5),0,Math.PI*2);cx.fillStyle=e.color+Math.floor((1-t)*220).toString(16).padStart(2,'0');cx.fill()}}
+    else if(e.type==='glow'){const a=(1-t)*.3;cx.beginPath();cx.arc(e.x,e.y,Math.max(.1,PR+t*CELL),0,Math.PI*2);const g=cx.createRadialGradient(e.x,e.y,PR*.5,e.x,e.y,PR+t*CELL);g.addColorStop(0,e.color+Math.floor(a*255).toString(16).padStart(2,'0'));g.addColorStop(1,e.color+'00');cx.fillStyle=g;cx.fill()}
+  }
+  if(S.effects.length>0)S.needAnim=true
+}
+function animLoop(){if(!S.over&&!S.needAnim){S.animId=null;return}S.animFrame++;S.needAnim=S.effects.length>0;render();if(S.over&&S.winLine)S.needAnim=true;if(S.needAnim||S.over)S.animId=requestAnimationFrame(animLoop);else S.animId=null}
+function kickAnim(){if(!S.animId){S.needAnim=true;animLoop()}}
+
+function gridPos(e){const rect=cv.getBoundingClientRect(),sx=cv.width/rect.width,sy=cv.height/rect.height;const mx=(e.clientX-rect.left)*sx,my=(e.clientY-rect.top)*sy;const col=Math.round((mx-PAD)/CELL),row=Math.round((my-PAD)/CELL);if(row>=0&&row<BS&&col>=0&&col<BS){const dx=mx-(PAD+col*CELL),dy=my-(PAD+row*CELL);if(Math.sqrt(dx*dx+dy*dy)<CELL*.58)return{r:row,c:col}}return null}
+cv.addEventListener('mousemove',e=>{S.hover=gridPos(e);if(!S.animId)render()});
+cv.addEventListener('mouseleave',()=>{S.hover=null;if(!S.animId)render()});
+cv.addEventListener('click',e=>{if(S.over||S.aiOn)return;if(S.mode==='pve'&&S.cur===2)return;const p=gridPos(e);if(p)place(p.r,p.c)});
+cv.addEventListener('touchstart',e=>{e.preventDefault();if(S.over||S.aiOn)return;if(S.mode==='pve'&&S.cur===2)return;const p=gridPos(e.touches[0]);if(p)place(p.r,p.c)},{passive:false});
+
+function place(r,c){
+  if(S.board[r][c]!==0)return;
+  S.board[r][c]=S.cur;S.hist.push({r,c,player:S.cur});S.moves++;
+  snd('place');
+  const px=PAD+c*CELL,py=PAD+r*CELL,tp=getTP(S.cur);
+  addFX('shockwave',px,py,tp.glow,{dur:600});addFX('sparkle',px,py,tp.accent,{dur:700,n:10});addFX('glow',px,py,tp.glow,{dur:500});
+  addRec(r,c,S.cur);kickAnim();
+  const w=checkWin(r,c,S.cur);
+  if(w){S.winLine=w;S.over=true;render();kickAnim();clearInterval(S.tInt);snd('win');if(S.cur===1)S.score1++;else S.score2++;document.getElementById('score1').textContent=S.score1;document.getElementById('score2').textContent=S.score2;setTimeout(()=>showWin(S.cur),700);return}
+  if(S.moves>=BS*BS){S.over=true;render();clearInterval(S.tInt);setTimeout(showDraw,600);return}
+  S.cur=S.cur===1?2:1;updateTurn();render();
+  if(S.mode==='pve'&&S.cur===2&&!S.over){S.aiOn=true;updateTurn();setTimeout(aiMove,S.diff==='easy'?400:S.diff==='medium'?700:1100)}
+}
+
+function addRec(r,c,pl){
+  const list=document.getElementById('moveList'),d=document.createElement('div');d.className='move-item';
+  const ic=document.createElement('canvas');ic.className='mi-icon';ic.width=12;ic.height=12;
+  const pc=getPC(pl);if(pc)ic.getContext('2d').drawImage(pc,0,0,PRE,PRE,0,0,12,12);
+  const tp=getTP(pl);
+  d.innerHTML='<span style="font-size:10px;color:'+tp.accent+'">'+tp.name+'</span><span class="mi-pos"> '+String.fromCharCode(65+c)+(BS-r)+'</span>';
+  d.prepend(ic);list.appendChild(d);list.scrollTop=list.scrollHeight
+}
+
+function checkWin(r,c,pl){
+  const dirs=[[0,1],[1,0],[1,1],[1,-1]];
+  for(const[dr,dc]of dirs){let line=[[r,c]];for(let i=1;i<5;i++){const nr=r+dr*i,nc=c+dc*i;if(nr>=0&&nr<BS&&nc>=0&&nc<BS&&S.board[nr][nc]===pl)line.push([nr,nc]);else break}for(let i=1;i<5;i++){const nr=r-dr*i,nc=c-dc*i;if(nr>=0&&nr<BS&&nc>=0&&nc<BS&&S.board[nr][nc]===pl)line.unshift([nr,nc]);else break}if(line.length>=5)return line}return null
+}
+
+function aiMove(){if(S.over){S.aiOn=false;return}let m;if(S.diff==='easy')m=aiEasy();else if(S.diff==='medium')m=aiMed();else m=aiHard();S.aiOn=false;if(m)place(m.r,m.c)}
+function empties(){const e=[];for(let r=0;r<BS;r++)for(let c=0;c<BS;c++)if(!S.board[r][c])e.push({r,c});return e}
+function hasN(r,c,n){const pl=2;for(const[dr,dc]of[[0,1],[1,0],[1,1],[1,-1]]){let cnt=0;for(let i=1;i<=n;i++){const nr=r+dr*i,nc=c+dc*i;if(nr>=0&&nr<BS&&nc>=0&&nc<BS&&S.board[nr][nc]===pl)cnt++;else break}for(let i=1;i<=n;i++){const nr=r-dr*i,nc=c-dc*i;if(nr>=0&&nr<BS&&nc>=0&&nc<BS&&S.board[nr][nc]===pl)cnt++;else break}if(cnt>=n-1)return true}return false}
+function immWin(pl){for(let r=0;r<BS;r++)for(let c=0;c<BS;c++)if(!S.board[r][c]){S.board[r][c]=pl;if(checkWin(r,c,pl)){S.board[r][c]=0;return{r,c}}S.board[r][c]=0}return null}
+function scorePos(r,c,pl){let score=0;const dirs=[[0,1],[1,0],[1,1],[1,-1]];for(const[dr,dc]of dirs){let cnt=1,open=0;for(let i=1;i<=4;i++){const nr=r+dr*i,nc=c+dc*i;if(nr>=0&&nr<BS&&nc>=0&&nc<BS){if(S.board[nr][nc]===pl)cnt++;else if(!S.board[nr][nc]){open++;break}else break}else break}for(let i=1;i<=4;i++){const nr=r-dr*i,nc=c-dc*i;if(nr>=0&&nr<BS&&nc>=0&&nc<BS){if(S.board[nr][nc]===pl)cnt++;else if(!S.board[nr][nc]){open++;break}else break}else break}if(cnt>=5)score+=100000;else if(cnt===4&&open>=1)score+=10000;else if(cnt===4)score+=5000;else if(cnt===3&&open>=2)score+=1000;else if(cnt===3&&open>=1)score+=500;else if(cnt===2&&open>=2)score+=100;else if(cnt===2)score+=50}return score}
+function bestMove(pl){let best=null,bestS=-1;const range=3;for(let dr=-range;dr<=range;dr++)for(let dc=-range;dc<=range;dc++){const nr=7+dr,nc=7+dc;if(nr>=0&&nr<BS&&nc>=0&&nc<BS&&!S.board[nr][nc]){const s1=scorePos(nr,nc,pl);const s2=scorePos(nr,nc,pl===1?2:1);const total=s1*1.1+s2;if(total>bestS){bestS=total;best={r:nr,c:nc}}}}if(best)return best;const e=empties();return e.length?e[Math.floor(Math.random()*e.length)]:null}
+function aiEasy(){const e=empties();if(!e.length)return null;if(Math.random()<.35){const ne=e.filter(p=>hasN(p.r,p.c,2));if(ne.length)return ne[Math.floor(Math.random()*ne.length)]}return bestMove(2)}
+function aiMed(){return bestMove(2)}
+function aiHard(){const w=immWin(2);if(w)return w;const b=immWin(1);if(b)return b;return bestMove(2)}
+
+// ===== 界面控制 =====
+function updateTurn(){
+  const tp=getTP(S.cur);
+  document.getElementById('p1Info').classList.toggle('active',S.cur===1);
+  document.getElementById('p2Info').classList.toggle('active',S.cur===2);
+  const tt=document.getElementById('turnText');
+  if(S.over)tt.textContent='对局结束';
+  else if(S.aiOn)tt.textContent='思考中...';
+  else tt.textContent=S.cur===1?'玩家1':(S.mode==='pve'?'AI':'玩家2')+' 落子'
+}
+
+function updateHeaderPieces(){
+  for(let p=1;p<=2;p++){
+    const iconC=document.getElementById('p'+p+'Icon'),ctx2=iconC.getContext('2d');
+    ctx2.clearRect(0,0,26,26);const pc=getPC(p);if(pc)ctx2.drawImage(pc,0,0,PRE,PRE,0,0,26,26)
+  }
+}
+
+
+let boardBgImg=null;
+function pickBoardStyle(v){S.boardStyle=v;document.querySelectorAll('#boardStyleGroup .opt-btn').forEach(function(x){x.classList.toggle('selected',x.dataset.val==v)})}
+function buildBoardStyles(){
+  var g=document.getElementById('boardStyleGroup');if(!g)return;
+  g.innerHTML='';var first=true;
+  for(var k in BOARD_STYLES){if(k==='image')continue;
+    var b=document.createElement('button');b.className='opt-btn'+(first?' selected':'');b.dataset.val=k;
+    b.textContent=BOARD_STYLES[k].name;b.onclick=function(v){return function(){pickBoardStyle(v)}}(k);g.appendChild(b);first=false
+  }
+}
+function buildThemeCards(){
+  var g=document.getElementById('themeCards');if(!g)return;
+  g.innerHTML='';var first=true;
+  for(var k in PIECE_THEMES){
+    var b=document.createElement('button');b.className='opt-btn'+(first?' selected':'');b.dataset.val=k;
+    b.textContent=PIECE_THEMES[k].name;b.onclick=function(v){return function(){pickTheme(v)}}(k);g.appendChild(b);first=false
+  }
+}
+function onBoardBgFile(input){var f=input.files&&input.files[0];if(!f)return;var img=new Image();img.onload=function(){boardBgImg=img;pickBoardStyle('image');toast('背景图片已上传')};img.src=URL.createObjectURL(f);input.value=''}
+function removeBoardBg(){boardBgImg=null;pickBoardStyle('wood');toast('已恢复默认背景')}
+
+function startGame(){
+  if(S.theme==='custom')reCacheCustom();
+  S.board=Array.from({length:BS},()=>Array(BS).fill(0));
+  S.cur=1;S.hist=[];S.over=false;S.winLine=null;S.aiOn=false;S.moves=0;S.t1=0;S.t2=0;S.effects=[];S.needAnim=false;S.hover=null;
+  if(S.tInt)clearInterval(S.tInt);
+  S.tInt=setInterval(()=>{if(!S.over){if(S.cur===1)S.t1++;else S.t2++;document.getElementById('p1Time').textContent=fmt(S.t1);document.getElementById('p2Time').textContent=fmt(S.t2)}},1000);
+  document.getElementById('moveList').innerHTML='';
+  const n1='玩家1';
+  const n2=S.mode==='pve'?'AI':'玩家2';
+  document.getElementById('scoreName1').textContent=n1;document.getElementById('scoreName2').textContent=n2;
+  document.getElementById('p1Name').textContent=n1;document.getElementById('p2Name').textContent=n2;
+  updateHeaderPieces();
+  document.getElementById('menuScreen').classList.remove('active');
+  document.getElementById('gameScreen').classList.add('active');
+  render();updateTurn();
+  if(S.mode==='pve'&&S.cur===2&&!S.over){S.aiOn=true;updateTurn();setTimeout(aiMove,600)}
+}
+function fmt(t){const m=Math.floor(t/60),s=t%60;return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
+function undoMove(){if(S.over||S.hist.length===0)return;const last=S.hist.pop();S.board[last.r][last.c]=0;S.moves--;S.cur=last.player;const list=document.getElementById('moveList');if(list.lastChild)list.removeChild(list.lastChild);updateTurn();render()}
+function restartGame(){if(S.tInt)clearInterval(S.tInt);S.board=Array.from({length:BS},()=>Array(BS).fill(0));S.cur=1;S.hist=[];S.over=false;S.winLine=null;S.aiOn=false;S.moves=0;S.t1=0;S.t2=0;S.effects=[];S.needAnim=false;S.hover=null;S.tInt=setInterval(()=>{if(!S.over){if(S.cur===1)S.t1++;else S.t2++;document.getElementById('p1Time').textContent=fmt(S.t1);document.getElementById('p2Time').textContent=fmt(S.t2)}},1000);document.getElementById('moveList').innerHTML='';document.getElementById('p1Time').textContent='00:00';document.getElementById('p2Time').textContent='00:00';updateHeaderPieces();render();updateTurn()}
+function backToMenu(){if(S.tInt)clearInterval(S.tInt);document.getElementById('gameScreen').classList.remove('active');document.getElementById('menuScreen').classList.add('active');document.getElementById('winModal').classList.remove('active')}
+function showWin(p){const tp=getTP(p);const iconC=document.getElementById('winIcon'),ctx2=iconC.getContext('2d');ctx2.clearRect(0,0,52,52);const pc=getPC(p);if(pc)ctx2.drawImage(pc,0,0,PRE,PRE,0,0,52,52);document.getElementById('winTitle').textContent=(p===1?'玩家1':'玩家2')+' 获胜！';document.getElementById('winDesc').textContent='五子连珠，精彩绝伦！';document.getElementById('winModal').classList.add('active')}
+function showDraw(){document.getElementById('winIcon').getContext('2d').clearRect(0,0,52,52);document.getElementById('winTitle').textContent='平局！';document.getElementById('winDesc').textContent='棋逢对手，势均力敌！';document.getElementById('winModal').classList.add('active')}
+function closeModal(){document.getElementById('winModal').classList.remove('active')}
+
+// ===== 初始化预制主题 =====
+preRenderAll();
+
+console.log('✅ 万象棋局已加载');
+console.log('💡 提示：选择"自定义"主题，可上传图片或输入文字作为棋子');
+</script>
+</body>
+</html>
