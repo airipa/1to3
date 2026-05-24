@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>指南针</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #070b12;
+            --fg: #dce4f0;
+            --accent: #e63946;
+            --muted: #6882a0;
+            --card: #0e1520;
+            --border: rgba(140,165,200,0.18);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html, body {
+            height:100%; overflow:hidden;
+            background:var(--bg);
+            font-family:'Orbitron','Noto Sans SC',monospace;
+            color:var(--fg);
+            -webkit-user-select:none; user-select:none;
+            -webkit-tap-highlight-color:transparent;
+        }
+        body {
+            display:flex; flex-direction:column;
+            align-items:center; justify-content:center;
+            background:
+                radial-gradient(ellipse at 50% 30%,rgba(18,40,72,0.45) 0%,transparent 55%),
+                radial-gradient(ellipse at 50% 80%,rgba(10,20,40,0.3) 0%,transparent 40%),
+                var(--bg);
+        }
+
+        #compass-wrap { position:relative; }
+        #compass-wrap::before {
+            content:''; position:absolute; inset:-24px; border-radius:50%;
+            background:radial-gradient(circle,rgba(25,50,85,0.18) 0%,transparent 62%);
+            animation:glow-pulse 5s ease-in-out infinite; pointer-events:none;
+        }
+        @keyframes glow-pulse {
+            0%,100%{opacity:.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.05)}
+        }
+        canvas { display:block; touch-action:none; }
+        .top-indicator {
+            position:absolute; top:-5px; left:50%; transform:translateX(-50%);
+            width:0; height:0;
+            border-left:10px solid transparent; border-right:10px solid transparent;
+            border-top:15px solid var(--accent);
+            filter:drop-shadow(0 0 8px rgba(230,57,70,0.7)); z-index:10;
+        }
+
+        #info-panel { margin-top:16px; text-align:center; }
+        #degree {
+            font-size:56px; font-weight:900; color:var(--accent);
+            letter-spacing:3px; line-height:1;
+            text-shadow:0 0 20px rgba(230,57,70,0.3);
+        }
+        #direction {
+            font-size:20px; font-weight:700; color:var(--fg);
+            margin-top:6px; letter-spacing:6px;
+        }
+
+        #sensor-bar {
+            margin-top:10px; display:flex; align-items:center; justify-content:center;
+            gap:8px; font-size:15px; color:var(--muted); letter-spacing:0.5px;
+        }
+        .status-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+        .status-dot.off { background:#555; }
+        .status-dot.on { background:#22c55e; box-shadow:0 0 6px rgba(34,197,94,0.5); }
+        .status-dot.warn { background:#f59e0b; box-shadow:0 0 6px rgba(245,158,11,0.5); }
+
+        #actions {
+            margin-top:12px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center;
+        }
+        .act-btn {
+            padding:12px 22px; border-radius:10px;
+            background:rgba(255,255,255,0.06); border:1px solid var(--border);
+            color:var(--fg); font-family:'Noto Sans SC','Orbitron',monospace;
+            font-size:17px; font-weight:700; letter-spacing:2px;
+            cursor:pointer; transition:background .15s;
+            min-width:90px; text-align:center;
+        }
+        .act-btn:active { transform:scale(0.96); background:rgba(255,255,255,0.12); }
+
+        #calib-overlay {
+            position:fixed; inset:0;
+            background:rgba(7,11,18,0.95);
+            display:flex; flex-direction:column;
+            align-items:center; justify-content:center;
+            z-index:100; gap:22px; padding:30px;
+        }
+        #calib-overlay.hidden { display:none; }
+        #calib-overlay h2 { font-size:22px; font-weight:700; letter-spacing:2px; }
+        #calib-overlay p {
+            font-size:15px; color:var(--muted); max-width:300px;
+            text-align:center; line-height:1.8;
+        }
+        #figure8-canvas { width:160px; height:160px; }
+        .close-btn {
+            padding:14px 40px; background:var(--accent); color:#fff;
+            border:none; border-radius:10px; font-size:17px;
+            font-family:'Noto Sans SC','Orbitron',monospace; font-weight:700;
+            cursor:pointer; letter-spacing:2px;
+        }
+        .close-btn:active { transform:scale(0.95); }
+
+        #debug-panel {
+            position:fixed; bottom:0; left:0; right:0;
+            background:rgba(10,15,24,0.95);
+            border-top:1px solid var(--border);
+            padding:14px 20px; font-size:14px; color:var(--muted);
+            letter-spacing:0.5px; line-height:2;
+            transform:translateY(100%); transition:transform .3s ease;
+            z-index:50;
+        }
+        #debug-panel.show { transform:translateY(0); }
+        #debug-panel span { color:var(--fg); font-weight:700; }
+
+        @media (prefers-reduced-motion:reduce) {
+            *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="compass-wrap">
+    <div class="top-indicator"></div>
+    <canvas id="compass"></canvas>
+</div>
+
+<div id="info-panel">
+    <div id="degree">0°</div>
+    <div id="direction">北 N</div>
+</div>
+
+<div id="sensor-bar">
+    <div class="status-dot off" id="dot-sensor"></div>
+    <span id="sensor-status">等待传感器…</span>
+</div>
+
+<div id="actions">
+    <button class="act-btn" id="btn-calib">校准</button>
+    <button class="act-btn" id="btn-offset">偏移</button>
+    <button class="act-btn" id="btn-debug">调试</button>
+</div>
+
+<div id="calib-overlay" class="hidden">
+    <h2>校准磁力计</h2>
+    <canvas id="figure8-canvas" width="320" height="320"></canvas>
+    <p>手持手机，沿8字形缓慢翻转摇晃数次，直到方向稳定。这是 Android 系统级校准，与网页无关。</p>
+    <button class="close-btn" id="btn-calib-close">完成</button>
+</div>
+
+<div id="debug-panel">
+    <div>alpha: <span id="dbg-alpha">--</span>  beta: <span id="dbg-beta">--</span>  gamma: <span id="dbg-gamma">--</span></div>
+    <div>absolute: <span id="dbg-abs">--</span>  heading: <span id="dbg-head">--</span>  offset: <span id="dbg-offset">0</span>°</div>
+    <div>来源: <span id="dbg-src">--</span></div>
+</div>
+
+<script>
+(function(){
+    'use strict';
+
+    var canvas = document.getElementById('compass');
+    var ctx = canvas.getContext('2d');
+    var degreeEl = document.getElementById('degree');
+    var directionEl = document.getElementById('direction');
+    var dotSensor = document.getElementById('dot-sensor');
+    var sensorStatusEl = document.getElementById('sensor-status');
+    var calibOverlay = document.getElementById('calib-overlay');
+    var debugPanel = document.getElementById('debug-panel');
+
+    var currentHeading = 0;
+    var targetHeading = 0;
+    var manualOffset = 0;
+    var hasSensorData = false;
+    var sensorAbsolute = false;
+    var lastAlpha = null, lastBeta = null, lastGamma = null;
+    var headingSource = '无';
+    var size = 0, dpr = 1;
+    var isDragging = false, lastDragAngle = 0;
+
+    /* ===== 尺寸 —— 圆盘缩小，留出文字按钮空间 ===== */
+    function resize() {
+        dpr = window.devicePixelRatio || 1;
+        // 宽度占 68%，高度占 46%，最大 380px
+        size = Math.min(window.innerWidth * 0.68, window.innerHeight * 0.46, 380);
+        size = Math.max(size, 240);
+        canvas.width = size * dpr;
+        canvas.height = size * dpr;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function lerpAngle(from, to, t) {
+        var diff = to - from;
+        while (diff > 180) diff -= 360;
+        while (diff < -180) diff += 360;
+        return from + diff * t;
+    }
+    function norm(deg) { return ((deg % 360) + 360) % 360; }
+    function getDirEN(d) { return ['N','NE','E','SE','S','SW','W','NW'][Math.round(norm(d)/45)%8]; }
+    function getDirCN(d) { return ['北','东北','东','东南','南','西南','西','西北'][Math.round(norm(d)/45)%8]; }
+
+    /* ===== 传感器 ===== */
+    function processOrientation(e) {
+        lastAlpha = e.alpha;
+        lastBeta = e.beta;
+        lastGamma = e.gamma;
+        sensorAbsolute = !!e.absolute;
+        if (e.alpha === null) return;
+
+        if (e.webkitCompassHeading !== undefined && e.webkitCompassHeading !== null) {
+            targetHeading = e.webkitCompassHeading;
+            headingSource = 'webkitCompassHeading';
+            hasSensorData = true;
+            updateSensorUI('ok');
+            return;
+        }
+        if (e.absolute) {
+            targetHeading = norm(360 - e.alpha);
+            headingSource = 'absolute';
+            hasSensorData = true;
+            updateSensorUI('ok');
+        } else {
+            targetHeading = norm(360 - e.alpha);
+            headingSource = 'relative(非绝对)';
+            hasSensorData = true;
+            updateSensorUI('warn');
+        }
+    }
+
+    function updateSensorUI(state) {
+        dotSensor.className = 'status-dot';
+        if (state === 'ok') {
+            dotSensor.classList.add('on');
+            sensorStatusEl.textContent = sensorAbsolute ? '绝对方向 · 精确' : '相对方向';
+        } else if (state === 'warn') {
+            dotSensor.classList.add('warn');
+            sensorStatusEl.textContent = '仅相对方向 · 建议校准';
+        } else {
+            dotSensor.classList.add('off');
+            sensorStatusEl.textContent = '等待传感器…';
+        }
+    }
+
+    if (typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+        document.getElementById('btn-calib').addEventListener('click', async function(){
+            try {
+                var p = await DeviceOrientationEvent.requestPermission();
+                if (p === 'granted') window.addEventListener('deviceorientation', processOrientation, true);
+            } catch(_){}
+        });
+    } else {
+        window.addEventListener('deviceorientationabsolute', processOrientation, true);
+        window.addEventListener('deviceorientation', processOrientation, true);
+        setTimeout(function(){
+            if (!hasSensorData) {
+                updateSensorUI('warn');
+                sensorStatusEl.textContent = '未获取传感器 · 可拖拽旋转';
+            }
+        }, 3000);
+    }
+
+    /* ===== 拖拽 ===== */
+    function angleFromCenter(cx, cy) {
+        var r = canvas.getBoundingClientRect();
+        return Math.atan2(cx - r.left - r.width/2, -(cy - r.top - r.height/2)) * 180 / Math.PI;
+    }
+    canvas.addEventListener('pointerdown', function(e){
+        isDragging = true;
+        lastDragAngle = angleFromCenter(e.clientX, e.clientY);
+        canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener('pointermove', function(e){
+        if (!isDragging) return;
+        var a = angleFromCenter(e.clientX, e.clientY);
+        var d = a - lastDragAngle;
+        if (d > 180) d -= 360; if (d < -180) d += 360;
+        targetHeading += d;
+        lastDragAngle = a;
+    });
+    canvas.addEventListener('pointerup', function(){ isDragging = false; });
+    canvas.addEventListener('pointercancel', function(){ isDragging = false; });
+
+    /* ===== 按钮 ===== */
+    document.getElementById('btn-calib').addEventListener('click', function(){
+        calibOverlay.classList.remove('hidden');
+        drawFigure8();
+    });
+    document.getElementById('btn-calib-close').addEventListener('click', function(){
+        calibOverlay.classList.add('hidden');
+    });
+
+    var offsetCycle = 0;
+    var offsets = [0, 15, -15, 30, -30];
+    document.getElementById('btn-offset').addEventListener('click', function(){
+        offsetCycle = (offsetCycle + 1) % offsets.length;
+        manualOffset = offsets[offsetCycle];
+        document.getElementById('dbg-offset').textContent = manualOffset;
+    });
+
+    document.getElementById('btn-debug').addEventListener('click', function(){
+        debugPanel.classList.toggle('show');
+    });
+
+    /* ===== 8字校准动画 ===== */
+    function drawFigure8() {
+        var fc = document.getElementById('figure8-canvas');
+        var fctx = fc.getContext('2d');
+        var w = fc.width, h = fc.height, cx = w/2, cy = h/2, phase = 0;
+        function anim() {
+            if (calibOverlay.classList.contains('hidden')) return;
+            fctx.clearRect(0,0,w,h);
+            fctx.beginPath(); fctx.strokeStyle='rgba(140,165,200,0.18)'; fctx.lineWidth=4;
+            for(var t=0;t<Math.PI*2;t+=0.02){
+                var x=cx+55*Math.sin(t), y=cy-50*Math.sin(t*2);
+                t===0?fctx.moveTo(x,y):fctx.lineTo(x,y);
+            }
+            fctx.closePath(); fctx.stroke();
+            phase+=0.025; var pt=phase%(Math.PI*2);
+            var px=cx+55*Math.sin(pt), py=cy-50*Math.sin(pt*2);
+            var angle=Math.atan2(-100*Math.cos(pt*2),55*Math.cos(pt));
+            fctx.save(); fctx.translate(px,py); fctx.rotate(angle);
+            fctx.fillStyle='#e63946'; fctx.shadowColor='rgba(230,57,70,0.6)'; fctx.shadowBlur=12;
+            fctx.beginPath(); fctx.roundRect(-8,-14,16,28,3); fctx.fill();
+            fctx.shadowBlur=0; fctx.fillStyle='#0a0e16'; fctx.fillRect(-5,-10,10,18);
+            fctx.restore();
+            requestAnimationFrame(anim);
+        }
+        anim();
+    }
+
+    /* ===== 绘制箭头 ===== */
+    function drawArrow(cx, cy, R) {
+        var len = R * 0.50;
+        var tailLen = R * 0.28;
+        var hw = R * 0.065;
+
+        ctx.save();
+        ctx.translate(cx, cy);
+
+        // 北向红色
+        ctx.shadowColor = 'rgba(230,57,70,0.6)';
+        ctx.shadowBlur = 24;
+        ctx.beginPath();
+        ctx.moveTo(0, -len);
+        ctx.lineTo(-hw * 1.8, -len * 0.28);
+        ctx.lineTo(-hw * 0.6, -len * 0.26);
+        ctx.lineTo(-hw * 0.6, 0);
+        ctx.lineTo(hw * 0.6, 0);
+        ctx.lineTo(hw * 0.6, -len * 0.26);
+        ctx.lineTo(hw * 1.8, -len * 0.28);
+        ctx.closePath();
+        var nG = ctx.createLinearGradient(0, -len, 0, 0);
+        nG.addColorStop(0, '#ff1830');
+        nG.addColorStop(0.5, '#e63946');
+        nG.addColorStop(1, '#c01228');
+        ctx.fillStyle = nG;
+        ctx.fill();
+
+        // 南向暗色
+        ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+        ctx.beginPath();
+        ctx.moveTo(0, tailLen);
+        ctx.lineTo(-hw * 1.3, tailLen * 0.12);
+        ctx.lineTo(-hw * 0.6, 0);
+        ctx.lineTo(hw * 0.6, 0);
+        ctx.lineTo(hw * 1.3, tailLen * 0.12);
+        ctx.closePath();
+        var sG = ctx.createLinearGradient(0, tailLen, 0, 0);
+        sG.addColorStop(0, '#18202e');
+        sG.addColorStop(1, '#2a3650');
+        ctx.fillStyle = sG;
+        ctx.fill();
+
+        // 中心
+        ctx.beginPath(); ctx.arc(0, 0, hw * 0.9, 0, Math.PI * 2);
+        ctx.fillStyle = '#c0cad8'; ctx.fill();
+        ctx.beginPath(); ctx.arc(0, 0, hw * 0.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#e63946'; ctx.fill();
+
+        ctx.restore();
+    }
+
+    /* ===== 主绘制 ===== */
+    function draw() {
+        var finalTarget = targetHeading + manualOffset;
+        currentHeading = lerpAngle(currentHeading, finalTarget, 0.08);
+
+        var dispDeg = Math.round(norm(currentHeading));
+        degreeEl.textContent = dispDeg + '°';
+        directionEl.textContent = getDirCN(dispDeg) + ' ' + getDirEN(dispDeg);
+
+        document.getElementById('dbg-alpha').textContent = lastAlpha !== null ? lastAlpha.toFixed(2) : '--';
+        document.getElementById('dbg-beta').textContent = lastBeta !== null ? lastBeta.toFixed(2) : '--';
+        document.getElementById('dbg-gamma').textContent = lastGamma !== null ? lastGamma.toFixed(2) : '--';
+        document.getElementById('dbg-abs').textContent = sensorAbsolute ? 'true' : 'false';
+        document.getElementById('dbg-head').textContent = dispDeg + '°';
+        document.getElementById('dbg-src').textContent = headingSource;
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, size, size);
+
+        var cx = size / 2, cy = size / 2;
+        var R = size * 0.42;
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(-currentHeading * Math.PI / 180);
+
+        // 外环
+        var rg = ctx.createRadialGradient(0, 0, R * 0.72, 0, 0, R * 1.14);
+        rg.addColorStop(0, '#111c2c');
+        rg.addColorStop(0.4, '#172438');
+        rg.addColorStop(0.8, '#14203a');
+        rg.addColorStop(1, '#0c1420');
+        ctx.beginPath(); ctx.arc(0, 0, R * 1.14, 0, Math.PI * 2);
+        ctx.fillStyle = rg; ctx.fill();
+        ctx.beginPath(); ctx.arc(0, 0, R * 1.14, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(140,165,200,0.25)'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 0, R * 0.72, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(140,165,200,0.12)'; ctx.lineWidth = 1.5; ctx.stroke();
+
+        // 1°
+        ctx.beginPath();
+        for(var d=0;d<360;d++){if(d%5===0)continue;var r=d*Math.PI/180,s=Math.sin(r),c=Math.cos(r);
+            ctx.moveTo(s*R*0.97,-c*R*0.97);ctx.lineTo(s*R*1.09,-c*R*1.09);}
+        ctx.strokeStyle='rgba(100,120,150,0.12)';ctx.lineWidth=0.5;ctx.stroke();
+
+        // 5°
+        ctx.beginPath();
+        for(var d=0;d<360;d+=5){if(d%15===0)continue;var r=d*Math.PI/180,s=Math.sin(r),c=Math.cos(r);
+            ctx.moveTo(s*R*0.92,-c*R*0.92);ctx.lineTo(s*R*1.09,-c*R*1.09);}
+        ctx.strokeStyle='rgba(120,140,175,0.28)';ctx.lineWidth=0.8;ctx.stroke();
+
+        // 15°
+        ctx.beginPath();
+        for(var d=0;d<360;d+=15){if(d%45===0)continue;var r=d*Math.PI/180,s=Math.sin(r),c=Math.cos(r);
+            ctx.moveTo(s*R*0.86,-c*R*0.86);ctx.lineTo(s*R*1.09,-c*R*1.09);}
+        ctx.strokeStyle='rgba(150,170,205,0.5)';ctx.lineWidth=1.5;ctx.stroke();
+
+        // 45°
+        ctx.beginPath();
+        for(var d=0;d<360;d+=45){var r=d*Math.PI/180,s=Math.sin(r),c=Math.cos(r);
+            ctx.moveTo(s*R*0.50,-c*R*0.50);ctx.lineTo(s*R*1.09,-c*R*1.09);}
+        ctx.strokeStyle='rgba(200,215,245,0.55)';ctx.lineWidth=2.2;ctx.stroke();
+
+        // 八方向：中文+英文，字号用较高下限保可读
+        var dirs=[
+            {deg:0,  cn:'北', en:'N', col:'#e63946', cnSz:22, enSz:17, wt:'900'},
+            {deg:45, cn:'东北',en:'NE',col:'#8095b0', cnSz:14, enSz:11, wt:'600'},
+            {deg:90, cn:'东', en:'E', col:'#c0d0e8', cnSz:20, enSz:15, wt:'700'},
+            {deg:135,cn:'东南',en:'SE',col:'#8095b0', cnSz:14, enSz:11, wt:'600'},
+            {deg:180,cn:'南', en:'S', col:'#c0d0e8', cnSz:20, enSz:15, wt:'700'},
+            {deg:225,cn:'西南',en:'SW',col:'#8095b0', cnSz:14, enSz:11, wt:'600'},
+            {deg:270,cn:'西', en:'W', col:'#c0d0e8', cnSz:20, enSz:15, wt:'700'},
+            {deg:315,cn:'西北',en:'NW',col:'#8095b0', cnSz:14, enSz:11, wt:'600'}
+        ];
+
+        dirs.forEach(function(d){
+            var rad=d.deg*Math.PI/180;
+            // 中文外圈
+            var cnR=R*0.83;
+            ctx.save();ctx.rotate(rad);ctx.translate(0,-cnR);
+            ctx.fillStyle=d.col;
+            ctx.font=d.wt+' '+d.cnSz+'px "Noto Sans SC",sans-serif';
+            ctx.textAlign='center';ctx.textBaseline='middle';
+            ctx.fillText(d.cn,0,0);ctx.restore();
+            // 英文内圈
+            var enR=R*0.64;
+            ctx.save();ctx.rotate(rad);ctx.translate(0,-enR);
+            ctx.fillStyle=d.col;
+            ctx.font=d.wt+' '+d.enSz+'px "Orbitron",monospace';
+            ctx.textAlign='center';ctx.textBaseline='middle';
+            ctx.fillText(d.en,0,0);ctx.restore();
+        });
+
+        // 30° 度数
+        for(var d=0;d<360;d+=30){if(d%45===0)continue;
+            var rad=d*Math.PI/180,tR=R*0.50;
+            ctx.save();ctx.rotate(rad);ctx.translate(0,-tR);
+            ctx.fillStyle='rgba(110,130,165,0.45)';
+            ctx.font='500 11px Orbitron';
+            ctx.textAlign='center';ctx.textBaseline='middle';
+            ctx.fillText(d.toString(),0,0);ctx.restore();
+        }
+
+        // 北方三角
+        ctx.beginPath();
+        ctx.moveTo(0,-R*1.18);ctx.lineTo(-7,-R*1.26);ctx.lineTo(7,-R*1.26);ctx.closePath();
+        ctx.fillStyle='#e63946';ctx.fill();
+
+        // 内圈装饰
+        ctx.beginPath();ctx.arc(0,0,R*0.38,0,Math.PI*2);
+        ctx.strokeStyle='rgba(130,155,190,0.08)';ctx.lineWidth=1;ctx.stroke();
+        ctx.beginPath();ctx.arc(0,0,R*0.32,0,Math.PI*2);
+        ctx.strokeStyle='rgba(130,155,190,0.06)';ctx.lineWidth=0.8;ctx.stroke();
+
+        ctx.restore();
+
+        // 固定内圆
+        var ig=ctx.createRadialGradient(cx,cy,0,cx,cy,R*0.32);
+        ig.addColorStop(0,'rgba(20,32,52,0.5)');ig.addColorStop(1,'rgba(10,16,28,0.2)');
+        ctx.beginPath();ctx.arc(cx,cy,R*0.32,0,Math.PI*2);ctx.fillStyle=ig;ctx.fill();
+
+        // 十字线
+        ctx.strokeStyle='rgba(140,165,200,0.06)';ctx.lineWidth=0.8;
+        ctx.beginPath();
+        ctx.moveTo(cx,cy-R*0.28);ctx.lineTo(cx,cy-R*0.06);
+        ctx.moveTo(cx,cy+R*0.06);ctx.lineTo(cx,cy+R*0.28);
+        ctx.moveTo(cx-R*0.28,cy);ctx.lineTo(cx-R*0.06,cy);
+        ctx.moveTo(cx+R*0.06,cy);ctx.lineTo(cx+R*0.28,cy);
+        ctx.stroke();
+
+        drawArrow(cx, cy, R);
+        requestAnimationFrame(draw);
+    }
+
+    draw();
+})();
+</script>
+</body>
+</html>
