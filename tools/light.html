@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>环境光强度测量</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            /* 禁止浏览器自动缩文字 */
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+        body {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8f4fd 100%);
+            padding: 15px;
+        }
+        /* 全屏宽度，无最大宽度限制 */
+        .container {
+            width: 100%;
+            margin: 0 auto;
+            background: #ffffffdd;
+            backdrop-filter: blur(10px);
+            padding: 30px 20px;
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(30, 136, 229, 0.15);
+            text-align: center;
+        }
+
+        .title {
+            font-size: 46px;
+            font-weight: 700;
+            color: #1976D2;
+            margin-bottom: 15px;
+        }
+        .hint-cam {
+            font-size: 30px;
+            font-weight: 500;
+            color: #444;
+            margin-bottom: 30px;
+        }
+
+        /* 动态渐变标尺 */
+        .scale-wrap {
+            width: 100%;
+            height: 36px;
+            background: #ECEFF1;
+            border-radius: 18px;
+            margin: 15px 0 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        .scale-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4CAF50 0%, #FFC107 50%, #F44336 100%);
+            border-radius: 18px;
+            transition: all 0.15s ease;
+        }
+        .scale-tip {
+            display: flex;
+            justify-content: space-between;
+            font-size: 28px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        .val-row {
+            margin: 20px 0;
+        }
+        .big-val {
+            font-size: 74px;
+            font-weight: 700;
+        }
+        .rel-color {
+            color: #3949AB;
+        }
+        .lux-color {
+            color: #0097A7;
+        }
+        .small-desc {
+            font-size: 30px;
+            font-weight: 500;
+            color: #444;
+            margin-top: 8px;
+        }
+
+        .level {
+            font-size: 36px;
+            font-weight: 600;
+            color: #D32F2F;
+            margin: 20px 0 8px;
+        }
+        .scene {
+            font-size: 30px;
+            font-weight: 500;
+            color: #455A64;
+            line-height: 1.6;
+        }
+
+        .notice {
+            font-size: 26px;
+            font-weight: 500;
+            color: #78909C;
+            margin-top: 30px;
+            line-height: 1.6;
+        }
+
+        /* 参考表 全屏同风格 */
+        .ref-box {
+            width: 100%;
+            margin: 30px auto 0;
+            background: #ffffffdd;
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            font-size: 28px;
+            font-weight: 500;
+            line-height: 2;
+            color: #455A64;
+        }
+        .ref-title {
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 12px;
+            font-size: 30px;
+            color: #1976D2;
+        }
+
+        video,canvas {
+            position: absolute;
+            opacity: 0;
+            width: 1px;
+            height: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">💡 环境光强度测量</div>
+        <div class="hint-cam">自动使用手机后置摄像头 | 量程 0 ~ 255</div>
+
+        <!-- 动态渐变标尺 -->
+        <div class="scale-wrap">
+            <div class="scale-bar" id="scaleBar"></div>
+        </div>
+        <div class="scale-tip">
+            <span>0</span>
+            <span>255</span>
+        </div>
+
+        <div class="val-row">
+            <div class="big-val rel-color" id="relVal">--</div>
+            <div class="small-desc">相对亮度值（0 ~ 255）</div>
+        </div>
+
+        <div class="val-row">
+            <div class="big-val lux-color" id="luxVal">--</div>
+            <div class="small-desc">模拟估算照度 Lux</div>
+        </div>
+
+        <div class="level" id="level">初始化中...</div>
+        <div class="scene" id="scene">请允许摄像头权限</div>
+
+        <div class="notice">
+            说明：模拟Lux由相对亮度换算得出，无专业硬件校准，仅供日常参考，非专业精密检测仪器
+        </div>
+    </div>
+
+    <div class="ref-box">
+        <div class="ref-title">常见环境亮度参考对照表</div>
+        <div>▪ 深夜无光：相对值0~15 ｜ 模拟 0 ~ 3922Lux</div>
+        <div>▪ 夜间弱灯光：相对值15~40 ｜ 模拟 3922 ~ 9804Lux</div>
+        <div>▪ 卧室昏暗弱光：相对值40~70 ｜ 模拟 9804 ~ 15686Lux</div>
+        <div>▪ 阴天室内房间：相对值70~110 ｜ 模拟 15686 ~ 27451Lux</div>
+        <div>▪ 居家办公正常光：相对值110~160 ｜ 模拟 27451 ~ 43137Lux</div>
+        <div>▪ 晴天窗边室内：相对值160~200 ｜ 模拟 43137 ~ 62745Lux</div>
+        <div>▪ 阳台/阴天户外：相对值200~235 ｜ 模拟 62745 ~ 78431Lux</div>
+        <div>▪ 晴天树荫下强光：相对值235~255 ｜ 模拟 78431 ~ 100000Lux</div>
+    </div>
+
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const relValEl = document.getElementById('relVal');
+        const luxValEl = document.getElementById('luxVal');
+        const levelEl = document.getElementById('level');
+        const sceneEl = document.getElementById('scene');
+        const scaleBar = document.getElementById('scaleBar');
+
+        canvas.width = 40;
+        canvas.height = 40;
+
+        // 平滑缓存
+        let valCache = [];
+        const cacheLen = 8;
+        const MAX_LUX = 100000;
+        const MAX_SCALE = 255;
+
+        // 亮度等级
+        function getLevel(val) {
+            if (val <= 15) return { level: "极暗", scene: "夜晚无光、深夜房间" };
+            if (val <= 40) return { level: "很暗", scene: "夜间弱灯、走廊夜灯" };
+            if (val <= 70) return { level: "偏暗", scene: "黄昏、卧室弱光" };
+            if (val <= 110) return { level: "昏暗", scene: "阴天室内、普通房间" };
+            if (val <= 160) return { level: "正常", scene: "居家、办公标准亮度" };
+            if (val <= 200) return { level: "明亮", scene: "晴天窗边、教室" };
+            if (val <= 235) return { level: "很亮", scene: "阳台、阴天户外" };
+            return { level: "强光刺眼", scene: "晴天直射、烈日强光环境" };
+        }
+
+        // 数值平滑
+        function smoothValue(v) {
+            valCache.push(v);
+            if (valCache.length > cacheLen) valCache.shift();
+            let sum = valCache.reduce((a, b) => a + b, 0);
+            return Math.round(sum / valCache.length);
+        }
+
+        // 相对值转模拟Lux
+        function relToLux(rel) {
+            return Math.round(rel / 255 * MAX_LUX);
+        }
+
+        // 更新动态标尺
+        function updateScale(val) {
+            let percent = (val / MAX_SCALE) * 100;
+            scaleBar.style.width = percent + "%";
+        }
+
+        // 开启后置摄像头
+        async function initCam() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' }
+                });
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    calcBright();
+                };
+            } catch (e) {
+                levelEl.innerText = "权限被拒绝";
+                sceneEl.innerText = "请允许摄像头权限才能测光";
+            }
+        }
+
+        // 计算亮度
+        function calcBright() {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let sum = 0;
+            const data = img.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+                let gray = Math.round(data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114);
+                sum += gray;
+            }
+            let avg = Math.round(sum / (data.length / 4));
+            let stableRel = smoothValue(avg);
+            let stableLux = relToLux(stableRel);
+
+            const res = getLevel(stableRel);
+            relValEl.innerText = stableRel;
+            luxValEl.innerText = stableLux;
+            levelEl.innerText = res.level;
+            sceneEl.innerText = res.scene;
+            updateScale(stableRel);
+
+            requestAnimationFrame(calcBright);
+        }
+
+        initCam();
+    </script>
+</body>
+</html>

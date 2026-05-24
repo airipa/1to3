@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>360°全景摄像头量角器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            touch-action: manipulation;
+        }
+        html, body {
+            overflow: hidden;
+            height: 100%;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8f4fd 100%);
+            padding: 10px;
+        }
+        .container {
+            width: 100%;
+            background: #ffffffdd;
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(30, 136, 229, 0.15);
+            text-align: center;
+        }
+
+        .title {
+            font-size: 46px;
+            font-weight: 700;
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+        .hint {
+            font-size: 30px;
+            font-weight: 500;
+            color: #444;
+            margin-bottom: 15px;
+        }
+
+        .cam-wrap {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #000;
+            margin-bottom: 20px;
+        }
+        video, canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            top: 0;
+            left: 0;
+        }
+
+        .val-row {
+            margin: 15px 0;
+        }
+        .big-val {
+            font-size: 74px;
+            font-weight: 700;
+            color: #D32F2F;
+        }
+        .small-desc {
+            font-size: 30px;
+            font-weight: 500;
+            color: #444;
+            margin-top: 8px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .angle-input {
+            width: 160px;
+            padding: 15px 10px;
+            font-size: 32px;
+            text-align: center;
+            border: 3px solid #1976D2;
+            border-radius: 12px;
+            outline: none;
+        }
+        .confirm-btn {
+            padding: 15px 25px;
+            font-size: 32px;
+            font-weight: 600;
+            background: #1976D2;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin: 10px 0 20px;
+        }
+        .ctrl-btn {
+            flex: 1;
+            padding: 22px 0;
+            font-size: 36px;
+            font-weight: 700;
+            border: none;
+            border-radius: 16px;
+            color: #fff;
+            touch-action: none;
+            user-select: none;
+        }
+        .minus {
+            background: #1976D2;
+        }
+        .plus {
+            background: #4CAF50;
+        }
+
+        .level {
+            font-size: 36px;
+            font-weight: 600;
+            color: #D32F2F;
+            margin: 10px 0;
+        }
+        .scene {
+            font-size: 30px;
+            font-weight: 500;
+            color: #455A64;
+            line-height: 1.4;
+        }
+
+        .notice {
+            font-size: 26px;
+            font-weight: 500;
+            color: #78909C;
+            margin-top: 15px;
+            line-height: 1.4;
+        }
+
+        .ref-box {
+            width: 100%;
+            background: #ffffffdd;
+            padding: 15px;
+            border-radius: 20px;
+            font-size: 28px;
+            font-weight: 500;
+            line-height: 1.6;
+            color: #455A64;
+            margin-top: 15px;
+        }
+        .ref-title {
+            text-align: center;
+            font-weight: 700;
+            font-size: 30px;
+            color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">📐 360°全景量角器</div>
+        <div class="hint">0~360°全角度 按键+输入双控制</div>
+
+        <div class="cam-wrap">
+            <video id="video" autoplay playsinline muted></video>
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <div class="val-row">
+            <div class="big-val" id="angleVal">45°</div>
+            <div class="small-desc">当前红线角度</div>
+        </div>
+
+        <div class="input-group">
+            <input type="number" class="angle-input" id="angleInput" placeholder="0-360" value="45">
+            <button class="confirm-btn" id="confirmBtn">确定</button>
+        </div>
+
+        <div class="btn-group">
+            <button class="ctrl-btn minus" id="minusBtn">− 减</button>
+            <button class="ctrl-btn plus" id="plusBtn">加 +</button>
+        </div>
+
+        <div class="level" id="level">摄像头启动中</div>
+        <div class="scene" id="scene">360°任意角度可调，对准物体直接读数</div>
+
+        <div class="notice">
+            说明：圆形量角盘每45°标注刻度，支持全方位测量角度
+        </div>
+
+        <div class="ref-box">
+            <div class="ref-title">刻度方位参考</div>
+            0°正东 | 90°正北 | 180°正西 | 270°正南
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const angleValEl = document.getElementById('angleVal');
+        const angleInput = document.getElementById('angleInput');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const minusBtn = document.getElementById('minusBtn');
+        const plusBtn = document.getElementById('plusBtn');
+        const levelEl = document.getElementById('level');
+
+        // 0~360度全程范围
+        let currentAngle = 45;
+        const step = 1;
+        const minAngle = 0;
+        const maxAngle = 360;
+
+        // 角度范围矫正
+        function fixAngle(val) {
+            let num = parseInt(val) || 0;
+            if(num < minAngle) num = minAngle;
+            if(num > maxAngle) num = maxAngle;
+            return num;
+        }
+
+        // 刷新角度显示和绘制
+        function refreshAngle(num) {
+            currentAngle = fixAngle(num);
+            angleValEl.innerText = currentAngle + "°";
+            angleInput.value = currentAngle;
+            drawAll();
+        }
+
+        // 画布适配
+        function resizeCanvas() {
+            canvas.width = video.offsetWidth;
+            canvas.height = video.offsetHeight;
+            drawAll();
+        }
+
+        // 绘制360°圆形量角盘 + 每45°刻度数字 + 基准线 + 红线
+        function drawAll() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const radius = Math.min(cx, cy) - 30;
+
+            // 1. 外圈大圆轮廓
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(33,150,243,0.7)';
+            ctx.lineWidth = 5;
+            ctx.stroke();
+
+            // 2. 每45度画刻度线 + 标注角度文字
+            const markAngles = [0,45,90,135,180,225,270,315];
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 24px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            markAngles.forEach(deg => {
+                let rad = deg * Math.PI / 180;
+                // 刻度线
+                ctx.beginPath();
+                ctx.moveTo(
+                    cx + (radius - 15) * Math.cos(rad),
+                    cy + (radius - 15) * Math.sin(rad)
+                );
+                ctx.lineTo(
+                    cx + radius * Math.cos(rad),
+                    cy + radius * Math.sin(rad)
+                );
+                ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // 角度文字
+                let textR = radius + 25;
+                ctx.fillText(deg + "°",
+                    cx + textR * Math.cos(rad),
+                    cy + textR * Math.sin(rad)
+                );
+            });
+
+            // 3. 水平基准线
+            ctx.beginPath();
+            ctx.moveTo(0, cy);
+            ctx.lineTo(canvas.width, cy);
+            ctx.strokeStyle = 'rgba(0,255,0,0.6)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 4. 红色测量线 360°任意旋转
+            ctx.save();
+            ctx.translate(cx, cy);
+            // 适配画布坐标系，0度朝右，顺时针360°
+            ctx.rotate(currentAngle * Math.PI / 180);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(radius * 0.9, 0);
+            ctx.strokeStyle = 'rgba(255,0,0,0.95)';
+            ctx.lineWidth = 6;
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // 减角度
+        minusBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            refreshAngle(currentAngle - step);
+        });
+
+        // 加角度
+        plusBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            refreshAngle(currentAngle + step);
+        });
+
+        // 手工确定
+        confirmBtn.addEventListener('click', () => {
+            refreshAngle(angleInput.value);
+        });
+
+        // 回车确认
+        angleInput.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter') refreshAngle(angleInput.value);
+        });
+
+        // 启动摄像头
+        async function initCam() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' }
+                });
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    resizeCanvas();
+                    levelEl.innerText = "已就绪";
+                };
+            } catch (err) {
+                levelEl.innerText = "请开启摄像头权限";
+            }
+        }
+
+        window.addEventListener('load', () => {
+            initCam();
+            setTimeout(resizeCanvas, 500);
+        });
+        window.addEventListener('resize', resizeCanvas);
+    </script>
+</body>
+</html>

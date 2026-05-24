@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ripa记提</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f5f5f5; color: #333; }
+        #app { max-width: 450px; margin: 0 auto; background: #f5f5f5; min-height: 100vh; position: relative; box-shadow: -1px 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+        
+        .clickable { transition: transform 0.1s, opacity 0.1s; cursor: pointer; }
+        .clickable:active { transform: scale(0.95); opacity: 0.7; }
+        .num-display { font-variant-numeric: tabular-nums; font-family: 'Courier New', monospace; }
+
+        .toast-container { position: fixed; top: 0; left: 0; width: 100%; z-index: 9999; pointer-events: none; display: flex; justify-content: center; }
+        .toast-box { margin-top: 15px; background: #333; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 14px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s ease; pointer-events: auto; }
+        .toast-box.hide { opacity: 0; transform: translateY(-20px); }
+        .undo-btn { color: #4facfe; font-weight: bold; cursor: pointer; white-space: nowrap; }
+
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #fff; border-bottom: 1px solid #eee; z-index: 10; }
+        .header-title { font-size: 18px; font-weight: bold; color: #2c3e50; }
+        .header-btn { font-size: 14px; color: #00bcd4; cursor: pointer; background: none; border: none; font-weight: bold; }
+
+        .search-bar { padding: 10px 15px; background: #fff; }
+        .search-input { width: 100%; padding: 10px 15px; background: #f5f5f5; border: none; border-radius: 20px; font-size: 14px; outline: none; }
+
+        .star-card { margin: 15px; padding: 20px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 15px; color: #fff; box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4); }
+        .star-card-title { font-size: 14px; opacity: 0.9; margin-bottom: 5px; display: flex; align-items: center; }
+        .star-event-name { font-size: 18px; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+        .switch-btn { font-size: 14px; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; border: none; color: #fff; }
+        .countdown-box { display: flex; justify-content: space-between; }
+        .countdown-item { text-align: center; background: rgba(255,255,255,0.2); border-radius: 8px; padding: 5px 10px; min-width: 60px; }
+        .countdown-num { font-size: 24px; font-weight: bold; }
+        .countdown-label { font-size: 12px; opacity: 0.8; }
+        .star-empty { text-align: center; padding: 20px; color: rgba(255,255,255,0.8); font-size: 14px;}
+
+        .filter-tabs { display: flex; padding: 0 15px 10px; gap: 10px; }
+        .filter-tab { padding: 6px 15px; border-radius: 15px; font-size: 13px; background: #fff; color: #666; cursor: pointer; border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .filter-tab.active { background: #e0f7fa; color: #00acc1; font-weight: bold; }
+
+        .main-content { flex: 1; overflow-y: auto; padding-bottom: 10px; }
+        .list-container { padding: 0 15px; }
+        .event-item { display: flex; align-items: center; padding: 15px; background: #fff; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .event-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+        .event-title.is-urgent { color: #ff5252; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+        .event-time { font-size: 12px; color: #999; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .action-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 5px; margin-left: 5px; }
+        .empty-list { text-align: center; color: #999; padding: 50px 20px; font-size: 14px; background: #fff; border-radius: 10px; line-height: 1.6; }
+
+        .star-selector { display: flex; gap: 5px; }
+        .star-selector span { font-size: 24px; color: #ddd; cursor: pointer; transition: color 0.2s; user-select: none; }
+        .star-selector span.active { color: #ffca28; }
+        .star-list-mini { font-size: 14px !important; gap: 1px; margin-right: 8px; }
+
+        .timer-tags { display: flex; gap: 10px; padding: 15px; background: #fff; align-items: center; flex-wrap: wrap; }
+        .timer-tag { padding: 8px 15px; background: #f0f0f0; border-radius: 20px; font-size: 13px; cursor: pointer; border: none; color: #555; font-weight: 500; }
+        .timer-tag.selected { background: #00bcd4; color: #fff; }
+        .add-tag-input { border: 1px solid #ddd; border-radius: 20px; padding: 8px 12px; font-size: 13px; outline: none; width: 100px; }
+        .start-selected-btn { display: block; margin: 10px auto; padding: 10px 30px; background: #00bcd4; color: white; border: none; border-radius: 25px; font-size: 15px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,188,212,0.3); }
+        .active-timers { padding: 15px; }
+        .timer-card { background: #fff; border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e0f7fa; }
+        .timer-card-name { font-size: 16px; font-weight: bold; margin-bottom: 10px; color: #00bcd4; }
+        .timer-display { font-size: 40px; font-weight: bold; color: #333; margin: 10px 0 20px; letter-spacing: 2px; }
+        .timer-btns { display: flex; justify-content: center; gap: 15px; }
+        .timer-btn { padding: 8px 20px; border-radius: 20px; border: none; font-size: 14px; font-weight: bold; cursor: pointer; }
+        .btn-start { background: #e0f7fa; color: #00bcd4; }
+        .btn-pause { background: #fff3e0; color: #ff9800; }
+        .btn-stop { background: #ffebee; color: #ff5252; }
+        .timer-stats { background: #fff; margin: 0 15px 15px; border-radius: 15px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .stats-title { font-size: 14px; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .stats-row-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f5f5f5; font-size: 14px; }
+        .stats-name { font-weight: bold; color: #555; }
+
+        .bill-summary { display: flex; justify-content: space-around; background: #fff; margin: 15px; padding: 20px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .summary-item { text-align: center; }
+        .summary-label { font-size: 13px; color: #999; margin-bottom: 5px; }
+        .summary-amount { font-size: 20px; font-weight: bold; }
+        .text-red { color: #ff5252; } .text-green { color: #4caf50; }
+        .bill-stats { background: #fff; margin: 0 15px 15px; padding: 15px; border-radius: 10px; }
+        .stats-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px; }
+        .stats-bar { flex: 1; height: 8px; background: #eee; border-radius: 4px; margin: 0 10px; overflow: hidden; }
+        .stats-bar-inner { height: 100%; background: #00bcd4; border-radius: 4px; }
+        .bill-item { display: flex; align-items: center; padding: 12px 15px; background: #fff; border-radius: 10px; margin-bottom: 8px; font-size: 14px; }
+        .bill-info { flex: 1; margin-left: 10px; }
+        .bill-note { color: #333; font-weight: 500; }
+        .bill-meta { font-size: 12px; color: #999; margin-top: 2px; }
+        .bill-amount { font-weight: bold; font-size: 16px; }
+
+        .tabbar { display: flex; justify-content: space-around; align-items: center; background: #fff; padding: 8px 0 12px; border-top: 1px solid #eee; z-index: 100; }
+        .tab-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #999; cursor: pointer; position: relative; background: none; border: none; width: 60px; }
+        .tab-icon { font-size: 20px; margin-bottom: 2px; }
+        .tab-active { color: #00bcd4; }
+        .badge { position: absolute; top: -5px; right: 5px; background: #ff5252; color: white; font-size: 10px; padding: 1px 5px; border-radius: 10px; min-width: 16px; text-align: center; }
+        .timer-running-dot { position: absolute; top: -2px; right: 10px; width: 8px; height: 8px; background: #4caf50; border-radius: 50%; border: 1px solid #fff; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.5); } 70% { box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); } 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); } }
+        .tab-add-btn { width: 50px; height: 50px; background: #00bcd4; color: white; border-radius: 50%; border: none; font-size: 16px; font-weight: bold; box-shadow: 0 2px 10px rgba(0,188,212,0.4); cursor: pointer; margin-top: -25px; display: flex; align-items: center; justify-content: center; }
+
+        .modal-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; align-items: flex-end; justify-content: center; }
+        .modal-content { width: 100%; max-width: 450px; background: #fff; border-radius: 15px 15px 0 0; padding: 20px; max-height: 85vh; overflow-y: auto; }
+        .modal-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; text-align: center; position: relative; }
+        .modal-close { position: absolute; right: 0; top: 0; background: none; border: none; font-size: 20px; color: #999; cursor: pointer;}
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; font-size: 13px; margin-bottom: 8px; color: #555; font-weight: 500; }
+        .form-input, .form-select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
+        .form-input:focus { border-color: #00bcd4; }
+        .checkbox-label { display: flex; align-items: center; font-size: 14px; cursor: pointer; margin-bottom: 15px; }
+        .checkbox-label input { margin-right: 8px; transform: scale(1.3); accent-color: #00bcd4; }
+        .tag-group { display: flex; flex-wrap: wrap; gap: 10px; }
+        .tag-item { padding: 6px 12px; border: 1px solid #ddd; border-radius: 15px; font-size: 13px; color: #666; cursor: pointer; }
+        .tag-item.active { border-color: #00bcd4; color: #00bcd4; background: #e0f7fa; }
+        .custom-tag-input { width: 80px; padding: 6px 10px; border: 1px solid #ddd; border-radius: 15px; font-size: 13px; outline: none; }
+        .type-switch { display: flex; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; margin-bottom: 15px; }
+        .type-btn { flex: 1; padding: 10px; text-align: center; cursor: pointer; background: #fff; border: none; font-size: 14px; }
+        .type-btn.active-expense { background: #ffebee; color: #ff5252; font-weight: bold; }
+        .type-btn.active-income { background: #e8f5e9; color: #4caf50; font-weight: bold; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; padding-bottom: 20px; }
+        .modal-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; }
+        .btn-cancel { background: #f0f0f0; color: #666; }
+        .btn-confirm { background: #00bcd4; color: #fff; }
+
+        .profile-page { padding: 40px 20px 20px; text-align: center; }
+        .clear-btn { margin-top: 15px; padding: 10px 20px; background: #ffebee; color: #d32f2f; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-size: 14px;}
+        .export-btn { margin-top: 15px; padding: 10px 20px; background: #e0f7fa; color: #00acc1; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-size: 14px;}
+        .safe-tip { margin-top: 25px; font-size: 12px; color: #81c784; background: #f1f8e9; padding: 10px; border-radius: 6px; line-height: 1.5;}
+        
+        .picker-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        .picker-content { width: 80%; background: #fff; border-radius: 10px; max-height: 50vh; overflow-y: auto; }
+        .picker-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; }
+        .picker-item.active { color: #00bcd4; background: #e0f7fa; }
+        .week-selector { display: flex; gap: 8px; margin-top: 5px; justify-content: center; }
+        .week-day { width: 36px; height: 36px; border: 1px solid #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; color: #666; }
+        .week-day.active { background: #00bcd4; color: #fff; border-color: #00bcd4; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="toast-container">
+            <div class="toast-box" :class="{ hide: !showToast }">
+                <span>{{ toastMsg }}</span>
+                <span class="undo-btn clickable" @click="handleUndo">撤销</span>
+            </div>
+        </div>
+
+        <div class="header">
+            <div style="width: 50px;"></div>
+            <div class="header-title">ripa记提</div>
+            <button class="header-btn" v-if="activeTab === 'bill'" @click="exportCSV">导出账单</button>
+            <div v-else style="width: 40px;"></div>
+        </div>
+
+        <div class="main-content">
+            <div v-if="activeTab === 'home'">
+                <div class="search-bar"><input class="search-input" type="text" v-model="searchQuery" placeholder="搜索事件..."></div>
+                <div class="star-card clickable" @click="showPicker = true">
+                    <template v-if="currentCountdownEvent">
+                        <div class="star-card-title"><span style="color:#ffca28; margin-right:5px;">★</span> 事件倒计时</div>
+                        <div class="star-event-name">
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 80%;">{{ currentCountdownEvent.title }}</span>
+                            <button class="switch-btn clickable">切换 ▾</button>
+                        </div>
+                        <div class="countdown-box num-display" v-if="countDownDiff > 0">
+                            <div class="countdown-item"><div class="countdown-num">{{ countDown.days }}</div><div class="countdown-label">天</div></div>
+                            <div class="countdown-item"><div class="countdown-num">{{ countDown.hours }}</div><div class="countdown-label">时</div></div>
+                            <div class="countdown-item"><div class="countdown-num">{{ countDown.minutes }}</div><div class="countdown-label">分</div></div>
+                            <div class="countdown-item"><div class="countdown-num">{{ countDown.seconds }}</div><div class="countdown-label">秒</div></div>
+                        </div>
+                        <div v-else style="text-align:center; font-size: 18px; margin-top: 10px;">已结束</div>
+                    </template>
+                    <div v-else class="star-empty">点击此处选择倒计时事件</div>
+                </div>
+                <div class="filter-tabs">
+                    <button class="filter-tab clickable" :class="{ active: filter === 'past' }" @click="filter='past'">过去</button>
+                    <button class="filter-tab clickable" :class="{ active: filter === 'all' }" @click="filter='all'">全部</button>
+                    <button class="filter-tab clickable" :class="{ active: filter === 'future' }" @click="filter='future'">未来</button>
+                </div>
+                <div class="list-container">
+                    <div class="event-item" v-for="item in filteredEvents" :key="item.id">
+                        <div class="star-selector star-list-mini clickable" @click.stop="setStarInList(item.id, item.starLevel)">
+                            <span v-for="i in 5" :key="i" :class="{ active: i <= item.starLevel }">★</span>
+                        </div>
+                        <div style="flex: 1;">
+                            <div class="event-title" :class="{'is-urgent': isUrgent(item)}">{{ item.title }}</div>
+                            <div class="event-time">
+                                <span>{{ formatTime(item.time) }}</span>
+                                <span v-if="item.isRemind" style="color:#ff9800;">⏰ {{ getRepeatText(item) }}</span>
+                                <span v-if="item.hasBill" style="color:#4caf50;">💰</span>
+                            </div>
+                        </div>
+                        <button class="action-btn clickable" @click="deleteEvent(item.id)">🗑️</button>
+                    </div>
+                    <div v-if="filteredEvents.length === 0" class="empty-list">还没有重要事件<br>点击下方 [新增] 开启你的第一个倒计时吧</div>
+                </div>
+            </div>
+
+            <div v-if="activeTab === 'timer'">
+                <div class="timer-tags">
+                    <button class="timer-tag clickable" :class="{selected: selectedTimerTag === tag}" @click="selectTag(tag)" v-for="tag in allTimerTags" :key="tag">{{ tag }}</button>
+                    <input class="add-tag-input" v-if="showAddTagInput" v-model="newCustomTag" placeholder="自定义名" @blur="confirmAddTag" @keyup.enter="confirmAddTag" autofocus>
+                    <button class="timer-tag clickable" v-if="!showAddTagInput" @click="showAddTagInput=true" style="border: 1px dashed #ccc; color: #999;">+ 自定义</button>
+                </div>
+                <button class="start-selected-btn clickable" v-if="selectedTimerTag && !activeTimers.find(t => t.name === selectedTimerTag)" @click="startNewTimer(selectedTimerTag)">开始计时: {{ selectedTimerTag }}</button>
+                <div class="active-timers">
+                    <div class="timer-card" v-for="t in activeTimers" :key="t.id">
+                        <div class="timer-card-name">{{ t.name }}</div>
+                        <div class="timer-display num-display">{{ formatTimerDisplay(t.seconds) }}</div>
+                        <div class="timer-btns">
+                            <button class="timer-btn btn-pause clickable" v-if="t.status === 'running'" @click="pauseTimer(t.id)">暂停</button>
+                            <button class="timer-btn btn-start clickable" v-if="t.status === 'paused'" @click="resumeTimer(t.id)">继续</button>
+                            <button class="timer-btn btn-stop clickable" @click="stopAndSaveTimer(t.id)">停止保存</button>
+                        </div>
+                    </div>
+                    <div v-if="activeTimers.length === 0" class="empty-list">点击上方标签，然后点击“开始计时”<br>支持多任务同时进行哦</div>
+                </div>
+                <div class="timer-stats" v-if="timerStats.length > 0">
+                    <div class="stats-title">历史总时长统计</div>
+                    <div class="stats-row-item" v-for="s in timerStats" :key="s.name">
+                        <span class="stats-name">{{ s.name }}</span>
+                        <span style="color: #00bcd4; font-weight: bold;" class="num-display">{{ formatTimerDisplay(s.totalSeconds) }}</span>
+                    </div>
+                </div>
+                <div class="list-container" style="margin-top:15px;">
+                    <div class="event-item" v-for="t in timerRecords" :key="t.id">
+                        <div style="flex:1"><div class="event-title">{{ t.name }}</div><div class="event-time num-display">{{ t.date }} | 时长: {{ formatTimerDisplay(t.duration) }}</div></div>
+                        <button class="action-btn clickable" @click="deleteTimerRecord(t.id)">🗑️</button>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="activeTab === 'bill'">
+                <div class="bill-summary">
+                    <div class="summary-item"><div class="summary-label">本月支出</div><div class="summary-amount text-red num-display">-{{ monthData.expense }}</div></div>
+                    <div class="summary-item"><div class="summary-label">本月收入</div><div class="summary-amount text-green num-display">+{{ monthData.income }}</div></div>
+                </div>
+                <div class="bill-stats" v-if="stats.length > 0">
+                    <div class="stats-title">用途支出排行</div>
+                    <div class="stats-row" v-for="s in stats" :key="s.category">
+                        <span style="width: 60px;">{{ s.category }}</span>
+                        <div class="stats-bar"><div class="stats-bar-inner" :style="{ width: s.percent + '%' }"></div></div>
+                        <span style="width: 80px; text-align: right; color: #ff5252;" class="num-display">{{ s.amount }}</span>
+                    </div>
+                </div>
+                <div class="list-container" style="padding-bottom: 20px;">
+                    <div class="bill-item" v-for="b in filteredBills" :key="b.id">
+                        <div style="font-size: 20px;">{{ b.type === 'expense' ? '📉' : '📈' }}</div>
+                        <div class="bill-info">
+                            <div class="bill-note">{{ b.purpose }} <span v-if="b.note">· {{ b.note }}</span></div>
+                            <div class="bill-meta">{{ b.date }} | {{ b.account }}</div>
+                        </div>
+                        <div :class="b.type === 'expense' ? 'text-red bill-amount' : 'text-green bill-amount'" class="num-display">{{ b.type === 'expense' ? '-' : '+' }}{{ b.amount }}</div>
+                    </div>
+                    <div v-if="filteredBills.length === 0" class="empty-list">还没有账单记录<br>快去记一笔今天的下午茶吧</div>
+                </div>
+            </div>
+
+            <div v-if="activeTab === 'my'" class="profile-page">
+                <p style="font-size: 50px; margin-bottom: 10px;">🛠️</p>
+                <h2>ripa记提</h2>
+                <div class="safe-tip">🟢 已开启本地自动保护<br>关闭页面或重启手机均不会丢失数据</div>
+                <button class="export-btn clickable" @click="exportFullBackup">📦 导出全量备份 (换机必用)</button>
+                <button class="export-btn clickable" style="background:#fff3e0; color:#ff9800;" @click="$refs.fileInput.click()">📥 导入备份恢复数据</button>
+                <input type="file" ref="fileInput" style="display:none" accept=".json" @change="importFullBackup">
+                <button class="export-btn clickable" @click="exportCSV">📊 导出账单为 Excel</button>
+                <button class="clear-btn clickable" @click="clearAllData">🗑️ 清空所有本地数据</button>
+            </div>
+        </div>
+
+        <div class="tabbar">
+            <button class="tab-item clickable" :class="{ 'tab-active': activeTab === 'home' }" @click="activeTab='home'; filter='future'"><span class="tab-icon">🏠</span><span>主页</span></button>
+            <button class="tab-item clickable" :class="{ 'tab-active': activeTab === 'timer' }" @click="activeTab='timer'">
+                <span class="tab-icon">⏱️</span><span>计时</span>
+                <div class="timer-running-dot" v-if="activeTimers.length > 0"></div>
+            </button>
+            <button class="tab-add-btn clickable" @click="openAddModal">新增</button>
+            <button class="tab-item clickable" :class="{ 'tab-active': activeTab === 'bill' }" @click="activeTab='bill'"><span class="tab-icon">💰</span><span>账单</span></button>
+            <button class="tab-item clickable" :class="{ 'tab-active': activeTab === 'my' }" @click="activeTab='my'"><span class="tab-icon">👨‍💻</span><span>我的</span></button>
+        </div>
+
+        <div class="picker-mask" v-if="showPicker" @click.self="showPicker = false">
+            <div class="picker-content">
+                <div class="picker-item clickable" :class="{ active: selectedCountdownId === null }" @click="selectCountdown(null)">自动(最近五星)</div>
+                <div class="picker-item clickable" v-for="e in events" :key="e.id" :class="{ active: selectedCountdownId === e.id }" @click="selectCountdown(e.id)">{{ e.title }} <span style="font-size:12px; color:#999;">{{ formatTime(e.time) }}</span></div>
+            </div>
+        </div>
+
+        <div class="modal-mask" v-if="showModal" @click.self="showModal = false">
+            <div class="modal-content">
+                <div class="modal-title">新增记录 <button class="modal-close clickable" @click="showModal = false">×</button></div>
+                <div class="form-group"><label class="form-label">事件名称</label><input class="form-input" type="text" v-model="form.title" placeholder="例如：交项目报告"></div>
+                <label class="checkbox-label"><input type="checkbox" v-model="form.hasBill"> 记账</label>
+                <div v-if="form.hasBill" style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div class="type-switch">
+                        <button class="type-btn clickable" :class="{'active-expense': form.billType==='expense'}" @click="form.billType='expense'">支出</button>
+                        <button class="type-btn clickable" :class="{'active-income': form.billType==='income'}" @click="form.billType='income'">收入</button>
+                    </div>
+                    <div class="form-group" style="margin-bottom:10px;"><input class="form-input num-display" type="number" v-model="form.amount" placeholder="金额 (元)"></div>
+                    <div class="form-group" style="margin-bottom:10px;"><div class="tag-group"><span class="tag-item clickable" :class="{active: form.account === c}" @click="form.account = c" v-for="c in defaultAccounts" :key="c">{{ c }}</span><input class="custom-tag-input" v-if="showCustomAccount" v-model="form.account" placeholder="自定义" @blur="showCustomAccount=false"><span class="tag-item clickable" v-if="!showCustomAccount" @click="enableCustom('account')">自定义</span></div></div>
+                    <div class="form-group" style="margin-bottom:0;"><div class="tag-group"><span class="tag-item clickable" :class="{active: form.purpose === p}" @click="form.purpose = p" v-for="p in defaultPurposes" :key="p">{{ p }}</span><input class="custom-tag-input" v-if="showCustomPurpose" v-model="form.purpose" placeholder="自定义" @blur="showCustomPurpose=false"><span class="tag-item clickable" v-if="!showCustomPurpose" @click="enableCustom('purpose')">自定义</span></div></div>
+                </div>
+                <div class="form-group"><label class="form-label">事件时间</label><input class="form-input" type="datetime-local" v-model="form.time"></div>
+                <label class="checkbox-label"><input type="checkbox" v-model="form.isRemind"> 需要提醒</label>
+                <div v-if="form.isRemind" style="background: #fff8e1; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div class="form-group" style="margin-bottom:10px;"><label class="form-label">提醒时间</label><input class="form-input" type="datetime-local" v-model="form.remindTime"></div>
+                    <label class="checkbox-label" style="margin-bottom: 10px;"><input type="checkbox" v-model="form.isRepeat"> 重复提醒</label>
+                    <div v-if="form.isRepeat">
+                        <label class="form-label">提醒周期</label>
+                        <div class="tag-group">
+                            <span class="tag-item clickable" :class="{active: form.repeatCycle === c}" @click="form.repeatCycle = c" v-for="c in ['年','月','周','日']">{{ c }}</span>
+                            <span class="tag-item clickable" :class="{active: form.repeatCycle === '自定义'}" @click="form.repeatCycle='自定义'">按周自定义</span>
+                        </div>
+                        <div class="week-selector" v-if="form.repeatCycle === '自定义'">
+                            <div class="week-day clickable" v-for="(day, index) in weekDays" :key="day" :class="{ active: form.repeatDays.includes(index + 1) }" @click="toggleWeekDay(index + 1)">{{ day }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group"><label class="form-label">重要程度</label><div class="star-selector"><span class="clickable" v-for="i in 5" :key="i" :class="{ active: i <= form.starLevel }" @click="form.starLevel = i">★</span></div></div>
+                <div class="modal-btns"><button class="modal-btn btn-cancel clickable" @click="showModal = false">取消</button><button class="modal-btn btn-confirm clickable" @click="submitForm">保存</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+        createApp({
+            setup() {
+                const activeTab = ref('home'); const filter = ref('future'); const searchQuery = ref('');
+                const showModal = ref(false); const showPicker = ref(false); const selectedCountdownId = ref(null);
+                const today = new Date(); const defaultTimeStr = new Date(today.getTime() + 86400000).toISOString().slice(0, 16);
+                const defaultDateStr = today.toISOString().slice(0, 10); const weekDays = ['一', '二', '三', '四', '五', '六', '日'];
+                const form = ref({ title: '', time: defaultTimeStr, hasBill: false, billType: 'expense', amount: '', account: '微信', purpose: '生活', isRemind: false, remindTime: '', isRepeat: false, repeatCycle: '日', repeatDays: [], starLevel: 0 });
+                const defaultAccounts = ['微信', '支付宝', '现金', '银行卡']; const defaultPurposes = ['工作', '生活', '餐饮', '交通', '购物', '娱乐'];
+                const showCustomAccount = ref(false); const showCustomPurpose = ref(false);
+                
+                const EVENT_KEY = 'ripa_events'; const BILL_KEY = 'ripa_bills'; const TIMER_KEY = 'ripa_timers'; const TAG_KEY = 'ripa_timer_tags'; const ACTIVE_TIMER_KEY = 'ripa_active_timers';
+                let events = ref([]); let bills = ref([]); let timerRecords = ref([]); let timer = null;
+
+                const showToast = ref(false); const toastMsg = ref(''); let undoTimer = null; let undoData = null; let undoType = null;
+                const triggerUndo = (msg, type, data) => {
+                    showToast.value = true; toastMsg.value = msg; undoType = type; undoData = data;
+                    if(undoTimer) clearTimeout(undoTimer);
+                    undoTimer = setTimeout(() => { showToast.value = false; }, 3000);
+                };
+                const handleUndo = () => { if(undoTimer) clearTimeout(undoTimer); showToast.value = false; restoreData(); };
+                const restoreData = () => {
+                    if(!undoData) return;
+                    if(undoType === 'event') events.value.push(undoData.event);
+                    if(undoType === 'timer') timerRecords.value.unshift(undoData.record);
+                    save(EVENT_KEY, events.value); save(TIMER_KEY, timerRecords.value);
+                };
+
+                const initData = () => {
+                    let e = JSON.parse(localStorage.getItem(EVENT_KEY) || '[]');
+                    events.value = e.map(item => ({ ...item, starLevel: item.starLevel || 0, isRepeat: item.isRepeat || false, repeatCycle: item.repeatCycle || '日', repeatDays: item.repeatDays || [] }));
+                    bills.value = JSON.parse(localStorage.getItem(BILL_KEY) || '[]');
+                    timerRecords.value = JSON.parse(localStorage.getItem(TIMER_KEY) || '[]');
+                    const savedActive = JSON.parse(localStorage.getItem(ACTIVE_TIMER_KEY) || '[]');
+                    if (savedActive.length > 0) {
+                        activeTimers.value = savedActive.map(t => { let s = t.seconds; if (t.status === 'running' && t.lastSaved) s += Math.floor((Date.now() - t.lastSaved) / 1000); return { ...t, seconds: s, intervalId: null }; });
+                        activeTimers.value.forEach(t => { if (t.status === 'running') t.intervalId = setInterval(() => { t.seconds++; }, 1000); });
+                    }
+                };
+                const save = (key, data) => localStorage.setItem(key, JSON.stringify(data));
+
+                const defaultStarEvent = computed(() => events.value.filter(e => e.starLevel === 5 && new Date(e.time).getTime() > Date.now()).sort((a,b) => new Date(a.time).getTime() - new Date(b.time).getTime())[0] || null);
+                const currentCountdownEvent = computed(() => { if (selectedCountdownId.value !== null) return events.value.find(e => e.id === selectedCountdownId.value) || null; return defaultStarEvent.value; });
+                const countDownDiff = ref(0); const countDown = ref({ days: '00', hours: '00', minutes: '00', seconds: '00' });
+                const updateCountDown = () => {
+                    if (!currentCountdownEvent.value) { countDownDiff.value = 0; return; }
+                    const diff = new Date(currentCountdownEvent.value.time).getTime() - Date.now(); countDownDiff.value = diff;
+                    if (diff <= 0) { countDown.value = { days: '00', hours: '00', minutes: '00', seconds: '00' }; return; }
+                    countDown.value = { days: String(Math.floor(diff / 86400000)).padStart(2, '0'), hours: String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0'), minutes: String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0'), seconds: String(Math.floor((diff % 60000) / 1000)).padStart(2, '0') };
+                };
+                const selectCountdown = (id) => { selectedCountdownId.value = id; showPicker.value = false; };
+
+                const getRepeatText = (item) => { if (!item.isRepeat) return formatTime(item.remindTime); if (item.repeatCycle === '自定义') return `每周${item.repeatDays.map(d => '周'+weekDays[d-1]).join('、')}`; return `每${item.repeatCycle}`; };
+                const isUrgent = (item) => {
+                    if (!item.isRemind || !item.remindTime) return false; const now = Date.now(); const eventTime = new Date(item.time).getTime();
+                    if (now >= eventTime) return false; if (!item.isRepeat) return now >= new Date(item.remindTime).getTime();
+                    let interval = 86400000;
+                    if (item.repeatCycle === '年') interval = 365 * 86400000; else if (item.repeatCycle === '月') interval = 30 * 86400000; else if (item.repeatCycle === '周') interval = 7 * 86400000;
+                    else if (item.repeatCycle === '自定义') { const nowDay = new Date().getDay(); const mappedDay = nowDay === 0 ? 7 : nowDay; if (!item.repeatDays.includes(mappedDay)) return false; const [rh, rm] = item.remindTime.split('T')[1].split(':'); const remindToday = new Date(); remindToday.setHours(rh, rm, 0, 0); return now >= remindToday.getTime(); }
+                    const startRemind = new Date(item.remindTime).getTime(); const elapsed = now - startRemind; return (elapsed % interval) < 86400000;
+                };
+
+                const futureBadgeCount = computed(() => events.value.filter(e => isUrgent(e)).length);
+                const filteredEvents = computed(() => { let res = [...events.value]; const now = Date.now(); if (searchQuery.value.trim()) res = res.filter(e => e.title.includes(searchQuery.value.trim())); if (filter.value === 'past') res = res.filter(e => new Date(e.time).getTime() <= now); else if (filter.value === 'future') res = res.filter(e => new Date(e.time).getTime() > now); return res.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()); });
+                const formatTime = (t) => { if(!t) return ''; const d = new Date(t); return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; };
+                const toggleWeekDay = (day) => { const idx = form.value.repeatDays.indexOf(day); if (idx > -1) form.value.repeatDays.splice(idx, 1); else form.value.repeatDays.push(day); };
+
+                const defaultTimerTags = ['📖 看书','🏃 运动','🍚 吃饭','📺 看电视','📱 刷视频','💤 睡觉','💻 工作','🥗 断食','🎮 玩游戏'];
+                const customTimerTags = ref(JSON.parse(localStorage.getItem(TAG_KEY) || '[]'));
+                const allTimerTags = computed(() => [...defaultTimerTags, ...customTimerTags.value]);
+                const showAddTagInput = ref(false); const newCustomTag = ref(''); const selectedTimerTag = ref('');
+                const confirmAddTag = () => { if (newCustomTag.value.trim() && !allTimerTags.value.includes(newCustomTag.value.trim())) { customTimerTags.value.push(newCustomTag.value.trim()); localStorage.setItem(TAG_KEY, JSON.stringify(customTimerTags.value)); } showAddTagInput.value = false; newCustomTag.value = ''; };
+                const selectTag = (tag) => { selectedTimerTag.value = (selectedTimerTag.value === tag) ? '' : tag; };
+
+                const activeTimers = ref([]);
+                const startNewTimer = (name) => { if (activeTimers.value.find(t => t.name === name)) return alert('该任务已在计时中'); const id = Date.now() + Math.random(); const intervalId = setInterval(() => { const t = activeTimers.value.find(x => x.id === id); if(t) t.seconds++; }, 1000); activeTimers.value.push({ id, name, status: 'running', seconds: 0, intervalId, lastSaved: Date.now() }); selectedTimerTag.value = ''; };
+                const pauseTimer = (id) => { const t = activeTimers.value.find(x=>x.id===id); if(t) { t.status = 'paused'; clearInterval(t.intervalId); t.intervalId = null; saveActiveTimers(); } };
+                const resumeTimer = (id) => { const t = activeTimers.value.find(x=>x.id===id); if(t) { t.status = 'running'; t.intervalId = setInterval(() => { t.seconds++; }, 1000); } };
+                const stopAndSaveTimer = (id) => { const idx = activeTimers.value.findIndex(x=>x.id===id); if(idx !== -1) { const t = activeTimers.value[idx]; clearInterval(t.intervalId); if(t.seconds > 0) { timerRecords.value.unshift({ id: t.id, name: t.name, duration: t.seconds, date: new Date().toLocaleDateString() }); save(TIMER_KEY, timerRecords.value); } activeTimers.value.splice(idx, 1); saveActiveTimers(); } };
+                const formatTimerDisplay = (sec) => { const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; };
+                const timerStats = computed(() => { let map = {}; timerRecords.value.forEach(r => { map[r.name] = (map[r.name] || 0) + r.duration; }); return Object.entries(map).map(([name, totalSeconds]) => ({ name, totalSeconds })); });
+                const deleteTimerRecord = (id) => { const idx = timerRecords.value.findIndex(r => r.id === id); if(idx!==-1) { const rec = timerRecords.value.splice(idx, 1)[0]; save(TIMER_KEY, timerRecords.value); triggerUndo(`已删除 [${rec.name}] 计时记录`, 'timer', {record: rec}); } };
+                const saveActiveTimers = () => { const toSave = activeTimers.value.map(t => ({...t, intervalId: null, lastSaved: Date.now()})); localStorage.setItem(ACTIVE_TIMER_KEY, JSON.stringify(toSave)); };
+
+                const filteredBills = computed(() => bills.value.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+                const monthData = computed(() => { const mStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`; const mBills = bills.value.filter(b => b.date.startsWith(mStr)); let ex = 0, inc = 0; mBills.forEach(b => { if(b.type === 'expense') ex += Number(b.amount); else inc += Number(b.amount); }); return { expense: ex.toFixed(2), income: inc.toFixed(2) }; });
+                const stats = computed(() => { const mStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`; const exp = bills.value.filter(b => b.date.startsWith(mStr) && b.type === 'expense'); if(!exp.length) return []; let map = {}; exp.forEach(b => { map[b.purpose] = (map[b.purpose] || 0) + Number(b.amount); }); let arr = Object.entries(map).map(([purpose, amount]) => ({ purpose, amount: amount.toFixed(2) })); arr.sort((a, b) => b.amount - a.amount); const max = Number(arr[0].amount); return arr.map(a => ({ ...a, percent: max === 0 ? 0 : (a.amount / max * 100).toFixed(0) })); });
+
+                const openAddModal = () => { form.value = { title: '', time: defaultTimeStr, hasBill: false, billType: 'expense', amount: '', account: '微信', purpose: '生活', isRemind: false, remindTime: '', isRepeat: false, repeatCycle: '日', repeatDays: [], starLevel: 0 }; showCustomAccount.value = false; showCustomPurpose.value = false; showModal.value = true; };
+                const enableCustom = (type) => { if (type === 'account') { showCustomAccount.value = true; form.value.account = ''; } if (type === 'purpose') { showCustomPurpose.value = true; form.value.purpose = ''; } };
+                
+                // 修复逻辑1：星级只能增加，不能被点灭
+                const setStarInList = (id, level) => {
+                    const e = events.value.find(x => x.id === id);
+                    if (e) {
+                        e.starLevel = level; // 直接赋值为点击的星级
+                        save(EVENT_KEY, events.value);
+                    }
+                };
+
+                // 修复逻辑2：把所有验证提到最前面，防止产生脏数据
+                const submitForm = () => {
+                    if (!form.value.title || !form.value.time) return alert('请至少填写事件名称和时间！');
+                    if (form.value.isRepeat && form.value.repeatCycle === '自定义' && form.value.repeatDays.length === 0) return alert('请至少选择一天');
+                    // 前置拦截：如果勾选了记账，必须校验金额通过才往下走
+                    if (form.value.hasBill && (!form.value.amount || Number(form.value.amount) <= 0)) {
+                        return alert('请输入正确的记账金额！');
+                    }
+                    
+                    // 全部验证通过，才开始存数据
+                    const eventId = Date.now();
+                    events.value.push({ id: eventId, ...form.value }); 
+                    save(EVENT_KEY, events.value);
+                    
+                    if (form.value.hasBill) {
+                        bills.value.push({ id: eventId, type: form.value.billType, amount: Number(form.value.amount).toFixed(2), account: form.value.account, purpose: form.value.purpose, date: form.value.time.split('T')[0] });
+                        save(BILL_KEY, bills.value);
+                    } 
+                    showModal.value = false;
+                };
+                
+                const deleteEvent = (id) => { const idx = events.value.findIndex(e => e.id === id); if(idx!==-1) { const ev = events.value.splice(idx, 1)[0]; const bi = bills.value.findIndex(b => b.id === id); if(bi!==-1) bills.value.splice(bi, 1); save(EVENT_KEY, events.value); save(BILL_KEY, bills.value); triggerUndo(`已删除 [${ev.title}]`, 'event', {event: ev, bill: bi!==-1 ? ev : null}); } };
+                
+                const exportCSV = () => { if(!bills.value.length) return alert('无数据！'); let csv = "\uFEFF日期,类型,用途,账户,金额\n"; bills.value.forEach(b => { csv += `${b.date},${b.type === 'expense' ? '支出' : '收入'},${b.purpose},${b.account},${b.amount}\n`; }); const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `ripa账单_${defaultDateStr}.csv`; link.click(); };
+                
+                const exportFullBackup = () => { const data = { events: events.value, bills: bills.value, timers: timerRecords.value, tags: customTimerTags.value }; const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `ripa全量备份_${defaultDateStr}.json`; link.click(); };
+                const importFullBackup = (e) => { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = (ev) => { try { const data = JSON.parse(ev.target.result); if(data.events) { save(EVENT_KEY, data.events); save(BILL_KEY, data.bills || []); save(TIMER_KEY, data.timers || []); save(TAG_KEY, data.tags || []); alert('导入成功，即将刷新页面'); location.reload(); } else { alert('文件格式错误'); } } catch(err) { alert('解析失败'); } }; reader.readAsText(file); e.target.value = ''; };
+                
+                const clearAllData = () => { if(confirm('警告：清空所有数据？此操作不可撤销！')) { events.value = []; bills.value = []; timerRecords.value = []; activeTimers.value = []; save(EVENT_KEY, []); save(BILL_KEY, []); save(TIMER_KEY, []); localStorage.removeItem(ACTIVE_TIMER_KEY); } };
+
+                onMounted(() => { initData(); timer = setInterval(updateCountDown, 1000); updateCountDown(); setInterval(saveActiveTimers, 2000); });
+                onUnmounted(() => { clearInterval(timer); activeTimers.value.forEach(t => { if(t.intervalId) clearInterval(t.intervalId); }); });
+
+                return { activeTab, filter, searchQuery, showModal, showPicker, selectedCountdownId, weekDays, form, defaultAccounts, defaultPurposes, showCustomAccount, showCustomPurpose, currentCountdownEvent, countDownDiff, countDown, selectCountdown, futureBadgeCount, filteredEvents, isUrgent, getRepeatText, formatTime, toggleWeekDay, defaultTimerTags, customTimerTags, allTimerTags, showAddTagInput, newCustomTag, confirmAddTag, selectedTimerTag, selectTag, activeTimers, startNewTimer, pauseTimer, resumeTimer, stopAndSaveTimer, formatTimerDisplay, timerStats, deleteTimerRecord, filteredBills, monthData, stats, openAddModal, enableCustom, setStarInList, submitForm, deleteEvent, exportCSV, exportFullBackup, importFullBackup, clearAllData, showToast, toastMsg, handleUndo };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

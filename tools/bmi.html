@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BMI Global Master Pro - ripa.cc</title>
+    <style>
+        :root {
+            --main: #007aff;
+            --trans: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="white"] {
+            --bg: #f2f2f7;
+            --card: #ffffff;
+            --text: #000;
+            --shd: 0 4px 15px rgba(0, 0, 0, 0.05);
+            --border: rgba(0, 0, 0, 0.1);
+        }
+        [data-theme="dark"] {
+            --bg: #000;
+            --card: #1c1c1e;
+            --text: #fff;
+            --shd: 0 4px 20px rgba(255, 255, 255, 0.1);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+        [data-theme="neon"] {
+            --bg: #000;
+            --card: #0a0a0a;
+            --text: #39ff14;
+            --shd: 0 0 15px rgba(57, 255, 20, 0.3);
+            --main: #39ff14;
+            --border: #39ff14;
+        }
+        [data-theme="medical"] {
+            --bg: #eef2f3;
+            --card: #ffffff;
+            --text: #2c3e50;
+            --shd: 0 10px 30px rgba(52, 152, 219, 0.15);
+            --main: #3498db;
+            --border: #3498db;
+        }
+        [data-theme="soft"] {
+            --bg: #fff5f5;
+            --card: #ffffff;
+            --text: #d63384;
+            --shd: 0 4px 15px rgba(214, 51, 132, 0.1);
+            --main: #fd7e14;
+            --border: #ffc9c9;
+        }
+        [data-theme="luxury"] {
+            --bg: #1a1a1a;
+            --card: #2d2d2d;
+            --text: #d4af37;
+            --shd: 0 10px 25px rgba(0, 0, 0, 0.5);
+            --main: #d4af37;
+            --border: #d4af37;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            transition: var(--trans);
+            padding: 15px;
+            min-height: 100vh;
+        }
+
+        .top-link {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .top-link a {
+            color: var(--main);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .style-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(128, 128, 128, 0.1);
+            padding: 8px 12px;
+            border-radius: 12px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .style-label {
+            font-size: 11px;
+            font-weight: 900;
+            white-space: nowrap;
+            width: 70px;
+            opacity: 0.8;
+        }
+        .btn-grp {
+            display: flex;
+            gap: 6px;
+        }
+        .btn {
+            border: 1px solid var(--border);
+            background: rgba(128, 128, 128, 0.05);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            color: var(--text);
+            font-weight: 700;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+        .btn.active {
+            background: var(--main);
+            color: #fff;
+            border-color: var(--main);
+        }
+
+        .main-card {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: var(--shd);
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+        .input-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .input-box {
+            flex: 1;
+            position: relative;
+        }
+        .input-box span {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            opacity: 0.6;
+            font-weight: 900;
+        }
+        .input-row input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 15px;
+            border: 1px solid var(--border);
+            background: rgba(128, 128, 128, 0.05);
+            color: var(--text);
+            font-size: 24px;
+            font-weight: 900;
+            outline: none;
+        }
+
+        .content-layout {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 15px;
+        }
+        .viz-box {
+            height: 180px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        .body-svg {
+            height: 100%;
+            transition: 0.5s;
+        }
+        .res-display {
+            text-align: center;
+        }
+        .res-num {
+            font-size: 52px;
+            font-weight: 900;
+            color: var(--main);
+            line-height: 1;
+        }
+        .res-lab {
+            font-size: 14px;
+            font-weight: 800;
+            margin-top: 15px;
+            padding: 6px 15px;
+            border-radius: 10px;
+            background: var(--main);
+            color: #fff;
+            display: inline-block;
+        }
+
+        .scale-area {
+            position: relative;
+            width: 45px;
+            height: 420px;
+            margin: 30px auto 0 auto;
+            overflow: visible;
+        }
+        .scale-bar {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 22px;
+            background: linear-gradient(to top, #00f2fe 0%, #00ff88 20%, #fadb14 40%, #ff7a45 60%, #ff4d4f 100%);
+            overflow: visible;
+        }
+
+        .tick-line {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 1.5px;
+            background: rgba(255, 255, 255, 0.6);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .std-label {
+            position: absolute;
+            top: -25px;
+            white-space: nowrap;
+            font-size: 11px;
+            font-weight: 900;
+            line-height: 1.2;
+        }
+        .std-label.L {
+            right: calc(100% + 6px);
+            text-align: right;
+            color: var(--text);
+        }
+        .std-label.R {
+            left: calc(100% + 6px);
+            text-align: left;
+            color: #ff4d4f;
+        }
+
+        /* 区间标签更贴近彩柱 */
+        .tick-text {
+            position: absolute;
+            white-space: nowrap;
+            font-size: 9px;
+            font-weight: 800;
+            line-height: 1.1;
+            
+        }
+        .tick-text.L {
+            right: calc(100% + 6px);
+            text-align: right;
+            color: var(--text);
+            align-items: flex-end;
+        }
+        .tick-text.R {
+            left: calc(100% + 6px);
+            text-align: left;
+            color: #ff4d4f;
+            align-items: flex-start;
+        }
+        .tick-text span {
+            font-size: 10px;
+            opacity: 0.6;
+            margin: 0 2px;
+        }
+
+        /* 刻度数值标签紧贴左侧 */
+        .tick-num {
+            position: absolute;
+            white-space: nowrap;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1;
+            z-index: 6;
+            pointer-events: none;
+            color: var(--text);
+            opacity: 0.85;
+            right: calc(100% + 3px);
+            text-align: right;
+            transform: translateY(-50%);
+            letter-spacing: -0.3px;
+        }
+
+        .ptr-line {
+            position: absolute;
+            left: -18px;
+            right: -18px;
+            height: 4px;
+            background: #fff;
+            border: 2.3px solid var(--main);
+            border-radius: 2px;
+            z-index: 10;
+            transition: top 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .report-box {
+            background: var(--main);
+            color: #fff;
+            padding: 25px;
+            border-radius: 25px;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        .report-box h3 {
+            margin-bottom: 12px;
+            font-size: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 5px;
+        }
+        .report-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .report-item {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 12.5px;
+            border-left: 4px solid #fff;
+        }
+        .report-item b {
+            display: block;
+            font-size: 13px;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+            opacity: 0.9;
+        }
+
+        .details {
+            padding: 35px;
+            border-radius: 35px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            font-size: 15px;
+            margin-bottom: 50px;
+            line-height: 1.8;
+        }
+        .details h1 {
+            font-size: 26px;
+            margin-bottom: 25px;
+            border-left: 8px solid var(--main);
+            padding-left: 20px;
+            color: var(--text);
+        }
+        .details h2 {
+            font-size: 20px;
+            margin: 35px 0 15px;
+            color: var(--main);
+            font-weight: 900;
+        }
+        .details h3 {
+            font-size: 17px;
+            margin-top: 25px;
+            font-weight: 800;
+        }
+        .details p {
+            margin-bottom: 18px;
+            opacity: 0.9;
+            text-align: justify;
+        }
+        .formula-box {
+            background: rgba(128, 128, 128, 0.06);
+            padding: 25px;
+            border-radius: 18px;
+            text-align: center;
+            font-weight: 900;
+            border: 2px dashed var(--main);
+            font-size: 22px;
+            margin: 30px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            font-size: 13px;
+        }
+        th {
+            background: var(--main);
+            color: #fff;
+            padding: 15px;
+            text-align: left;
+        }
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(128, 128, 128, 0.02);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 50px;
+            font-size: 12px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body data-theme="white">
+
+    <div class="top-link"><a href="http://ripa.cc" target="_blank">进入主页 ripa.cc</a></div>
+
+    <div class="nav">
+        <div class="style-row">
+            <span class="style-label" id="i18n-lang-label">Language:</span>
+            <div class="btn-grp" id="l-grp">
+                <button class="btn active" data-lang="en" onclick="setLang('en', this)">English</button>
+                <button class="btn" data-lang="es" onclick="setLang('es', this)">Español</button>
+                <button class="btn" data-lang="tc" onclick="setLang('tc', this)">繁體中文</button>
+                <button class="btn" data-lang="jp" onclick="setLang('jp', this)">日本語</button>
+                <button class="btn" data-lang="kr" onclick="setLang('kr', this)">한국어</button>
+                <button class="btn" data-lang="zh" onclick="setLang('zh', this)">简体中文</button>
+            </div>
+        </div>
+        <div class="style-row">
+            <span class="style-label" id="i18n-style-label">Theme:</span>
+            <div class="btn-grp" id="t-grp">
+                <button class="btn active" data-theme-btn="white" onclick="setTheme('white', this)">White</button>
+                <button class="btn" data-theme-btn="dark" onclick="setTheme('dark', this)">Dark</button>
+                <button class="btn" data-theme-btn="neon" onclick="setTheme('neon', this)">Neon</button>
+                <button class="btn" data-theme-btn="medical" onclick="setTheme('medical', this)">Medical</button>
+                <button class="btn" data-theme-btn="soft" onclick="setTheme('soft', this)">Soft</button>
+                <button class="btn" data-theme-btn="luxury" onclick="setTheme('luxury', this)">Luxury</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-card">
+        <div class="input-row">
+            <div class="input-box"><input type="number" id="h" value="175" oninput="calc()"><span id="i18n-h">Height CM</span></div>
+            <div class="input-box"><input type="number" id="w" value="70" oninput="calc()"><span id="i18n-w">Weight KG</span></div>
+        </div>
+        <div class="content-layout">
+            <div class="left-col">
+                <div class="viz-box">
+                    <svg class="body-svg" viewBox="0 0 100 200">
+                        <circle fill="currentColor" cx="50" cy="25" r="12" />
+                        <path id="v-body" fill="currentColor" d="M38,42 Q50,40 62,42 L65,110 Q50,115 35,110 Z" />
+                        <rect id="v-al" fill="currentColor" x="28" y="45" width="8" height="55" rx="4" />
+                        <rect id="v-ar" fill="currentColor" x="64" y="45" width="8" height="55" rx="4" />
+                        <rect fill="currentColor" x="38" y="112" width="10" height="75" rx="5" />
+                        <rect fill="currentColor" x="52" y="112" width="10" height="75" rx="5" />
+                    </svg>
+                </div>
+                <div class="res-display">
+                    <div class="res-num" id="rv">22.9</div>
+                    <div class="res-lab" id="rl">Normal</div>
+                </div>
+            </div>
+            <div class="right-col">
+                <div class="scale-area">
+                    <div class="std-label L" id="std-l-label">WHO Global</div>
+                    <div class="std-label R" id="std-r-label">Asian Std</div>
+                    <div class="scale-bar" id="bar">
+                        <div id="ptr" class="ptr-line"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="rep" class="report-box">Loading...</div>
+    <div id="det" class="details"></div>
+
+    <footer class="footer">&copy; 2026 ripa.cc | International Health Informatics</footer>
+
+    <footer>
+        <div style="text-align:center;margin-top:10px;">
+            <p>© 2026 ripa.cc</p>
+            <p>
+                <a href="http://beian.miit.gov.cn" target="_blank">粤ICP备2026048175号</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        let curLang = 'en';
+
+        const i18n = {
+            en: {
+                langLabel: "Language",
+                styleLabel: "Display",
+                h: "Height CM",
+                w: "Weight KG",
+                cats: ["Severely Thin", "Underweight", "Healthy", "Overweight", "Obese I", "Obese II", "Obese III"],
+                reps: [
+                    "<h3>Severely Thin (BMI < 16.0)</h3><div class='report-item'><b>Clinical Risk:</b> Extreme risk of organ failure, electrolyte imbalance, and severe malnutrition.</div><div class='report-item'><b>Advice:</b> Immediate medical evaluation and structured nutritional support required. Do not attempt self-treatment.</div>",
+                    "<h3>Underweight (BMI 16.0–18.4)</h3><div class='report-item'><b>Risk:</b> Higher susceptibility to osteoporosis, anemia, and weakened immune response.</div><div class='report-item'><b>Advice:</b> Increase intake of nutrient-dense whole foods, combine with resistance training to build lean mass.</div>",
+                    "<h3>Healthy Weight (BMI 18.5–24.9)</h3><div class='report-item'><b>Status:</b> Optimal range associated with lowest all-cause mortality and metabolic disease risk.</div><div class='report-item'><b>Maintain:</b> Continue balanced diet, regular physical activity (150+ min/week), and stress management.</div>",
+                    "<h3>Overweight (BMI 25.0–29.9)</h3><div class='report-item'><b>Risk:</b> Moderately elevated risk of type 2 diabetes, hypertension, and cardiovascular disease.</div><div class='report-item'><b>Action:</b> Reduce refined carbohydrates, increase daily step count, and monitor waist circumference.</div>",
+                    "<h3>Obese Class I (BMI 30.0–34.9)</h3><div class='report-item'><b>Alert:</b> High probability of fatty liver, sleep apnea, and joint stress.</div><div class='report-item'><b>Strategy:</b> Consult a registered dietitian for a personalized calorie‑controlled plan and begin structured exercise.</div>",
+                    "<h3>Obese Class II (BMI 35.0–39.9)</h3><div class='report-item'><b>Warning:</b> Very high risk; mortality rates 1.5–2.7× higher than normal weight. Often accompanied by metabolic syndrome.</div><div class='report-item'><b>Intervention:</b> Multidisciplinary approach – medical supervision, pharmacotherapy, or bariatric surgery evaluation.</div>",
+                    "<h3>Obese Class III (BMI ≥ 40.0)</h3><div class='report-item'><b>Critical:</b> Life-threatening condition; 2–3× increase in early death risk. Severe strain on cardiovascular system.</div><div class='report-item'><b>Urgent:</b> Immediate specialist referral. Comprehensive weight management program essential for survival.</div>"
+                ],
+                wiki: `<h1>Body Mass Index (BMI): International Overview & Global Standards</h1>
+                <p><b>BMI (Quetelet Index)</b> is the primary international metric for classifying body weight relative to height, adopted by WHO, CDC, and global health authorities.</p>
+                <h2>1. Definition & Calculation</h2>
+                <div class="formula-box">BMI = weight (kg) / height (m)²</div>
+                <p><b>Imperial:</b> BMI = [weight (lb) / height (in)²] × 703</p>
+                <h2>2. WHO International Classification</h2>
+                <table><tr><th>Category</th><th>BMI (kg/m²)</th><th>Health Risk</th></tr>
+                <tr><td>Severely Underweight</td><td>&lt;16.0</td><td>Organ failure, osteoporosis</td></tr>
+                <tr><td>Underweight</td><td>16.0–18.4</td><td>Nutritional deficiency, immune impairment</td></tr>
+                <tr><td>Normal weight</td><td>18.5–24.9</td><td>Lowest mortality risk</td></tr>
+                <tr><td>Overweight</td><td>25.0–29.9</td><td>Elevated diabetes, hypertension risk</td></tr>
+                <tr><td>Obesity Class I</td><td>30.0–34.9</td><td>High CVD, sleep apnea risk</td></tr>
+                <tr><td>Obesity Class II</td><td>35.0–39.9</td><td>Very high mortality (1.5–2.7×)</td></tr>
+                <tr><td>Obesity Class III</td><td>≥40.0</td><td>Morbid obesity – life‑threatening</td></tr></table>
+                <h2>3. Global Prevalence (WHO, 2025)</h2>
+                <p>Over 1 billion adults overweight; 670 million obese. Obesity has tripled since 1975. 39 million children under 5 and 340 million aged 5–19 are overweight/obese.</p>
+                <h2>4. Asian‑Specific Thresholds</h2>
+                <p>Asian populations exhibit higher metabolic risk at lower BMI. Overweight ≥23.0, obesity ≥27.5 (WHO expert consultation). This tool uses <b>23.0</b> as alert line and <b>25.0</b> as obesity threshold.</p>
+                <h2>5. Limitations</h2>
+                <p>BMI does not differentiate muscle from fat; athletes may be misclassified. Waist circumference and body fat percentage provide better visceral‑fat risk assessment.</p>
+                <p><b>Source:</b> WHO, CDC (2023–2025). All data for international reference only.</p>`
+            },
+            zh: {
+                langLabel: "界面语言",
+                styleLabel: "显示风格",
+                h: "身高 CM",
+                w: "体重 KG",
+                cats: ["严重消瘦", "体重偏低", "健康体重", "超重阶段", "肥胖 I 级", "肥胖 II 级", "肥胖 III 级"],
+                reps: [
+                    "<h3>严重消瘦 (BMI < 16.0)</h3><div class='report-item'><b>临床风险：</b> 器官衰竭、电解质紊乱、严重营养不良风险极高。</div><div class='report-item'><b>建议：</b> 立即寻求医疗评估与结构化营养支持，切勿自行处理。</div>",
+                    "<h3>体重偏低 (BMI 16.0–18.4)</h3><div class='report-item'><b>风险：</b> 易患骨质疏松、贫血、免疫功能低下。</div><div class='report-item'><b>建议：</b> 增加优质蛋白与全食物摄入，配合力量训练增加肌肉量。</div>",
+                    "<h3>健康体重 (BMI 18.5–24.9)</h3><div class='report-item'><b>状态：</b> 理想范围，全因死亡率与代谢疾病风险最低。</div><div class='report-item'><b>保持：</b> 均衡饮食，每周150分钟以上运动，管理压力。</div>",
+                    "<h3>超重阶段 (BMI 25.0–29.9)</h3><div class='report-item'><b>警示：</b> 2型糖尿病、高血压、心血管疾病风险中度升高。</div><div class='report-item'><b>对策：</b> 减少精制碳水，增加每日步数，监测腰围。</div>",
+                    "<h3>肥胖 I 级 (BMI 30.0–34.9)</h3><div class='report-item'><b>告警：</b> 高概率伴随脂肪肝、睡眠呼吸暂停及关节负荷过重。</div><div class='report-item'><b>行动：</b> 咨询营养师制定热量控制计划，开始系统锻炼。</div>",
+                    "<h3>肥胖 II 级 (BMI 35.0–39.9)</h3><div class='report-item'><b>警告：</b> 死亡风险是正常体重者的1.5–2.7倍，常伴有代谢综合征。</div><div class='report-item'><b>干预：</b> 多学科管理——医疗监督、药物治疗或减重手术评估。</div>",
+                    "<h3>肥胖 III 级 (BMI ≥ 40.0)</h3><div class='report-item'><b>危重：</b> 危及生命，早逝风险增加2–3倍，心血管系统极度受压。</div><div class='report-item'><b>紧急：</b> 立即转诊专科，全面体重管理计划至关重要。</div>"
+                ],
+                wiki: `<h1>身体质量指数（BMI）：国际概况与全球标准</h1>
+                <p><b>BMI（凯特勒指数）</b>是国际上衡量体重相对于身高分类的主要指标，被WHO、CDC及全球卫生机构广泛采用。</p>
+                <h2>1. 定义与计算</h2>
+                <div class="formula-box">BMI = 体重 (kg) / 身高 (m)²</div>
+                <p><b>英制：</b> BMI = [体重 (lb) / 身高 (in)²] × 703</p>
+                <h2>2. WHO 国际分类</h2>
+                <table><tr><th>类别</th><th>BMI (kg/m²)</th><th>健康风险</th></tr>
+                <tr><td>严重消瘦</td><td>&lt;16.0</td><td>器官衰竭、骨质疏松</td></tr>
+                <tr><td>体重偏低</td><td>16.0–18.4</td><td>营养缺乏、免疫功能下降</td></tr>
+                <tr><td>正常体重</td><td>18.5–24.9</td><td>死亡率最低</td></tr>
+                <tr><td>超重</td><td>25.0–29.9</td><td>糖尿病、高血压风险升高</td></tr>
+                <tr><td>肥胖 I 级</td><td>30.0–34.9</td><td>心血管病、睡眠呼吸暂停高风险</td></tr>
+                <tr><td>肥胖 II 级</td><td>35.0–39.9</td><td>死亡风险极高（1.5–2.7倍）</td></tr>
+                <tr><td>肥胖 III 级</td><td>≥40.0</td><td>病态肥胖——危及生命</td></tr></table>
+                <h2>3. 全球患病率（WHO, 2025）</h2>
+                <p>超10亿成年人超重，6.7亿人肥胖。自1975年以来肥胖率翻了三倍。3900万5岁以下儿童与3.4亿5–19岁儿童青少年超重或肥胖。</p>
+                <h2>4. 亚洲特定阈值</h2>
+                <p>亚洲人群在较低BMI时即出现代谢风险，超重≥23.0，肥胖≥27.5（WHO专家咨询）。本工具以<b>23.0</b>为警戒线，<b>25.0</b>为肥胖阈值。</p>
+                <h2>5. 局限性</h2>
+                <p>BMI无法区分肌肉与脂肪，运动员可能被误判。腰围与体脂率更能反映内脏脂肪风险。</p>
+                <p><b>数据来源：</b> WHO、CDC（2023–2025）。所有信息仅供国际参考。</p>`
+            },
+            tc: {
+                langLabel: "介面語言",
+                styleLabel: "顯示風格",
+                h: "身高 CM",
+                w: "體重 KG",
+                cats: ["極度消瘦", "體重過輕", "健康體重", "體重超重", "肥胖 I 級", "中度肥胖", "重度肥胖"],
+                reps: [
+                    "<h3>極度消瘦 (BMI < 16.0)</h3><div class='report-item'><b>臨床風險：</b> 器官衰竭、嚴重營養不良風險極高。</div><div class='report-item'><b>建議：</b> 立即尋求醫療評估與營養支持。</div>",
+                    "<h3>體重過輕 (BMI 16.0–18.4)</h3><div class='report-item'><b>風險：</b> 骨質疏鬆、貧血、免疫功能下降。</div><div class='report-item'><b>建議：</b> 增加優質蛋白與全食物攝取，配合肌力訓練。</div>",
+                    "<h3>健康體重 (BMI 18.5–24.9)</h3><div class='report-item'><b>狀態：</b> 理想範圍，全因死亡率最低。</div><div class='report-item'><b>保持：</b> 均衡飲食，每週150分鐘以上運動。</div>",
+                    "<h3>體重超重 (BMI 25.0–29.9)</h3><div class='report-item'><b>警示：</b> 第二型糖尿病、高血壓風險中度升高。</div><div class='report-item'><b>對策：</b> 減少精製碳水，增加日常步數。</div>",
+                    "<h3>肥胖 I 級 (BMI 30.0–34.9)</h3><div class='report-item'><b>告警：</b> 脂肪肝、睡眠呼吸中止、關節壓力高。</div><div class='report-item'><b>行動：</b> 諮詢營養師，開始系統減重計劃。</div>",
+                    "<h3>中度肥胖 (BMI 35.0–39.9)</h3><div class='report-item'><b>警告：</b> 死亡風險為正常體重者的1.5–2.7倍。</div><div class='report-item'><b>介入：</b> 多學科管理，藥物或減重手術評估。</div>",
+                    "<h3>重度肥胖 (BMI ≥ 40.0)</h3><div class='report-item'><b>危殆：</b> 生命威脅，早逝風險增加2–3倍。</div><div class='report-item'><b>緊急：</b> 立即轉介專科，全面體重管理方案。</div>"
+                ],
+                wiki: `<h1>身體質量指數（BMI）：國際概覽與全球標準</h1>
+                <p><b>BMI</b>是國際主要體重分類指標，被WHO、CDC等機構採用。</p>
+                <h2>1. 定義與計算</h2>
+                <div class="formula-box">BMI = 體重 (kg) / 身高 (m)²</div>
+                <p><b>英制：</b> BMI = [體重 (lb) / 身高 (in)²] × 703</p>
+                <h2>2. WHO 國際分類</h2>
+                <table><tr><th>類別</th><th>BMI (kg/m²)</th><th>健康風險</th></tr>
+                <tr><td>極度消瘦</td><td>&lt;16.0</td><td>器官衰竭、骨質疏鬆</td></tr>
+                <tr><td>體重過輕</td><td>16.0–18.4</td><td>營養缺乏、免疫力下降</td></tr>
+                <tr><td>正常體重</td><td>18.5–24.9</td><td>死亡率最低</td></tr>
+                <tr><td>超重</td><td>25.0–29.9</td><td>糖尿病、高血壓風險升高</td></tr>
+                <tr><td>肥胖 I 級</td><td>30.0–34.9</td><td>心血管病、睡眠窒息高風險</td></tr>
+                <tr><td>肥胖 II 級</td><td>35.0–39.9</td><td>死亡風險極高（1.5–2.7倍）</td></tr>
+                <tr><td>肥胖 III 級</td><td>≥40.0</td><td>病態肥胖——危及生命</td></tr></table>
+                <h2>3. 全球患病率 (WHO, 2025)</h2>
+                <p>超10億成年人超重，6.7億肥胖。自1975年肥胖率增三倍。亞洲群體在較低BMI即出現代謝風險。</p>
+                <h2>4. 亞洲特定閾值</h2>
+                <p>超重≥23.0，肥胖≥27.5。本工具以<b>23.0</b>為警戒線，<b>25.0</b>為肥胖閾值。</p>
+                <h2>5. 局限性</h2>
+                <p>BMI無法區分肌肉與脂肪，運動員可能誤判。腰圍更能反映內臟脂肪風險。</p>
+                <p><b>資料來源：</b> WHO、CDC（2023–2025），僅供國際參考。</p>`
+            },
+            es: {
+                langLabel: "Idioma",
+                styleLabel: "Estilo",
+                h: "Altura CM",
+                w: "Peso KG",
+                cats: ["Delgadez Extrema", "Bajo Peso", "Peso Saludable", "Sobrepeso", "Obesidad I", "Obesidad II", "Obesidad III"],
+                reps: [
+                    "<h3>Delgadez Extrema (IMC < 16.0)</h3><div class='report-item'><b>Riesgo:</b> Fallo orgánico, desnutrición severa.</div><div class='report-item'><b>Consejo:</b> Atención médica inmediata y soporte nutricional estructurado.</div>",
+                    "<h3>Bajo Peso (IMC 16.0–18.4)</h3><div class='report-item'><b>Riesgo:</b> Osteoporosis, anemia, inmunidad debilitada.</div><div class='report-item'><b>Consejo:</b> Alimentos densos en nutrientes y entrenamiento de fuerza.</div>",
+                    "<h3>Peso Saludable (IMC 18.5–24.9)</h3><div class='report-item'><b>Estado:</b> Rango óptimo, menor riesgo de mortalidad.</div><div class='report-item'><b>Mantener:</b> Dieta equilibrada, 150+ min de actividad física semanal.</div>",
+                    "<h3>Sobrepeso (IMC 25.0–29.9)</h3><div class='report-item'><b>Riesgo:</b> Diabetes tipo 2, hipertensión elevados.</div><div class='report-item'><b>Acción:</b> Reducir carbohidratos refinados, aumentar pasos diarios.</div>",
+                    "<h3>Obesidad I (IMC 30.0–34.9)</h3><div class='report-item'><b>Alerta:</b> Hígado graso, apnea del sueño, estrés articular.</div><div class='report-item'><b>Plan:</b> Consultar a un dietista, plan calórico personalizado.</div>",
+                    "<h3>Obesidad II (IMC 35.0–39.9)</h3><div class='report-item'><b>Advertencia:</b> Mortalidad 1.5–2.7× mayor. Síndrome metabólico frecuente.</div><div class='report-item'><b>Intervención:</b> Manejo multidisciplinario, posible cirugía bariátrica.</div>",
+                    "<h3>Obesidad III (IMC ≥ 40.0)</h3><div class='report-item'><b>Crítico:</b> Riesgo de muerte prematura 2–3× mayor. Tensión cardiovascular extrema.</div><div class='report-item'><b>Urgente:</b> Derivación inmediata a especialista.</div>"
+                ],
+                wiki: `<h1>Índice de Masa Corporal (IMC): Visión General Internacional</h1>
+                <p><b>IMC (Índice de Quetelet)</b> es la métrica internacional principal para clasificar el peso, adoptada por OMS, CDC, etc.</p>
+                <h2>1. Definición y Cálculo</h2>
+                <div class="formula-box">IMC = peso (kg) / estatura (m)²</div>
+                <p><b>Sistema imperial:</b> IMC = [peso (lb) / estatura (in)²] × 703</p>
+                <h2>2. Clasificación Internacional OMS</h2>
+                <table><tr><th>Categoría</th><th>IMC (kg/m²)</th><th>Riesgo</th></tr>
+                <tr><td>Delgadez extrema</td><td>&lt;16.0</td><td>Fallo orgánico</td></tr>
+                <tr><td>Bajo peso</td><td>16.0–18.4</td><td>Deficiencia nutricional</td></tr>
+                <tr><td>Peso normal</td><td>18.5–24.9</td><td>Menor riesgo</td></tr>
+                <tr><td>Sobrepeso</td><td>25.0–29.9</td><td>Diabetes, hipertensión</td></tr>
+                <tr><td>Obesidad I</td><td>30.0–34.9</td><td>Alto riesgo CVD</td></tr>
+                <tr><td>Obesidad II</td><td>35.0–39.9</td><td>Mortalidad muy alta</td></tr>
+                <tr><td>Obesidad III</td><td>≥40.0</td><td>Obesidad mórbida</td></tr></table>
+                <h2>3. Prevalencia Global</h2>
+                <p>Más de 1 000 millones de adultos con sobrepeso; 670 millones con obesidad. La obesidad se ha triplicado desde 1975.</p>
+                <h2>4. Umbrales Asiáticos</h2>
+                <p>Sobrepeso ≥23.0, obesidad ≥27.5. Esta herramienta usa <b>23.0</b> como alerta y <b>25.0</b> como obesidad.</p>
+                <h2>5. Limitaciones</h2>
+                <p>El IMC no distingue músculo de grasa. La circunferencia de cintura es un mejor indicador de riesgo visceral.</p>
+                <p><b>Fuente:</b> OMS, CDC (2023–2025). Solo para referencia internacional.</p>`
+            },
+            jp: {
+                langLabel: "言語",
+                styleLabel: "デザイン",
+                h: "身長 CM",
+                w: "体重 KG",
+                cats: ["痩せすぎ", "低体重", "普通体重", "過体重", "肥満 I 度", "肥満 II 度", "肥満 III 度"],
+                reps: [
+                    "<h3>痩せすぎ (BMI < 16.0)</h3><div class='report-item'><b>リスク：</b> 臓器不全、重度の栄養失調。</div><div class='report-item'><b>推奨：</b> 直ちに医療機関を受診し、栄養管理を開始。</div>",
+                    "<h3>低体重 (BMI 16.0–18.4)</h3><div class='report-item'><b>リスク：</b> 骨粗鬆症、貧血、免疫力低下。</div><div class='report-item'><b>推奨：</b> 栄養価の高い食品と筋力トレーニングを。</div>",
+                    "<h3>普通体重 (BMI 18.5–24.9)</h3><div class='report-item'><b>状態：</b> 理想的な範囲。全死亡率が最も低い。</div><div class='report-item'><b>維持：</b> バランスの良い食事と週150分以上の運動。</div>",
+                    "<h3>過体重 (BMI 25.0–29.9)</h3><div class='report-item'><b>リスク：</b> 2型糖尿病、高血圧のリスク中程度。</div><div class='report-item'><b>対策：</b> 精製炭水化物を減らし、歩数を増やす。</div>",
+                    "<h3>肥満 I 度 (BMI 30.0–34.9)</h3><div class='report-item'><b>警告：</b> 脂肪肝、睡眠時無呼吸、関節負荷。</div><div class='report-item'><b>行動：</b> 管理栄養士に相談し、計画的な減量を。</div>",
+                    "<h3>肥満 II 度 (BMI 35.0–39.9)</h3><div class='report-item'><b>深刻：</b> 死亡率が正常体重の1.5～2.7倍。</div><div class='report-item'><b>介入：</b> 多角的治療（薬物療法、外科手術の検討）。</div>",
+                    "<h3>肥満 III 度 (BMI ≥ 40.0)</h3><div class='report-item'><b>緊急：</b> 生命を脅かす。早期死亡リスク2～3倍。</div><div class='report-item'><b>対応：</b> 直ちに専門医へ。包括的体重管理が必須。</div>"
+                ],
+                wiki: `<h1>BMI（体格指数）：国際的概要と世界基準</h1>
+                <p><b>BMI（ケトレー指数）</b>はWHOやCDCが採用する国際的な体重分類指標です。</p>
+                <h2>1. 定義と計算式</h2>
+                <div class="formula-box">BMI = 体重 (kg) / 身長 (m)²</div>
+                <p><b>ヤード・ポンド法：</b> BMI = [体重 (lb) / 身長 (in)²] × 703</p>
+                <h2>2. WHO国際分類</h2>
+                <table><tr><th>分類</th><th>BMI (kg/m²)</th><th>健康リスク</th></tr>
+                <tr><td>痩せすぎ</td><td>&lt;16.0</td><td>臓器不全、骨粗鬆症</td></tr>
+                <tr><td>低体重</td><td>16.0–18.4</td><td>栄養不足、免疫低下</td></tr>
+                <tr><td>普通体重</td><td>18.5–24.9</td><td>死亡率最低</td></tr>
+                <tr><td>過体重</td><td>25.0–29.9</td><td>糖尿病・高血圧リスク増</td></tr>
+                <tr><td>肥満 I 度</td><td>30.0–34.9</td><td>心血管疾患リスク高</td></tr>
+                <tr><td>肥満 II 度</td><td>35.0–39.9</td><td>死亡率1.5～2.7倍</td></tr>
+                <tr><td>肥満 III 度</td><td>≥40.0</td><td>病的肥満－生命を脅かす</td></tr></table>
+                <h2>3. 世界の有病率</h2>
+                <p>成人の10億人以上が過体重、6.7億人が肥満。1975年以降肥満率は3倍に。</p>
+                <h2>4. アジア基準</h2>
+                <p>アジア人は低いBMIでも代謝リスクが高い。過体重≥23.0、肥満≥27.5。本ツールは<b>23.0</b>を警告線、<b>25.0</b>を肥満閾値とする。</p>
+                <h2>5. 限界</h2>
+                <p>BMIは筋肉と脂肪を区別しない。腹囲が内臓脂肪リスクの指標として優れる。</p>
+                <p><b>出典：</b> WHO、CDC（2023–2025）。国際的な参考情報です。</p>`
+            },
+            kr: {
+                langLabel: "언어",
+                styleLabel: "테마",
+                h: "키 CM",
+                w: "몸무게 KG",
+                cats: ["심한 저체중", "저체중", "정상 체중", "과체중", "비만 I", "비만 II", "비만 III"],
+                reps: [
+                    "<h3>심한 저체중 (BMI < 16.0)</h3><div class='report-item'><b>위험：</b> 장기 부전, 심각한 영양실조.</div><div class='report-item'><b>권고：</b> 즉시 의료 평가와 체계적 영양 지원 필요.</div>",
+                    "<h3>저체중 (BMI 16.0–18.4)</h3><div class='report-item'><b>위험：</b> 골다공증, 빈혈, 면역력 저하.</div><div class='report-item'><b>권고：</b> 영양 밀도 높은 식품과 근력 운동.</div>",
+                    "<h3>정상 체중 (BMI 18.5–24.9)</h3><div class='report-item'><b>상태：</b> 최적 범위, 사망률 가장 낮음.</div><div class='report-item'><b>유지：</b> 균형 잡힌 식사, 주 150분 이상 신체 활동.</div>",
+                    "<h3>과체중 (BMI 25.0–29.9)</h3><div class='report-item'><b>위험：</b> 제2형 당뇨병, 고혈압 위험 중등도 증가.</div><div class='report-item'><b>대책：</b> 정제 탄수화물 줄이고, 걸음 수 늘리기.</div>",
+                    "<h3>비만 I (BMI 30.0–34.9)</h3><div class='report-item'><b>경고：</b> 지방간, 수면 무호흡, 관절 스트레스.</div><div class='report-item'><b>계획：</b> 영양사 상담 후 칼로리 조절 계획.</div>",
+                    "<h3>비만 II (BMI 35.0–39.9)</h3><div class='report-item'><b>심각：</b> 사망률 정상 체중의 1.5~2.7배. 대사 증후군 동반.</div><div class='report-item'><b>개입：</b> 다학제 관리 – 약물 또는 비만 수술 평가.</div>",
+                    "<h3>비만 III (BMI ≥ 40.0)</h3><div class='report-item'><b>위급：</b> 생명 위협, 조기 사망 위험 2~3배 증가.</div><div class='report-item'><b>긴급：</b> 즉시 전문의 진료 의뢰.</div>"
+                ],
+                wiki: `<h1>체질량지수(BMI): 국제 개요 및 세계 기준</h1>
+                <p><b>BMI(케틀레 지수)</b>는 WHO, CDC 등이 채택한 국제적 체중 분류 지표입니다.</p>
+                <h2>1. 정의 및 계산</h2>
+                <div class="formula-box">BMI = 체중 (kg) / 키 (m)²</div>
+                <p><b>야드파운드법：</b> BMI = [체중 (lb) / 키 (in)²] × 703</p>
+                <h2>2. WHO 국제 분류</h2>
+                <table><tr><th>분류</th><th>BMI (kg/m²)</th><th>건강 위험</th></tr>
+                <tr><td>심한 저체중</td><td>&lt;16.0</td><td>장기 부전, 골다공증</td></tr>
+                <tr><td>저체중</td><td>16.0–18.4</td><td>영양 결핍, 면역 저하</td></tr>
+                <tr><td>정상 체중</td><td>18.5–24.9</td><td>사망률 최저</td></tr>
+                <tr><td>과체중</td><td>25.0–29.9</td><td>당뇨, 고혈압 위험 증가</td></tr>
+                <tr><td>비만 I</td><td>30.0–34.9</td><td>심혈관 질환 고위험</td></tr>
+                <tr><td>비만 II</td><td>35.0–39.9</td><td>사망률 1.5~2.7배</td></tr>
+                <tr><td>비만 III</td><td>≥40.0</td><td>병적 비만 – 생명 위협</td></tr></table>
+                <h2>3. 세계적 유병률</h2>
+                <p>성인 10억 명 이상 과체중, 6억 7천만 명 비만. 1975년 이후 비만율 3배 증가.</p>
+                <h2>4. 아시아 기준</h2>
+                <p>아시아인은 낮은 BMI에서도 대사 위험 증가. 과체중 ≥23.0, 비만 ≥27.5. 본 도구는 <b>23.0</b> 경고선, <b>25.0</b> 비만 기준.</p>
+                <h2>5. 한계점</h2>
+                <p>BMI는 근육과 지방을 구분하지 못함. 허리둘레가 내장지방 위험을 더 잘 반영.</p>
+                <p><b>출처：</b> WHO, CDC (2023–2025). 국제 참고용입니다.</p>`
+            }
+        };
+
+        function setLang(l, b) {
+            curLang = l;
+            document.querySelectorAll('#l-grp .btn').forEach(x => x.classList.remove('active'));
+            b.classList.add('active');
+            updateUI();
+        }
+
+        function setTheme(t, b) {
+            document.body.setAttribute('data-theme', t);
+            document.querySelectorAll('#t-grp .btn').forEach(x => x.classList.remove('active'));
+            b.classList.add('active');
+            calc();
+        }
+
+        function updateUI() {
+            const lang = i18n[curLang];
+            document.getElementById('i18n-lang-label').innerText = lang.langLabel + ":";
+            document.getElementById('i18n-style-label').innerText = lang.styleLabel + ":";
+            document.getElementById('i18n-h').innerText = lang.h;
+            document.getElementById('i18n-w').innerText = lang.w;
+            document.getElementById('det').innerHTML = lang.wiki;
+            renderScale();
+            calc();
+        }
+
+        function renderScale() {
+            const bar = document.getElementById('bar');
+            bar.querySelectorAll('.tick-text, .tick-line, .tick-num').forEach(e => e.remove());
+            const MIN = 15, MAX = 45;
+            const getTop = (v) => 100 - ((v - MIN) / (MAX - MIN) * 100);
+            const cats = i18n[curLang].cats;
+
+            const tickValues = [15, 18.5, 23, 25, 30, 35, 40, 45];
+            tickValues.forEach(v => {
+                const line = document.createElement('div');
+                line.className = 'tick-line';
+                if (v === 23 || v === 25) {
+                    line.style.height = '2px';
+                    line.style.background = 'rgba(255,255,255,0.9)';
+                    line.style.zIndex = '6';
+                }
+                if (v === 15 || v === 45) {
+                    line.style.background = 'rgba(255,255,255,0.35)';
+                    line.style.height = '1px';
+                }
+                line.style.top = getTop(v) + '%';
+                bar.appendChild(line);
+
+                const numLabel = document.createElement('div');
+                numLabel.className = 'tick-num';
+                numLabel.style.top = getTop(v) + '%';
+                numLabel.textContent = v === 18.5 ? '18.5' : String(v);
+                bar.appendChild(numLabel);
+            });
+
+            const whoLevels = [
+                { s: 15, e: 18.5, t: cats[1] },
+                { s: 18.5, e: 25.0, t: cats[2] },
+                { s: 25.0, e: 30.0, t: cats[3] },
+                { s: 30.0, e: 45.0, t: cats[4] }
+            ];
+            whoLevels.forEach(lv => {
+                const txt = document.createElement('div');
+                txt.className = 'tick-text L';
+                const mid = (getTop(lv.s) + getTop(lv.e)) / 2;
+                txt.style.top = `calc(${mid}% - 6px)`;
+                txt.innerHTML = `${lv.t}<br><span>${lv.s}-${lv.e}</span>`;
+                bar.appendChild(txt);
+            });
+
+            const asiaLevels = [
+                { s: 15, e: 18.5, t: cats[1] },
+                { s: 18.5, e: 23.0, t: cats[2] },
+                { s: 23.0, e: 25.0, t: cats[3] },
+                { s: 25.0, e: 30.0, t: cats[4] },
+                { s: 30.0, e: 45.0, t: cats[5] }
+            ];
+            asiaLevels.forEach(lv => {
+                const txt = document.createElement('div');
+                txt.className = 'tick-text R';
+                const mid = (getTop(lv.s) + getTop(lv.e)) / 2;
+                txt.style.top = `calc(${mid}% - 6px)`;
+                txt.innerHTML = `${lv.t}<br><span>${lv.s}-${lv.e}</span>`;
+                bar.appendChild(txt);
+            });
+        }
+
+        function calc() {
+            const h = document.getElementById('h').value / 100;
+            const w = document.getElementById('w').value;
+            if (!h || h <= 0) return;
+            const bmi = (w / (h * h)).toFixed(1);
+            document.getElementById('rv').innerText = bmi;
+            const MIN = 15, MAX = 45;
+            const pos = 100 - ((bmi - MIN) / (MAX - MIN) * 100);
+            document.getElementById('ptr').style.top = Math.max(0, Math.min(100, pos)) + '%';
+
+            let idx;
+            if (bmi < 16) idx = 0;
+            else if (bmi < 18.5) idx = 1;
+            else if (bmi < 25) idx = 2;
+            else if (bmi < 30) idx = 3;
+            else if (bmi < 35) idx = 4;
+            else if (bmi < 40) idx = 5;
+            else idx = 6;
+
+            document.getElementById('rl').innerText = i18n[curLang].cats[idx];
+            const repArr = i18n[curLang].reps;
+            document.getElementById('rep').innerHTML = repArr[idx] || repArr[2];
+
+            const f = (bmi - 22) * 2.2;
+            document.getElementById('v-body').setAttribute('d',
+                `M${38-f/4},42 Q50,40 ${62+f/4},42 L${65+f/2},110 Q50,115 ${35-f/2},110 Z`);
+
+            const theme = document.body.getAttribute('data-theme');
+            const svg = document.querySelector('.body-svg');
+            if (theme === 'white' || theme === 'dark') {
+                svg.style.color = bmi < 18.5 ? '#3498db' : bmi < 25 ? '#2ecc71' : bmi < 30 ? '#f1c40f' : '#e74c3c';
+            } else {
+                svg.style.color = 'currentColor';
+            }
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>

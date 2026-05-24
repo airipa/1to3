@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>声音分贝测量</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+        body {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8f4fd 100%);
+            padding: 15px;
+        }
+        .container {
+            width: 100%;
+            margin: 0 auto;
+            background: #ffffffdd;
+            backdrop-filter: blur(10px);
+            padding: 30px 20px;
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(30, 136, 229, 0.15);
+            text-align: center;
+        }
+
+        .title {
+            font-size: 46px;
+            font-weight: 700;
+            color: #1976D2;
+            margin-bottom: 15px;
+        }
+        .hint-mic {
+            font-size: 30px;
+            font-weight: 500;
+            color: #444;
+            margin-bottom: 30px;
+        }
+
+        .scale-wrap {
+            width: 100%;
+            height: 36px;
+            background: #ECEFF1;
+            border-radius: 18px;
+            margin: 15px 0 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        .scale-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4CAF50 0%, #FFC107 50%, #F44336 100%);
+            border-radius: 18px;
+            transition: all 0.15s ease;
+        }
+        .scale-tip {
+            display: flex;
+            justify-content: space-between;
+            font-size: 28px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        .val-row {
+            margin: 20px 0;
+        }
+        .big-val {
+            font-size: 74px;
+            font-weight: 700;
+        }
+        .rel-color {
+            color: #3949AB;
+        }
+        .db-color {
+            color: #0097A7;
+        }
+        .small-desc {
+            font-size: 30px;
+            font-weight: 500;
+            color: #444;
+            margin-top: 8px;
+        }
+
+        .level {
+            font-size: 36px;
+            font-weight: 600;
+            color: #D32F2F;
+            margin: 20px 0 8px;
+        }
+        .scene {
+            font-size: 30px;
+            font-weight: 500;
+            color: #455A64;
+            line-height: 1.6;
+        }
+
+        .notice {
+            font-size: 26px;
+            font-weight: 500;
+            color: #78909C;
+            margin-top: 30px;
+            line-height: 1.6;
+        }
+
+        .ref-box {
+            width: 100%;
+            margin: 30px auto 0;
+            background: #ffffffdd;
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            font-size: 28px;
+            font-weight: 500;
+            line-height: 2;
+            color: #455A64;
+        }
+        .ref-title {
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 12px;
+            font-size: 30px;
+            color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">🔊 声音分贝测量</div>
+        <div class="hint-mic">自动使用手机麦克风 | 量程 0 ~ 255</div>
+
+        <div class="scale-wrap">
+            <div class="scale-bar" id="scaleBar"></div>
+        </div>
+        <div class="scale-tip">
+            <span>0</span>
+            <span>255</span>
+        </div>
+
+        <div class="val-row">
+            <div class="big-val rel-color" id="relVal">--</div>
+            <div class="small-desc">相对音量值（0 ~ 255）</div>
+        </div>
+
+        <div class="val-row">
+            <div class="big-val db-color" id="dbVal">--</div>
+            <div class="small-desc">模拟估算分贝 dB</div>
+        </div>
+
+        <div class="level" id="level">初始化中...</div>
+        <div class="scene" id="scene">请允许麦克风权限</div>
+
+        <div class="notice">
+            说明：模拟分贝由相对音量换算得出，无专业硬件校准，仅供日常参考，非专业精密检测仪器
+        </div>
+    </div>
+
+    <div class="ref-box">
+        <div class="ref-title">常见环境声音参考对照表</div>
+        <div>▪ 几乎静音：相对值0~15 ｜ 模拟 0 ~ 25dB</div>
+        <div>▪ 安静室内环境：相对值15~40 ｜ 模拟 25 ~ 40dB</div>
+        <div>▪ 轻声说话：相对值40~70 ｜ 模拟 40 ~ 55dB</div>
+        <div>▪ 正常交谈：相对值70~110 ｜ 模拟 55 ~ 70dB</div>
+        <div>▪ 室内嘈杂人声：相对值110~160 ｜ 模拟 70 ~ 85dB</div>
+        <div>▪ 街边日常车流：相对值160~200 ｜ 模拟 85 ~ 95dB</div>
+        <div>▪ 喧闹闹市/KTV：相对值200~235 ｜ 模拟 95 ~ 105dB</div>
+        <div>▪ 高分贝噪音：相对值235~255 ｜ 模拟 105 ~ 115dB</div>
+    </div>
+
+    <script>
+        const relValEl = document.getElementById('relVal');
+        const dbValEl = document.getElementById('dbVal');
+        const levelEl = document.getElementById('level');
+        const sceneEl = document.getElementById('scene');
+        const scaleBar = document.getElementById('scaleBar');
+
+        let valCache = [];
+        const cacheLen = 8;
+        const MAX_DB = 115;
+        const MAX_SCALE = 255;
+
+        function getLevel(val) {
+            if (val <= 15) return { level: "极静", scene: "几乎静音、深夜无人环境" };
+            if (val <= 40) return { level: "安静", scene: "居家安静室内、图书馆" };
+            if (val <= 70) return { level: "轻柔", scene: "轻声交谈、低声耳语" };
+            if (val <= 110) return { level: "正常", scene: "日常对话、普通室内人声" };
+            if (val <= 160) return { level: "偏吵", scene: "办公室嘈杂、多人交谈" };
+            if (val <= 200) return { level: "嘈杂", scene: "街边车流、普通户外环境" };
+            if (val <= 235) return { level: "喧闹", scene: "闹市、商场、KTV" };
+            return { level: "噪音", scene: "高分贝嘈杂，长期有损听力" };
+        }
+
+        function smoothValue(v) {
+            valCache.push(v);
+            if (valCache.length > cacheLen) valCache.shift();
+            let sum = valCache.reduce((a, b) => a + b, 0);
+            return Math.round(sum / valCache.length);
+        }
+
+        function relToDb(rel) {
+            return Math.round(rel / 255 * MAX_DB);
+        }
+
+        function updateScale(val) {
+            let percent = (val / MAX_SCALE) * 100;
+            scaleBar.style.width = percent + "%";
+        }
+
+        async function initMic() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 256;
+                const source = audioCtx.createMediaStreamSource(stream);
+                source.connect(analyser);
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+                function detect() {
+                    analyser.getByteFrequencyData(dataArray);
+                    let sum = 0;
+                    dataArray.forEach(v => sum += v);
+                    let avg = Math.round(sum / dataArray.length);
+                    let stableRel = smoothValue(avg);
+                    let stableDb = relToDb(stableRel);
+                    const res = getLevel(stableRel);
+
+                    relValEl.innerText = stableRel;
+                    dbValEl.innerText = stableDb;
+                    levelEl.innerText = res.level;
+                    sceneEl.innerText = res.scene;
+                    updateScale(stableRel);
+
+                    requestAnimationFrame(detect);
+                }
+                detect();
+            } catch (e) {
+                levelEl.innerText = "权限被拒绝";
+                sceneEl.innerText = "请允许麦克风权限才能测量声音";
+            }
+        }
+
+        initMic();
+    </script>
+</body>
+</html>
