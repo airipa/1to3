@@ -1,187 +1,486 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>1to3 Labs — Tools & Games</title>
-<meta name="description" content="1to3 Labs — A collection of useful tools and fun games. Free to use, built with care.">
-<meta name="keywords" content="online tools, free tools, BMI calculator, color code picker, compass, internet speed, angle meter, light meter, volume meter, browser games, gomoku, go game">
+<meta name="description" content="1to3 Labs — A growing collection of practical tools and fun games. Free to use, no installs, no sign-ups. BMI calculator, color picker, compass, speed test and more.">
+<meta name="keywords" content="free online tools, BMI calculator, color code picker, digital compass, internet speed test, angle meter, light meter, volume meter, browser games, gomoku, go game, snake game">
+<meta name="author" content="1to3 Labs">
 <meta property="og:title" content="1to3 Labs — Tools & Games">
-<meta property="og:description" content="A collection of useful tools and fun games. Free to use, built with care.">
+<meta property="og:description" content="A growing collection of practical tools and fun games. Free to use, no installs, no sign-ups.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://1to3.cc">
 <link rel="canonical" href="https://1to3.cc">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
 :root{
-  --bg:#07090F;
-  --bg2:#0D1017;
-  --bg3:#131720;
-  --border:rgba(255,255,255,0.06);
-  --border-hover:rgba(255,255,255,0.12);
-  --blue:#38BDF8;
-  --blue-bg:rgba(56,189,248,0.07);
-  --blue-border:rgba(56,189,248,0.2);
-  --green:#34D399;
-  --amber:#FBBF24;
-  --pink:#F472B4;
-  --text:#CDD5E0;
-  --text2:rgba(255,255,255,0.35);
-  --text3:rgba(255,255,255,0.15);
+  --bg-a:#FDFAF3;
+  --bg-b:#FFFEF8;
+  --bg-c:#FAF5E4;
+  --gold:#A16207;
+  --gold-l:#CA8A04;
+  --gold-d:#713F12;
+  --gold-pale:#FEF9C3;
+  --gold-soft:#FEF08A;
+  --glass:rgba(255,255,255,0.62);
+  --glass-b:rgba(255,255,255,0.75);
+  --border:rgba(255,255,255,0.95);
+  --border-soft:rgba(0,0,0,0.06);
+  --shadow-card:0 6px 24px rgba(161,98,7,0.08),0 2px 8px rgba(0,0,0,0.05);
+  --shadow-hover:0 14px 36px rgba(161,98,7,0.13),0 4px 12px rgba(0,0,0,0.07);
+  --shadow-inset:inset 0 2px 8px rgba(161,98,7,0.1),inset 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-glass:inset 0 1px 0 #fff;
+  --text:#1C1407;
+  --text2:#92807A;
+  --text3:#C4B49E;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI','Inter',sans-serif;
 }
+
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+body{
+  background:linear-gradient(145deg,var(--bg-a) 0%,var(--bg-b) 45%,var(--bg-c) 100%);
+  background-attachment:fixed;
+  color:var(--text);
+  font-family:var(--font);
+  font-size:14px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
 a{text-decoration:none;color:inherit}
 
-/* NAV */
-nav{position:sticky;top:0;z-index:100;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;background:rgba(7,9,15,0.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
-.logo{font-size:13px;font-weight:600;letter-spacing:.25em;color:#fff}
-.logo span{color:var(--blue)}
-.nav-links{display:flex;gap:32px;font-size:12px;letter-spacing:.08em;color:var(--text2)}
-.nav-links a:hover{color:var(--blue);transition:color .15s}
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:200;
+  height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;
+  background:rgba(253,250,243,0.72);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid rgba(255,255,255,0.9);
+  box-shadow:0 1px 0 rgba(161,98,7,0.07),0 4px 16px rgba(161,98,7,0.04);
+}
+.logo{
+  font-size:15px;font-weight:700;
+  color:var(--gold-d);letter-spacing:-.01em;
+}
+.logo em{font-style:normal;color:var(--gold)}
+.nav-links{
+  display:flex;gap:32px;
+  font-size:12px;letter-spacing:.04em;color:var(--text2);
+}
+.nav-links a:hover{color:var(--gold);transition:color .15s}
+.nav-right{
+  display:flex;align-items:center;gap:16px;
+}
+.nav-badge{
+  font-size:10px;padding:4px 12px;border-radius:980px;
+  background:rgba(202,138,4,0.1);
+  border:1px solid rgba(202,138,4,0.2);
+  color:var(--gold);letter-spacing:.06em;
+}
 
-/* HERO */
-.hero{position:relative;overflow:hidden;padding:96px 40px 72px;text-align:center}
-.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(56,189,248,0.06) 0%,transparent 60%)}
-.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(56,189,248,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,0.035) 1px,transparent 1px);background-size:44px 44px}
-.hero-inner{position:relative;max-width:600px;margin:0 auto}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.2em;color:var(--blue);border:1px solid var(--blue-border);padding:5px 14px;border-radius:20px;background:var(--blue-bg);margin-bottom:28px;text-transform:uppercase}
-.badge-dot{width:5px;height:5px;border-radius:50%;background:var(--blue);animation:pulse 2s infinite}
-h1{font-size:clamp(32px,5.5vw,52px);font-weight:300;line-height:1.25;letter-spacing:-.03em;margin-bottom:20px;color:#fff}
-h1 strong{font-weight:300;color:var(--blue)}
-.hero-sub{font-size:15px;color:var(--text2);line-height:1.85;margin-bottom:44px}
-.hero-stats{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:44px;border:1px solid var(--border);border-radius:12px;overflow:hidden;display:inline-flex}
+/* ── HERO ── */
+.hero{
+  position:relative;overflow:hidden;
+  padding:88px 48px 72px;
+  text-align:center;
+}
+.hero-orb1{
+  position:absolute;width:400px;height:400px;border-radius:50%;
+  background:radial-gradient(circle,rgba(202,138,4,0.08) 0%,transparent 65%);
+  top:-120px;left:-80px;pointer-events:none;
+}
+.hero-orb2{
+  position:absolute;width:320px;height:320px;border-radius:50%;
+  background:radial-gradient(circle,rgba(234,179,8,0.07) 0%,transparent 65%);
+  top:-60px;right:-60px;pointer-events:none;
+}
+.hero-orb3{
+  position:absolute;width:500px;height:200px;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(202,138,4,0.05) 0%,transparent 70%);
+  bottom:-60px;left:50%;transform:translateX(-50%);pointer-events:none;
+}
+.hero-inner{position:relative;max-width:680px;margin:0 auto}
+
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;letter-spacing:.1em;color:var(--gold);
+  background:rgba(255,255,255,0.75);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.95);
+  padding:6px 16px;border-radius:980px;
+  box-shadow:0 2px 10px rgba(161,98,7,0.1),0 1px 3px rgba(0,0,0,0.05),var(--shadow-glass);
+  margin-bottom:28px;
+  text-transform:uppercase;
+}
+.badge-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#22C55E;
+  box-shadow:0 0 6px rgba(34,197,94,0.7);
+  animation:pulse-dot 2.4s ease-in-out infinite;
+}
+@keyframes pulse-dot{
+  0%,100%{opacity:.6;transform:scale(1)}
+  50%{opacity:1;transform:scale(1.3)}
+}
+
+h1{
+  font-size:clamp(32px,5.5vw,56px);
+  font-weight:700;
+  color:var(--text);
+  line-height:1.2;
+  letter-spacing:-.035em;
+  margin-bottom:18px;
+}
+h1 em{font-style:normal;color:var(--gold)}
+
+.hero-sub{
+  font-size:16px;color:var(--text2);
+  line-height:1.85;margin-bottom:40px;
+}
+
+/* 凸起统计面板 */
+.hero-stats{
+  display:inline-flex;
+  background:rgba(255,255,255,0.68);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,0.95);
+  border-radius:18px;
+  box-shadow:0 6px 24px rgba(161,98,7,0.1),0 2px 8px rgba(0,0,0,0.05),var(--shadow-glass);
+  overflow:hidden;
+  margin-bottom:36px;
+}
 .stat{padding:16px 32px;text-align:center}
-.stat+.stat{border-left:1px solid var(--border)}
-.stat-n{font-size:24px;font-weight:300;color:var(--blue);line-height:1}
-.stat-l{font-size:9px;letter-spacing:.2em;color:var(--text3);margin-top:4px;text-transform:uppercase}
-.hero-btn{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.1em;color:var(--blue);border:1px solid var(--blue-border);padding:11px 24px;border-radius:6px;background:var(--blue-bg);text-transform:uppercase;transition:all .2s}
-.hero-btn:hover{background:rgba(56,189,248,0.12);border-color:rgba(56,189,248,0.4)}
+.stat+.stat{border-left:1px solid var(--border-soft)}
+.stat-n{
+  font-size:28px;font-weight:700;
+  color:var(--gold);
+  line-height:1;letter-spacing:-.03em;
+}
+.stat-l{
+  font-size:9px;letter-spacing:.18em;
+  color:var(--text3);margin-top:4px;
+  text-transform:uppercase;
+}
 
-/* FILTER */
-.filter-bar{display:flex;align-items:center;justify-content:center;gap:6px;padding:40px 40px 32px;flex-wrap:wrap}
-.chip{font-size:11px;padding:6px 16px;border-radius:20px;border:1px solid var(--border);color:var(--text2);letter-spacing:.06em;cursor:pointer;background:transparent;font-family:inherit;transition:all .2s}
-.chip:hover{border-color:var(--border-hover);color:var(--text)}
-.chip.active{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
+/* 主按钮 */
+.hero-cta{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:600;
+  background:linear-gradient(180deg,#CA8A04 0%,#A16207 100%);
+  color:#fff;padding:13px 28px;border-radius:980px;
+  box-shadow:0 6px 20px rgba(161,98,7,0.4),0 2px 6px rgba(161,98,7,0.3),inset 0 1px 0 rgba(255,255,255,0.28);
+  letter-spacing:.02em;
+  transition:transform .2s,box-shadow .2s;
+}
+.hero-cta:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 28px rgba(161,98,7,0.45),0 4px 10px rgba(161,98,7,0.3),inset 0 1px 0 rgba(255,255,255,0.28);
+}
 
-/* SECTION */
-.section{max-width:1100px;margin:0 auto 64px;padding:0 40px}
-.section-head{display:flex;align-items:center;gap:14px;margin-bottom:28px}
-.section-tag{font-size:10px;letter-spacing:.3em;color:var(--text3);text-transform:uppercase;white-space:nowrap}
-.section-line{flex:1;height:1px;background:var(--border)}
-.section-count{font-size:10px;letter-spacing:.1em;color:var(--text3)}
+/* ── FILTER ── */
+.filter-wrap{
+  display:flex;align-items:center;justify-content:center;
+  gap:8px;padding:40px 48px 32px;flex-wrap:wrap;
+}
+.chip{
+  font-size:11px;padding:7px 18px;border-radius:980px;
+  background:rgba(255,255,255,0.6);
+  border:1px solid rgba(255,255,255,0.95);
+  color:var(--text2);letter-spacing:.05em;
+  box-shadow:0 2px 8px rgba(0,0,0,0.05),var(--shadow-glass);
+  cursor:pointer;font-family:var(--font);
+  transition:all .2s;
+}
+.chip:hover{color:var(--gold);border-color:rgba(202,138,4,0.3)}
+.chip.active{
+  background:rgba(202,138,4,0.1);
+  border-color:rgba(202,138,4,0.3);
+  color:var(--gold);
+  box-shadow:0 2px 8px rgba(161,98,7,0.12),inset 0 1px 0 rgba(255,255,255,0.8),inset 0 -1px 0 rgba(202,138,4,0.08);
+}
 
-/* TOOL GRID — vertical phone cards */
-.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+/* ── SECTION ── */
+.section{max-width:1160px;margin:0 auto 60px;padding:0 48px}
+.section-head{
+  display:flex;align-items:center;gap:14px;margin-bottom:24px;
+}
+.section-tag{
+  font-size:10px;letter-spacing:.28em;
+  color:var(--text3);text-transform:uppercase;white-space:nowrap;
+}
+.section-line{flex:1;height:1px;background:rgba(161,98,7,0.1)}
+.section-count{
+  font-size:10px;letter-spacing:.1em;
+  color:var(--text3);white-space:nowrap;
+}
 
-.tool-card{display:flex;flex-direction:column;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);transition:border-color .25s,transform .3s;cursor:pointer;position:relative}
-.tool-card:hover{border-color:var(--border-hover);transform:translateY(-4px)}
-.tool-card.featured{border-color:var(--blue-border);background:linear-gradient(160deg,rgba(56,189,248,0.05) 0%,var(--bg2) 50%)}
-.tool-card.featured:hover{border-color:rgba(56,189,248,0.4)}
+/* ── TOOLS GRID ── */
+.tools-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:14px;
+}
 
-/* screenshot — full vertical phone ratio */
-.card-img-wrap{position:relative;width:100%;aspect-ratio:400/623;overflow:hidden;background:var(--bg3);flex-shrink:0}
-.card-img-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;transition:opacity .4s}
-.card-img-wrap img.loaded{opacity:1}
-.card-img-wrap::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(to bottom,transparent,var(--bg2));pointer-events:none}
+.tool-card{
+  display:flex;flex-direction:column;
+  border-radius:18px;overflow:hidden;
+  background:var(--glass);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-card),var(--shadow-glass);
+  transition:transform .28s cubic-bezier(.34,1.56,.64,1),box-shadow .28s ease;
+  cursor:pointer;
+}
+.tool-card:hover{
+  transform:translateY(-5px) scale(1.01);
+  box-shadow:var(--shadow-hover),var(--shadow-glass);
+}
+.tool-card.featured{
+  border-color:rgba(202,138,4,0.25);
+  background:rgba(255,255,255,0.78);
+  box-shadow:0 6px 24px rgba(161,98,7,0.12),0 2px 8px rgba(161,98,7,0.07),var(--shadow-glass);
+}
 
-.card-body{padding:14px 15px 16px;flex:1;display:flex;flex-direction:column}
-.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.card-cat{font-size:9px;letter-spacing:.18em;text-transform:uppercase;font-weight:500}
-.cat-blue{color:rgba(56,189,248,0.7)}
-.cat-green{color:rgba(52,211,153,0.7)}
-.cat-amber{color:rgba(251,191,36,0.7)}
-.cat-pink{color:rgba(244,114,182,0.7)}
-.card-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;animation:pulse 2.5s ease-in-out infinite}
-.dot-blue{background:var(--blue)}
-.dot-green{background:var(--green)}
-.dot-amber{background:var(--amber)}
-.dot-pink{background:var(--pink)}
+/* 凹陷截图区 */
+.card-shot{
+  width:100%;
+  aspect-ratio:400/623;
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--gold-pale),var(--gold-soft));
+  box-shadow:var(--shadow-inset);
+  border-bottom:1px solid rgba(255,255,255,0.7);
+  flex-shrink:0;
+}
+.card-shot img{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;object-position:top center;
+  opacity:0;transition:opacity .45s ease;
+}
+.card-shot img.loaded{opacity:1}
+.card-shot-placeholder{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;opacity:.35;
+}
 
-.card-title{font-size:13px;font-weight:500;color:#E4ECF8;line-height:1.4;margin-bottom:5px}
-.card-desc{font-size:11px;color:var(--text2);line-height:1.7;flex:1}
-.card-action{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
-.card-link{font-size:9px;letter-spacing:.15em;color:var(--blue);text-transform:uppercase}
-.card-arrow{font-size:13px;color:var(--text3)}
+.card-body{
+  padding:14px 15px 16px;
+  flex:1;display:flex;flex-direction:column;
+}
+.card-row{
+  display:flex;align-items:center;
+  justify-content:space-between;margin-bottom:7px;
+}
+.card-cat{
+  font-size:9px;letter-spacing:.16em;
+  text-transform:uppercase;font-weight:600;
+  color:var(--gold);
+}
+.card-cat.green{color:#16A34A}
+.card-cat.pink{color:#DB2777}
+.card-cat.teal{color:#0D9488}
+.card-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--gold);
+  animation:pulse-dot 2.8s ease-in-out infinite;
+}
+.card-dot.green{background:#22C55E}
+.card-dot.pink{background:#F472B4}
+.card-dot.teal{background:#2DD4BF}
+.card-title{
+  font-size:13px;font-weight:600;
+  color:var(--text);line-height:1.4;margin-bottom:5px;
+}
+.card-desc{
+  font-size:11px;color:var(--text2);
+  line-height:1.75;flex:1;
+}
+.card-foot{
+  display:flex;align-items:center;
+  justify-content:space-between;
+  margin-top:12px;padding-top:11px;
+  border-top:1px solid rgba(161,98,7,0.08);
+}
+.card-cta{
+  font-size:9px;letter-spacing:.14em;
+  color:var(--gold);text-transform:uppercase;font-weight:600;
+}
+.card-arr{font-size:12px;color:var(--text3)}
 
-/* GAME GRID */
-.games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+/* ── GAMES GRID ── */
+.games-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:14px;
+}
 
-.game-card{border-radius:14px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);transition:border-color .25s,transform .3s;cursor:pointer;display:flex}
-.game-card:hover{border-color:rgba(251,191,36,0.25);transform:translateY(-4px)}
+.game-card{
+  border-radius:18px;overflow:hidden;
+  background:var(--glass);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-card),var(--shadow-glass);
+  transition:transform .28s cubic-bezier(.34,1.56,.64,1),box-shadow .28s ease;
+  cursor:pointer;
+  display:flex;
+}
+.game-card:hover{
+  transform:translateY(-5px) scale(1.01);
+  box-shadow:var(--shadow-hover),var(--shadow-glass);
+}
 
-.game-img-wrap{width:120px;flex-shrink:0;position:relative;overflow:hidden;background:var(--bg3)}
-.game-img-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;transition:opacity .4s}
-.game-img-wrap img.loaded{opacity:1}
+/* 游戏截图 — 竖向左侧 */
+.game-shot{
+  width:130px;flex-shrink:0;
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--gold-pale),var(--gold-soft));
+  box-shadow:inset -2px 0 8px rgba(0,0,0,0.04);
+}
+.game-shot img{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;object-position:top center;
+  opacity:0;transition:opacity .45s ease;
+}
+.game-shot img.loaded{opacity:1}
+.game-shot-placeholder{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;opacity:.3;
+}
 
-.game-body{padding:18px 18px 18px;flex:1;display:flex;flex-direction:column;justify-content:space-between}
-.game-tag{font-size:9px;letter-spacing:.18em;color:rgba(251,191,36,0.65);text-transform:uppercase;margin-bottom:8px}
-.game-title{font-size:16px;font-weight:400;color:#E4ECF8;margin-bottom:6px;letter-spacing:-.01em}
-.game-desc{font-size:11px;color:var(--text2);line-height:1.7;margin-bottom:14px}
-.game-btn{display:inline-flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.12em;color:rgba(251,191,36,0.8);border:1px solid rgba(251,191,36,0.18);padding:7px 14px;border-radius:5px;background:rgba(251,191,36,0.05);text-transform:uppercase;transition:all .2s;align-self:flex-start}
-.game-btn:hover{background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.35)}
+.game-body{
+  padding:20px 20px 20px;
+  flex:1;display:flex;flex-direction:column;justify-content:space-between;
+}
+.game-tag{
+  font-size:9px;letter-spacing:.18em;
+  color:var(--gold);text-transform:uppercase;font-weight:600;
+  margin-bottom:8px;
+}
+.game-title{
+  font-size:18px;font-weight:700;
+  color:var(--text);letter-spacing:-.02em;margin-bottom:6px;
+}
+.game-desc{
+  font-size:11px;color:var(--text2);
+  line-height:1.8;margin-bottom:16px;flex:1;
+}
+.game-cta{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:10px;font-weight:600;letter-spacing:.08em;
+  background:linear-gradient(180deg,#CA8A04,#A16207);
+  color:#fff;padding:8px 16px;border-radius:980px;
+  box-shadow:0 3px 10px rgba(161,98,7,0.35),inset 0 1px 0 rgba(255,255,255,0.25);
+  align-self:flex-start;
+  transition:transform .2s,box-shadow .2s;
+}
+.game-cta:hover{
+  transform:translateY(-1px);
+  box-shadow:0 5px 14px rgba(161,98,7,0.4),inset 0 1px 0 rgba(255,255,255,0.25);
+}
 
-/* ABOUT */
-.about-box{border:1px solid var(--border);border-radius:14px;padding:36px 40px;background:var(--bg2);max-width:640px;position:relative;overflow:hidden}
-.about-box::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,0.06),transparent 70%)}
-.about-label{font-size:10px;letter-spacing:.28em;color:var(--blue);margin-bottom:14px;text-transform:uppercase}
-.about-text{font-size:14px;color:var(--text2);line-height:2;margin-bottom:14px}
+/* ── ABOUT ── */
+.about-card{
+  border-radius:18px;
+  background:rgba(255,255,255,0.68);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-card),var(--shadow-glass);
+  padding:36px 40px;
+  max-width:640px;
+  position:relative;overflow:hidden;
+}
+.about-card::before{
+  content:'';position:absolute;
+  top:-80px;right:-80px;
+  width:240px;height:240px;border-radius:50%;
+  background:radial-gradient(circle,rgba(202,138,4,0.07),transparent 70%);
+  pointer-events:none;
+}
+.about-label{
+  font-size:10px;letter-spacing:.26em;
+  color:var(--gold);text-transform:uppercase;
+  margin-bottom:14px;font-weight:600;
+}
+.about-text{
+  font-size:14px;color:var(--text2);
+  line-height:2;margin-bottom:14px;
+}
+.about-text:last-child{margin-bottom:0}
 
-/* FOOTER */
-.footer-wrap{border-top:1px solid var(--border);margin-top:24px}
-footer{max-width:1100px;margin:0 auto;padding:24px 40px;display:flex;justify-content:space-between;align-items:center}
+/* ── FOOTER ── */
+.footer-wrap{
+  border-top:1px solid rgba(161,98,7,0.1);
+  background:rgba(253,250,243,0.6);
+  backdrop-filter:blur(12px);
+  margin-top:16px;
+}
+footer{
+  max-width:1160px;margin:0 auto;
+  padding:24px 48px;
+  display:flex;justify-content:space-between;align-items:center;
+}
 .footer-l{font-size:11px;color:var(--text3)}
-.footer-r{display:flex;gap:24px;font-size:11px;color:var(--text3)}
-.footer-r a:hover{color:var(--blue)}
+.footer-links{display:flex;gap:24px;font-size:11px;color:var(--text3)}
+.footer-links a:hover{color:var(--gold)}
 
-/* HIDDEN */
+/* ── HIDDEN ── */
 .hidden{display:none!important}
 
-/* ANIMATIONS */
-@keyframes pulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-.hero-inner{animation:fadeUp .6s ease both}
-
-/* RESPONSIVE */
-@media(max-width:768px){
-  nav{padding:0 20px}
-  .hero{padding:64px 20px 52px}
-  .filter-bar,.section{padding:0 20px}
-  .filter-bar{padding-top:32px;padding-bottom:24px}
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  nav{padding:0 24px}
+  .nav-badge{display:none}
+  .hero{padding:60px 24px 48px}
+  .filter-wrap,.section{padding:0 24px}
+  .filter-wrap{padding-top:32px;padding-bottom:24px}
   .tools-grid{grid-template-columns:repeat(2,1fr);gap:10px}
   .games-grid{grid-template-columns:1fr;gap:10px}
-  .game-img-wrap{width:100px}
-  footer{flex-direction:column;gap:12px;text-align:center;padding:20px}
-  .about-box{padding:24px 20px}
-  .hero-stats{flex-direction:row}
-  .stat{padding:14px 20px}
+  .stat{padding:14px 22px}
+  footer{padding:20px 24px;flex-direction:column;gap:12px;text-align:center}
 }
-@media(max-width:420px){
-  .tools-grid{grid-template-columns:repeat(2,1fr)}
+@media(max-width:500px){
+  .tools-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .game-shot{width:100px}
+  .hero-stats{flex-wrap:wrap}
   h1{font-size:28px}
+  .card-body{padding:11px 12px 13px}
 }
 </style>
 </head>
 <body>
 
+<!-- NAV -->
 <nav>
-  <div class="logo">1TO3<span>.</span>LABS</div>
+  <a href="#" class="logo">1to3<em>.</em>Labs</a>
   <div class="nav-links">
     <a href="#tools">Tools</a>
     <a href="#games">Games</a>
     <a href="#about">About</a>
   </div>
+  <div class="nav-right">
+    <div class="nav-badge">Free & Open</div>
+  </div>
 </nav>
 
+<!-- HERO -->
 <section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-grid"></div>
+  <div class="hero-orb1"></div>
+  <div class="hero-orb2"></div>
+  <div class="hero-orb3"></div>
   <div class="hero-inner">
     <div class="hero-badge">
       <span class="badge-dot"></span>
       Free · Open · Always Updating
     </div>
-    <h1>Tools &amp; games<br>built for <strong>everyday life</strong></h1>
+    <h1>Tools &amp; games<br>built for <em>everyday life</em></h1>
     <p class="hero-sub">
       A growing collection of practical tools and fun games.<br>
       No installs. No sign-ups. Just open and use.
@@ -200,12 +499,13 @@ footer{max-width:1100px;margin:0 auto;padding:24px 40px;display:flex;justify-con
         <div class="stat-l">Free</div>
       </div>
     </div>
-    <br><br>
-    <a href="#tools" class="hero-btn">Explore all projects →</a>
+    <br>
+    <a href="#tools" class="hero-cta">Explore all projects →</a>
   </div>
 </section>
 
-<div class="filter-bar">
+<!-- FILTER -->
+<div class="filter-wrap">
   <button class="chip active" onclick="filter('all',this)">All</button>
   <button class="chip" onclick="filter('tools',this)">Tools</button>
   <button class="chip" onclick="filter('games',this)">Games</button>
@@ -224,145 +524,153 @@ footer{max-width:1100px;margin:0 auto;padding:24px 40px;display:flex;justify-con
   <div class="tools-grid">
 
     <a href="tools/note.html" class="tool-card featured" data-tags="tools">
-      <div class="card-img-wrap">
+      <div class="card-shot">
+        <div class="card-shot-placeholder">⏱</div>
         <img data-src="screenshots/note.webp" alt="Note & Reminder Timer">
       </div>
       <div class="card-body">
-        <div class="card-top">
-          <span class="card-cat cat-blue">Productivity</span>
-          <span class="card-dot dot-blue"></span>
+        <div class="card-row">
+          <span class="card-cat">Productivity</span>
+          <span class="card-dot"></span>
         </div>
         <div class="card-title">Note & Reminder Timer</div>
-        <div class="card-desc">Write notes, set countdowns, get reminded on time.</div>
-        <div class="card-action">
-          <span class="card-link">Open Tool</span>
-          <span class="card-arrow">→</span>
+        <div class="card-desc">Write notes, set countdowns, get reminded. Stay on top of every task.</div>
+        <div class="card-foot">
+          <span class="card-cta">Open Tool</span>
+          <span class="card-arr">→</span>
         </div>
       </div>
     </a>
 
     <a href="tools/bmi.html" class="tool-card" data-tags="tools health">
-      <div class="card-img-wrap">
+      <div class="card-shot">
+        <div class="card-shot-placeholder">💛</div>
         <img data-src="screenshots/bmi.webp" alt="BMI Calculator">
       </div>
       <div class="card-body">
-        <div class="card-top">
-          <span class="card-cat cat-green">Health</span>
-          <span class="card-dot dot-green"></span>
+        <div class="card-row">
+          <span class="card-cat green">Health</span>
+          <span class="card-dot green"></span>
         </div>
         <div class="card-title">BMI Calculator</div>
-        <div class="card-desc">Calculate your Body Mass Index and healthy weight range.</div>
-        <div class="card-action">
-          <span class="card-link">Open Tool</span>
-          <span class="card-arrow">→</span>
+        <div class="card-desc">Calculate your Body Mass Index instantly. Visualize your healthy weight range.</div>
+        <div class="card-foot">
+          <span class="card-cta">Open Tool</span>
+          <span class="card-arr">→</span>
         </div>
       </div>
     </a>
 
     <a href="tools/color.html" class="tool-card" data-tags="tools design">
-      <div class="card-img-wrap">
+      <div class="card-shot">
+        <div class="card-shot-placeholder">🎨</div>
         <img data-src="screenshots/color.webp" alt="Color Code Picker">
       </div>
       <div class="card-body">
-        <div class="card-top">
-          <span class="card-cat cat-pink">Design</span>
-          <span class="card-dot dot-pink"></span>
+        <div class="card-row">
+          <span class="card-cat pink">Design</span>
+          <span class="card-dot pink"></span>
         </div>
         <div class="card-title">Color Code Picker</div>
-        <div class="card-desc">Convert HEX, RGB and HSL. One tap to copy.</div>
-        <div class="card-action">
-          <span class="card-link">Open Tool</span>
-          <span class="card-arrow">→</span>
+        <div class="card-desc">Pick any color, convert between HEX, RGB and HSL. One tap to copy.</div>
+        <div class="card-foot">
+          <span class="card-cta">Open Tool</span>
+          <span class="card-arr">→</span>
         </div>
       </div>
     </a>
 
     <a href="tools/volume.html" class="tool-card" data-tags="tools measure">
-      <div class="card-img-wrap">
+      <div class="card-shot">
+        <div class="card-shot-placeholder">🔊</div>
         <img data-src="screenshots/volume.webp" alt="Volume Meter">
       </div>
       <div class="card-body">
-        <div class="card-top">
-          <span class="card-cat cat-blue">Measurement</span>
-          <span class="card-dot dot-blue"></span>
+        <div class="card-row">
+          <span class="card-cat">Measurement</span>
+          <span class="card-dot"></span>
         </div>
         <div class="card-title">Volume Meter</div>
-        <div class="card-desc">Real-time sound level via device microphone.</div>
-        <div class="card-action">
-          <span class="card-link">Open Tool</span>
-          <span class="card-arrow">→</span>
+        <div class="card-desc">Real-time ambient sound level detection using your device microphone.</div>
+        <div class="card-foot">
+          <span class="card-cta">Open Tool</span>
+          <span class="card-arr">→</span>
         </div>
       </div>
     </a>
 
     <a href="tools/light.html" class="tool-card" data-tags="tools measure">
-      <div class="card-img-wrap">
+      <div class="card-shot">
+        <div class="card-shot-placeholder">☀️</div>
         <img data-src="screenshots/light.webp" alt="Light Meter">
       </div>
       <div class="card-body">
-        <div class="card-top">
-          <span class="card-cat cat-amber">Measurement</span>
-          <span class="card-dot dot-amber"></span>
+        <div class="card-row">
+          <span class="card-cat teal">Measurement</span>
+          <span class="card-dot teal"></span>
         </div>
         <div class="card-title">Light Meter</div>
-        <div class="card-desc">Measure ambient brightness with your light sensor.</div>
-        <div class="card-action">
-          <span class="card-link">Open Tool</span>
-          <span class="card-arrow">→</span>
+        <div class="card-desc">Measure ambient brightness in real time using your device light sensor.</div>
+        <div class="card-foot">
+          <span class="card-cta">Open Tool</span>
+          <span class="card-arr">→</span>
         </div>
       </div>
     </a>
 
     <a href="tools/internet-speed.html" class="tool-card" data-tags="tools measure">
-      <div class="card-img-wrap">
+      <div class="card-shot">
+        <div class="card-shot-placeholder">⚡</div>
         <img data-src="screenshots/internet-speed.webp" alt="Internet Speed Test">
       </div>
       <div class="card-body">
-        <div class="card-top">
-          <span class="card-cat cat-blue">Measurement</span>
-          <span class="card-dot dot-blue"></span>
+        <div class="card-row">
+          <span class="card-cat">Measurement</span>
+          <span class="card-dot"></span>
         </div>
         <div class="card-title">Internet Speed Test</div>
-        <div class="card-desc">Test download and upload speed in your browser.</div>
-        <div class="card-action">
-          <span class="card-link">Open Tool</span>
-          <span class="card-arrow">→</span>
+        <div class="card-desc">Test your download and upload speed directly in the browser. No app needed.</div>
+        <div class="card-foot">
+          <span class="card-cta">Open Tool</span>
+          <span class="card-arr">→</span>
         </div>
       </div>
     </a>
 
     <a href="tools/angle.html" class="tool-card" data-tags="tools measure">
-      <div class="card-img-wrap">
+      <div class="card-shot">
+        <div class="card-shot-placeholder">📐</div>
         <img data-src="screenshots/angle.webp" alt="Angle Meter">
       </div>
       <div class="card-body">
-        <div class="card-top">
-          <span class="card-cat cat-green">Measurement</span>
-          <span class="card-dot dot-green"></span>
+        <div class="card-row">
+          <span class="card-cat green">Measurement</span>
+          <span class="card-dot green"></span>
         </div>
         <div class="card-title">Angle Meter</div>
-        <div class="card-desc">Measure tilt and angle with your gyroscope.</div>
-        <div class="card-action">
-          <span class="card-link">Open Tool</span>
-          <span class="card-arrow">→</span>
+        <div class="card-desc">Measure tilt and angle precisely using your device gyroscope sensor.</div>
+        <div class="card-foot">
+          <span class="card-cta">Open Tool</span>
+          <span class="card-arr">→</span>
         </div>
       </div>
     </a>
 
     <a href="tools/compass.html" class="tool-card" data-tags="tools measure">
-      <div class="card-img-wrap">
+      <div class="card-shot">
+        <div class="card-shot-placeholder">🧭</div>
         <img data-src="screenshots/compass.webp" alt="Compass">
       </div>
       <div class="card-body">
-        <div class="card-top">
-          <span class="card-cat cat-amber">Navigation</span>
-          <span class="card-dot dot-amber"></span>
+        <div class="card-row">
+          <span class="card-cat">Navigation</span>
+          <span class="card-dot"></span>
         </div>
         <div class="card-title">Compass</div>
-        <div class="card-desc">Digital compass using your magnetic sensor.</div>
-        <div class="card-action">
-          <span class="card-link">Open Tool</span>
-          <span class="card-arrow">→</span>
+        <div class="card-desc">Digital compass using your device magnetic sensor. Find your direction anywhere.</div>
+        <div class="card-foot">
+          <span class="card-cta">Open Tool</span>
+          <span class="card-arr">→</span>
         </div>
       </div>
     </a>
@@ -380,44 +688,47 @@ footer{max-width:1100px;margin:0 auto;padding:24px 40px;display:flex;justify-con
   <div class="games-grid">
 
     <a href="games/dragon.html" class="game-card" data-tags="games">
-      <div class="game-img-wrap">
+      <div class="game-shot">
+        <div class="game-shot-placeholder">🐉</div>
         <img data-src="screenshots/dragon.webp" alt="Dragon">
       </div>
       <div class="game-body">
         <div>
           <div class="game-tag">Arcade · Game</div>
           <div class="game-title">Dragon</div>
-          <div class="game-desc">A dragon-themed twist on the classic snake game. Smooth controls, addictive gameplay.</div>
+          <div class="game-desc">A dragon-themed twist on the classic snake game. Smooth controls, addictive gameplay. How long can your dragon grow?</div>
         </div>
-        <span class="game-btn">Play Now →</span>
+        <span class="game-cta">Play Now →</span>
       </div>
     </a>
 
     <a href="games/gomoku.html" class="game-card" data-tags="games">
-      <div class="game-img-wrap">
+      <div class="game-shot">
+        <div class="game-shot-placeholder">♟</div>
         <img data-src="screenshots/gomoku.webp" alt="Gomoku">
       </div>
       <div class="game-body">
         <div>
           <div class="game-tag">Strategy · Game</div>
           <div class="game-title">Gomoku</div>
-          <div class="game-desc">Five in a row with custom piece skins. Classic strategy, beautifully redesigned.</div>
+          <div class="game-desc">Five in a row with custom piece skins. The classic strategy game, beautifully redesigned with elegant controls.</div>
         </div>
-        <span class="game-btn">Play Now →</span>
+        <span class="game-cta">Play Now →</span>
       </div>
     </a>
 
     <a href="games/go.html" class="game-card" data-tags="games">
-      <div class="game-img-wrap">
+      <div class="game-shot">
+        <div class="game-shot-placeholder">⬤</div>
         <img data-src="screenshots/go.webp" alt="Go">
       </div>
       <div class="game-body">
         <div>
           <div class="game-tag">Strategy · Game</div>
           <div class="game-title">Go</div>
-          <div class="game-desc">The ancient game of Go with customizable rules and piece styles. For all skill levels.</div>
+          <div class="game-desc">The ancient game of Go with customizable rules and piece styles. Deep strategy for players of all skill levels.</div>
         </div>
-        <span class="game-btn">Play Now →</span>
+        <span class="game-cta">Play Now →</span>
       </div>
     </a>
 
@@ -430,53 +741,67 @@ footer{max-width:1100px;margin:0 auto;padding:24px 40px;display:flex;justify-con
     <div class="section-tag">About</div>
     <div class="section-line"></div>
   </div>
-  <div class="about-box">
+  <div class="about-card">
     <div class="about-label">1to3 Labs</div>
-    <p class="about-text">A personal laboratory for building useful things. Every tool here solves a real problem I encountered. Every game is something I wanted to play.</p>
-    <p class="about-text">All projects run entirely in your browser — no account, no installation, no cost. New projects are added regularly.</p>
+    <p class="about-text">
+      A personal laboratory for building useful things. Every tool here solves a real problem I encountered. Every game is something I wanted to play.
+    </p>
+    <p class="about-text">
+      All projects run entirely in your browser — no account, no installation, no cost. Everything is free and new projects are added regularly.
+    </p>
   </div>
 </section>
 
+<!-- FOOTER -->
 <div class="footer-wrap">
   <footer>
     <div class="footer-l">© 2026 1to3 Labs · All rights reserved</div>
-    <div class="footer-r">
+    <div class="footer-links">
       <a href="https://github.com/airipa/1to3" target="_blank" rel="noopener">GitHub</a>
       <a href="#tools">Tools</a>
       <a href="#games">Games</a>
+      <a href="#about">About</a>
     </div>
   </footer>
 </div>
 
 <script>
-// Lazy load
-const io = new IntersectionObserver((entries)=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){
-      const img=e.target;
-      img.src=img.dataset.src;
-      img.onload=()=>img.classList.add('loaded');
-      img.onerror=()=>img.classList.add('loaded');
-      io.unobserve(img);
-    }
+// Lazy load images
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const img = e.target;
+    img.src = img.dataset.src;
+    img.onload = () => img.classList.add('loaded');
+    img.onerror = () => img.classList.add('loaded');
+    observer.unobserve(img);
   });
-},{rootMargin:'120px'});
-document.querySelectorAll('[data-src]').forEach(img=>io.observe(img));
+}, { rootMargin: '140px' });
+document.querySelectorAll('[data-src]').forEach(img => observer.observe(img));
 
 // Filter
-function filter(tag,btn){
-  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+function filter(tag, btn) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
-  const toolSec=document.querySelector('[data-section="tools"]');
-  const gameSec=document.querySelector('[data-section="games"]');
-  const cards=document.querySelectorAll('[data-tags]');
-  cards.forEach(c=>{
-    const tags=c.dataset.tags||'';
-    c.classList.toggle('hidden',tag!=='all'&&!tags.includes(tag));
+  const toolSec = document.querySelector('[data-section="tools"]');
+  const gameSec = document.querySelector('[data-section="games"]');
+  const cards = document.querySelectorAll('[data-tags]');
+  const gameTags = ['games'];
+  const toolOnlyTags = ['tools','health','measure','design'];
+  cards.forEach(c => {
+    const tags = c.dataset.tags || '';
+    c.classList.toggle('hidden', tag !== 'all' && !tags.includes(tag));
   });
-  if(tag==='games'){toolSec.style.display='none';gameSec.style.display='block'}
-  else if(tag==='tools'||tag==='health'||tag==='measure'||tag==='design'){toolSec.style.display='block';gameSec.style.display='none'}
-  else{toolSec.style.display='block';gameSec.style.display='block'}
+  if (gameTags.includes(tag)) {
+    toolSec.style.display = 'none';
+    gameSec.style.display = 'block';
+  } else if (toolOnlyTags.includes(tag)) {
+    toolSec.style.display = 'block';
+    gameSec.style.display = 'none';
+  } else {
+    toolSec.style.display = 'block';
+    gameSec.style.display = 'block';
+  }
 }
 </script>
 </body>
