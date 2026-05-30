@@ -1,0 +1,1002 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title🌍>学十国外语 · 问好</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --primary: #6c5ce7; --primary2: #a29bfe; --accent: #fd79a8;
+  --gold: #fdcb6e; --dark: #2d3436; --light: #dfe6e9;
+  --card: #ffffff; --bg: #f0f2f5;
+}
+body { font-family: -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--dark); min-height: 100vh; }
+.container { max-width: 820px; margin: 0 auto; padding: 20px 16px 60px; }
+
+/* ===== Header ===== */
+header { text-align: center; padding: 30px 0 20px; }
+h1 { font-size: 2.2em; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -0.5px; }
+.subhead { color: #888; font-size: 0.95em; margin-top: 6px; letter-spacing: 2px; }
+
+/* ===== 标签切换 ===== */
+.tabs { display: flex; justify-content: center; gap: 10px; margin: 20px 0 25px; }
+.tab { padding: 10px 28px; border-radius: 30px; border: none; font-size: 0.95em; cursor: pointer; font-weight: 600; transition: all 0.2s; background: #fff; color: #999; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.tab.active { background: var(--primary); color: #fff; box-shadow: 0 4px 15px rgba(108,92,231,0.35); transform: scale(1.02); }
+.tab:hover:not(.active) { background: #f5f3ff; color: var(--primary); }
+
+/* ===== 语言卡片 ===== */
+.lang-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; }
+.lang-card {
+  background: var(--card); border-radius: 18px; padding: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06); transition: all 0.25s;
+  cursor: pointer; position: relative; overflow: hidden;
+  border-left: 5px solid var(--primary);
+}
+.lang-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+.lang-card.expanded { border-left-color: var(--accent); }
+
+.lang-name { font-size: 1.3em; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.lang-name .flag { font-size: 1.1em; }
+.lang-name .speakers { font-size: 0.5em; font-weight: 400; color: #999; margin-left: auto; }
+
+.hello-row { margin: 10px 0 6px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.hello-write { font-size: 1.5em; font-weight: 600; color: var(--primary); overflow-wrap: anywhere; }
+.hello-romaji { font-size: 0.9em; color: #888; font-style: italic; min-width: 0; }
+.hello-phonetic { font-size: 0.85em; color: #aaa; font-family: 'Times New Roman', serif; min-width: 0; }
+
+.play-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 16px; border-radius: 20px; border: none;
+  background: var(--primary); color: #fff; font-size: 0.8em;
+  cursor: pointer; transition: all 0.2s;
+}
+.play-btn:hover { background: #5a4bd1; transform: scale(1.05); }
+.play-btn:active { transform: scale(0.95); }
+.play-btn.playing { background: var(--accent); animation: pulse 0.6s infinite; }
+.play-btn.loading { background: #b8b5e0; pointer-events: none; }
+.play-btn .src-badge { font-size: 0.6em; background: rgba(255,255,255,0.25); padding: 1px 6px; border-radius: 8px; margin-left: 4px; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+.lang-detail {
+  max-height: 0; overflow: hidden; transition: max-height 0.4s ease;
+  border-top: 0 solid #eee; margin-top: 0;
+}
+.lang-card.expanded .lang-detail {
+  max-height: 400px; border-top-width: 1px; margin-top: 16px; padding-top: 16px;
+}
+.lang-detail p { font-size: 0.9em; color: #555; line-height: 1.7; margin-bottom: 6px; }
+.lang-detail .tag {
+  display: inline-block; padding: 2px 10px; border-radius: 12px;
+  font-size: 0.75em; margin: 3px 4px 3px 0; font-weight: 500;
+}
+.tag-family { background: #dfe6e9; color: #555; }
+.tag-country { background: #ffeaa7; color: #856404; }
+.tag-speakers { background: #74b9ff; color: #fff; }
+
+.voice-status { font-size: 0.7em; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 10px; margin-left: 8px; }
+.voice-status.ok { background: #e6fff8; color: #00b894; }
+.voice-status.fallback { background: #fff8e1; color: #f39c12; }
+
+.expand-hint { font-size: 0.75em; color: #ccc; margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+
+/* ===== 考试区 ===== */
+.exam-section {
+  background: var(--card); border-radius: 20px; padding: 30px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-top: 10px;
+  text-align: center;
+}
+.exam-progress { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.exam-progress-bar { flex: 1; height: 6px; background: #eee; border-radius: 3px; margin: 0 15px; overflow: hidden; }
+.exam-progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 3px; transition: width 0.4s; }
+.exam-score { font-weight: 700; color: var(--primary); font-size: 1em; }
+
+.exam-listen-hint { font-size: 0.85em; color: #999; margin-bottom: 10px; }
+.exam-play-big {
+  width: 80px; height: 80px; border-radius: 50%; border: none;
+  background: linear-gradient(135deg, var(--primary), var(--primary2));
+  color: #fff; font-size: 2em; cursor: pointer; margin: 10px auto 18px;
+  box-shadow: 0 6px 20px rgba(108,92,231,0.3);
+  transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+}
+.exam-play-big:hover { transform: scale(1.08); }
+.exam-play-big:active { transform: scale(0.95); }
+.exam-play-big.playing { background: var(--accent); box-shadow: 0 6px 20px rgba(253,121,168,0.4); }
+.exam-play-big.loading { background: #b8b5e0; animation: pulse 0.6s infinite; }
+
+.exam-question { font-size: 1.1em; color: #555; margin-bottom: 20px; font-weight: 500; }
+
+.exam-options {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;
+  margin: 20px 0;
+}
+.exam-option {
+  padding: 14px 18px; border-radius: 14px; border: 2px solid #eee;
+  background: #fff; cursor: pointer; transition: all 0.2s;
+  font-size: 0.95em; text-align: left; display: flex; align-items: center; gap: 10px;
+}
+.exam-option:hover:not(.disabled) { border-color: var(--primary2); background: #f8f7ff; }
+.exam-option .opt-letter {
+  width: 28px; height: 28px; border-radius: 50%; background: #f0f0f0;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.8em; color: #888; flex-shrink: 0;
+}
+.exam-option .opt-write { font-size: 1.2em; font-weight: 600; color: var(--dark); }
+.exam-option .opt-lang { font-size: 0.75em; color: #999; margin-top: 2px; }
+.exam-option.correct { border-color: #00b894; background: #e6fff8; }
+.exam-option.correct .opt-letter { background: #00b894; color: #fff; }
+.exam-option.wrong { border-color: #ff7675; background: #fff5f5; }
+.exam-option.wrong .opt-letter { background: #ff7675; color: #fff; }
+.exam-option.disabled { pointer-events: none; opacity: 0.7; }
+
+.exam-feedback { margin: 15px 0; font-size: 1em; font-weight: 600; min-height: 30px; }
+.exam-feedback.correct { color: #00b894; }
+.exam-feedback.wrong { color: #ff7675; }
+
+.exam-btn {
+  padding: 12px 40px; border-radius: 30px; border: none;
+  font-size: 1em; font-weight: 600; cursor: pointer;
+  background: var(--primary); color: #fff;
+  transition: all 0.2s;
+}
+.exam-btn:hover { background: #5a4bd1; transform: scale(1.02); }
+.exam-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+.exam-btn.secondary { background: #f0f0f0; color: #666; }
+.exam-btn.secondary:hover { background: #e0e0e0; }
+
+/* ===== 奖状 ===== */
+.certificate-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center;
+  z-index: 1000; padding: 20px;
+}
+.certificate-overlay.show { display: flex; }
+.certificate {
+  background: #fff; border-radius: 24px; padding: 40px 36px; max-width: 600px;
+  width: 100%; text-align: center; position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  border: 6px double var(--gold);
+}
+.cert-badge { font-size: 4em; margin-bottom: 10px; }
+.cert-title { font-size: 1.8em; font-weight: 800; color: var(--dark); letter-spacing: 2px; }
+.cert-subtitle { color: #999; margin: 8px 0 20px; font-size: 0.95em; }
+.cert-name { font-size: 1.4em; font-weight: 700; color: var(--primary); margin: 10px 0; padding: 10px 0; border-top: 2px dashed #eee; border-bottom: 2px dashed #eee; }
+.cert-langs {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 18px 0;
+}
+.cert-lang-tag {
+  padding: 4px 14px; border-radius: 20px; background: #f0edff;
+  color: var(--primary); font-size: 0.8em; font-weight: 500;
+}
+.cert-footer { font-size: 0.8em; color: #aaa; margin-top: 20px; line-height: 1.6; }
+.cert-seal {
+  position: absolute; top: 30px; right: 30px; width: 70px; height: 70px;
+  border-radius: 50%; background: var(--accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2em; font-weight: 800; transform: rotate(15deg);
+  box-shadow: 0 3px 10px rgba(253,121,168,0.3);
+}
+.cert-close {
+  margin-top: 20px; padding: 12px 40px; border-radius: 30px; border: none;
+  background: var(--primary); color: #fff; font-size: 1em; font-weight: 600; cursor: pointer;
+}
+
+/* ===== 学习进度 ===== */
+.study-progress { display: flex; justify-content: center; gap: 6px; margin-bottom: 20px; }
+.study-dot {
+  width: 14px; height: 14px; border-radius: 50%; background: #ddd; transition: all 0.3s;
+}
+.study-dot.done { background: var(--primary); box-shadow: 0 0 8px rgba(108,92,231,0.3); }
+.study-dot.current { background: var(--gold); transform: scale(1.3); }
+
+/* ===== 响应式 ===== */
+@media (max-width: 600px) {
+  .container { padding: 12px; }
+  h1 { font-size: 1.6em; }
+  .lang-grid { grid-template-columns: 1fr; }
+  .exam-options { grid-template-columns: 1fr; }
+  .certificate { padding: 28px 20px; }
+  .cert-seal { width: 50px; height: 50px; font-size: 1.3em; top: 20px; right: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>🌏 学十国外语 · 问好</h1>
+    <div class="subhead">一句"你好"走遍全球 — 听说读写 · 一站掌握</div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('learn')">📖 学习</button>
+    <button class="tab" onclick="switchTab('exam')">✏️ 考试</button>
+  </div>
+
+  <!-- ===== 学习 ===== -->
+  <div id="tab-learn">
+    <div class="lang-grid" id="langGrid"></div>
+  </div>
+
+  <!-- ===== 考试 ===== -->
+  <div id="tab-exam" style="display:none;">
+    <div class="exam-section">
+      <div class="exam-progress">
+        <span style="font-weight:600;">🎯 挑战</span>
+        <view class="exam-progress-bar">
+          <div class="exam-progress-fill" id="examProgressFill" style="width:0%"></div>
+        </view>
+        <span class="exam-score" id="examScore">0 / 0</span>
+      </div>
+
+      <div class="study-progress" id="studyDots"></div>
+
+      <div class="exam-listen-hint">🔊 点击下方按钮，听这段"你好"说的是哪种语言？</div>
+      <button class="exam-play-big" id="playBtn" onclick="playExamAudio()">🔊</button>
+
+      <div class="exam-question" id="examQuestion">这段问候语属于哪种语言？</div>
+
+      <div class="exam-options" id="examOptions"></div>
+
+      <div class="exam-feedback" id="examFeedback"></div>
+
+      <div style="display:flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <button class="exam-btn" id="nextBtn" onclick="nextQuestion()" disabled>下一题 →</button>
+        <button class="exam-btn secondary" onclick="resetExam()">🔄 重新开始</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 奖状弹窗 ===== -->
+<div class="certificate-overlay" id="certOverlay">
+  <div class="certificate" id="certContent">
+    <div class="cert-seal">🎓</div>
+    <div class="cert-badge">🏆</div>
+    <div class="cert-title">🌟 十国外语人才</div>
+    <div class="cert-subtitle">— 国际问候语能力认证 —</div>
+    <div class="cert-name" id="certName">____同学</div>
+    <p style="color:#666;font-size:0.9em;margin:10px 0;">
+      经考核，已掌握以下<span id="certLangCount"></span>种语言的问候语，<br>
+      能够通过听音辨识语言及其文字，达到"十国外语"水平。
+    </p>
+    <div class="cert-langs" id="certLangs"></div>
+    <div style="display:flex; justify-content:space-between; margin-top:15px; font-size:0.75em; color:#aaa;">
+      <span>证书编号: HELLO-10-<span id="certNo"></span></span>
+      <span>签发日期: <span id="certDate"></span></span>
+    </div>
+    <div class="cert-footer">🎉 行万里路，从一句"你好"开始。<br>Keep learning, keep exploring!</div>
+    <button class="cert-close" onclick="closeCert()">🎊 太棒了！</button>
+    <button style="margin-top:10px; background:transparent; color:#999; border:none; font-size:0.8em; cursor:pointer;" onclick="downloadCertImage()">💾 保存奖状</button>
+  </div>
+</div>
+
+<script>
+// ==================== 语言数据 ====================
+const LANGUAGES = [
+  {
+    id: 'zh', name: '中文（普通话）', flag: '🇨🇳',
+    hello: '你好', romaji: 'Nǐ hǎo', phonetic: '/ni³⁵ xɑʊ²¹⁴/',
+    speakers: '约13亿', countries: '中国、新加坡、马来西亚',
+    family: '汉藏语系',
+    intro: '汉语普通话是世界使用人数最多的语言。声调系统（4个声调）是其最大特色，同一个音节不同声调意思完全不同。"你好"是最基础的问候语，两个字分别读作第三声。',
+    audioLang: 'zh-CN', audioText: '你好',
+    googleTTS: '你好', googleLang: 'zh-CN',
+    helloWrite: '你好'
+  },
+  {
+    id: 'en', name: '英语', flag: '🇬🇧',
+    hello: 'Hello', romaji: 'Hə-LŌ', phonetic: '/həˈloʊ/',
+    speakers: '约15亿（含第二语言）', countries: '英美加澳等100+国家',
+    family: '日耳曼语系',
+    intro: '英语是全球最通用的国际语言。"Hello" 源自14世纪的"hallo"（引起注意的感叹词），19世纪电话发明后成为标准问候语。简单易学，元音发音清晰。',
+    audioLang: 'en-US', audioText: 'Hello',
+    googleTTS: 'Hello', googleLang: 'en',
+    helloWrite: 'Hello'
+  },
+  {
+    id: 'es', name: '西班牙语', flag: '🇪🇸',
+    hello: 'Hola', romaji: 'Ó-la', phonetic: '/ˈola/',
+    speakers: '约5.8亿', countries: '西班牙、墨西哥、阿根廷等21国',
+    family: '罗曼语系',
+    intro: '西班牙语是21国的官方语言，发音非常有韵律感。"Hola" 源自拉丁语"illa"（那个），后来演变为问候语。H不发音，O发饱满的[o]音。联合国六种工作语言之一。',
+    audioLang: 'es-ES', audioText: 'Hola',
+    googleTTS: 'Hola', googleLang: 'es',
+    helloWrite: 'Hola'
+  },
+  {
+    id: 'hi', name: '印地语', flag: '🇮🇳',
+    hello: 'नमस्ते', romaji: 'Na-mas-té', phonetic: '/nəməsteː/',
+    speakers: '约6亿', countries: '印度、斐济',
+    family: '印度-雅利安语系',
+    intro: '印地语是印度最主要的官方语言。"नमस्ते"(Namaste) 源自梵语，字面意思是"我向你鞠躬"。双手合十（安贾利手印）说这句话是标准姿势。天城文从左向右书写，字母上方有横线连接。',
+    audioLang: 'hi-IN', audioText: 'नमस्ते',
+    googleTTS: 'नमस्ते', googleLang: 'hi',
+    helloWrite: 'नमस्ते'
+  },
+  {
+    id: 'ar', name: '阿拉伯语', flag: '🇸🇦',
+    hello: 'السلام عليكم', romaji: 'As-salāmu ʿalaykum', phonetic: '/as.sa.laː.mu ʕa.laj.kum/',
+    speakers: '约4.2亿', countries: '沙特、埃及、阿联酋等22国',
+    family: '闪含语系',
+    intro: '阿拉伯语是《古兰经》的语言，从右向左书写。"السلام عليكم" 意为"愿平安降临你"，是伊斯兰世界最经典的问候。回应是"وعليكم السلام"（也愿你平安）。字母共有28个，均为辅音。',
+    audioLang: 'ar-SA', audioText: 'السلام عليكم',
+    googleTTS: 'السلام عليكم', googleLang: 'ar',
+    helloWrite: 'السلام عليكم'
+  },
+  {
+    id: 'pt', name: '葡萄牙语', flag: '🇧🇷',
+    hello: 'Olá', romaji: 'Ô-lá', phonetic: '/ɔˈla/',
+    speakers: '约2.6亿', countries: '巴西、葡萄牙、安哥拉等9国',
+    family: '罗曼语系',
+    intro: '葡萄牙语与西班牙语很像但发音更"柔和"。 "Olá" 与西语的"Hola"同源。巴西葡萄牙语的发音更开放，葡萄牙本土的发音更内敛。重音通常在倒数第二个音节。',
+    audioLang: 'pt-BR', audioText: 'Olá',
+    googleTTS: 'Olá', googleLang: 'pt',
+    helloWrite: 'Olá'
+  },
+  {
+    id: 'bn', name: '孟加拉语', flag: '🇧🇩',
+    hello: 'নমস্কার', romaji: 'Nô-mos-kār', phonetic: '/nɔmɔʃkaːr/',
+    speakers: '约2.3亿', countries: '孟加拉国、印度西孟加拉邦',
+    family: '印度-雅利安语系',
+    intro: '孟加拉语以优美的书写闻名，字母蜿蜒流畅如波浪。"নমস্কার" 与印地语的"नमस्ते"同源，都是梵语问候。孟加拉国独立战争（1971年）就是为保护语言权利而战。',
+    audioLang: 'bn-BD', audioText: 'নমস্কার',
+    googleTTS: 'নমস্কার', googleLang: 'bn',
+    helloWrite: 'নমস্কার'
+  },
+  {
+    id: 'ru', name: '俄语', flag: '🇷🇺',
+    hello: 'Здравствуйте', romaji: 'ZDRAV-stvooy-tye', phonetic: '/ˈzdrastvʊjtʲe/',
+    speakers: '约2.5亿', countries: '俄罗斯、白俄罗斯、哈萨克斯坦等',
+    family: '斯拉夫语系',
+    intro: '俄语使用西里尔字母，"Здравствуйте" 是正式问候语（对长辈/陌生人），字面意思是"祝你健康"。日常朋友间用"Привет"（Pri-vét）。俄语有6个格的变化，动词变位复杂。',
+    audioLang: 'ru-RU', audioText: 'Здравствуйте',
+    googleTTS: 'Здравствуйте', googleLang: 'ru',
+    helloWrite: 'Здравствуйте'
+  },
+  {
+    id: 'ja', name: '日语', flag: '🇯🇵',
+    hello: 'こんにちは', romaji: 'Kon-ni-chi-wa', phonetic: '/konnitɕiwa/',
+    speakers: '约1.3亿', countries: '日本',
+    family: '日本语系（孤立语）',
+    intro: '日语"こんにちは"原意为"今天好"，是白天的问候。"は"作助词时读作"wa"而非"ha"。日语有平假名、片假名和汉字三种文字混合书写。敬语系统丰富，对不同人用不同说法。',
+    audioLang: 'ja-JP', audioText: 'こんにちは',
+    googleTTS: 'こんにちは', googleLang: 'ja',
+    helloWrite: 'こんにちは'
+  },
+  {
+    id: 'ko', name: '韩语', flag: '🇰🇷',
+    hello: '안녕하세요', romaji: 'An-nyeong-ha-se-yo', phonetic: '/an.njʌŋ.ha.se.jo/',
+    speakers: '约8000万', countries: '韩国、朝鲜、中国延边',
+    family: '朝鲜语系（孤立语）',
+    intro: '韩语是表音文字（谚文），由世宗大王于1443年创造。"안녕하세요" 意为"安好吗？"，是敬语形式。韩语词汇约60%来自汉语（汉字词），发音清晰但松紧音区别微妙。',
+    audioLang: 'ko-KR', audioText: '안녕하세요',
+    googleTTS: '안녕하세요', googleLang: 'ko',
+    helloWrite: '안녕하세요'
+  },
+  {
+    id: 'de', name: '德语', flag: '🇩🇪',
+    hello: 'Guten Tag', romaji: 'GU-ten TAHK', phonetic: '/ˈɡuːtən taːk/',
+    speakers: '约1.3亿', countries: '德国、奥地利、瑞士等',
+    family: '日耳曼语系',
+    intro: '德语是欧洲使用人数最多的母语。"Guten Tag" 意为"好的一天"。朋友间常用"Hallo"或"Hi"。德语的名词分阴阳中三性，首字母必须大写。语法严谨，有四个格的变化。',
+    audioLang: 'de-DE', audioText: 'Guten Tag',
+    googleTTS: 'Guten Tag', googleLang: 'de',
+    helloWrite: 'Guten Tag'
+  },
+  {
+    id: 'fr', name: '法语', flag: '🇫🇷',
+    hello: 'Bonjour', romaji: 'Bohn-ZHOOR', phonetic: '/bɔ̃ʒuʁ/',
+    speakers: '约3亿', countries: '法国、加拿大、比利时、瑞士等29国',
+    family: '罗曼语系',
+    intro: '法语被称为"爱情的语言"，联合国第一份文件就是法语。"Bonjour" 由"bon"（好）+"jour"（日）组成。法语鼻音元音和小舌音是其特色。傍晚后用"Bonsoir"。',
+    audioLang: 'fr-FR', audioText: 'Bonjour',
+    googleTTS: 'Bonjour', googleLang: 'fr',
+    helloWrite: 'Bonjour'
+  },
+  {
+    id: 'vi', name: '越南语', flag: '🇻🇳',
+    hello: 'Xin chào', romaji: 'Sin chào', phonetic: '/sin tɕaːw˨˩/',
+    speakers: '约9800万', countries: '越南',
+    family: '南亚语系',
+    intro: '越南语使用拉丁字母附加大量声调符号（6个声调）。"Xin chào" 是最简单的问候。越南语吸收了大量的汉语借词（汉越词）。不同称呼代词针对不同年龄和性别的人。',
+    audioLang: 'vi-VN', audioText: 'Xin chào',
+    googleTTS: 'Xin chào', googleLang: 'vi',
+    helloWrite: 'Xin chào'
+  },
+  {
+    id: 'it', name: '意大利语', flag: '🇮🇹',
+    hello: 'Ciao', romaji: 'CHOW', phonetic: '/tʃaːo/',
+    speakers: '约8500万', countries: '意大利、瑞士提契诺州',
+    family: '罗曼语系',
+    intro: '意大利语是音乐的语言（所有音乐术语都是意语）。"Ciao" 原为威尼斯方言"schiavo"（您的仆人），现已成全球通用的问候语，既可问候又可告别。意大利语的元音清脆，音调起伏如歌。',
+    audioLang: 'it-IT', audioText: 'Ciao',
+    googleTTS: 'Ciao', googleLang: 'it',
+    helloWrite: 'Ciao'
+  },
+  {
+    id: 'th', name: '泰语', flag: '🇹🇭',
+    hello: 'สวัสดี', romaji: 'sà-wàt-dii', phonetic: '/sà.wàt.dīː/',
+    speakers: '约7200万', countries: '泰国',
+    family: '台-卡岱语系',
+    intro: '泰语有5个声调（中、低、高、降、升），辅音分三组（高、中、低）决定声调。"สวัสดี"(sà-wàt-dii) 意为"吉祥如意"，说时双手合十(Wai)。泰文字母源自高棉文，元音可写在辅音的上、下、左、右。',
+    audioLang: 'th-TH', audioText: 'สวัสดีครับ',
+    googleTTS: 'สวัสดีครับ', googleLang: 'th',
+    helloWrite: 'สวัสดี',
+    variants: [
+      { label: '♂ 男士', text: 'สวัสดีครับ', romaji: 'sà-wàt-dii kráp', phonetic: '/sà.wàt.dīː kráp/', note: '"ครับ"读高短音，收尾不送气' },
+      { label: '♀ 女士', text: 'สวัสดีค่ะ', romaji: 'sà-wàt-dii khâ', phonetic: '/sà.wàt.dīː khâ/', note: '"ค่ะ"读降调' },
+    ]
+  },
+];
+
+// ==================== 渲染 ====================
+function renderLangCards() {
+  const grid = document.getElementById('langGrid');
+  grid.innerHTML = LANGUAGES.map((lang, i) => {
+    const hasVariants = lang.variants && lang.variants.length;
+    const playButtons = hasVariants
+      ? lang.variants.map((v, vi) =>
+          `<button class="play-btn" onclick="event.stopPropagation(); speakVariant(${i}, ${vi})" data-lang="${i}" data-variant="${vi}">🔊 ${v.label}</button>`
+        ).join('')
+      : `<button class="play-btn" onclick="event.stopPropagation(); speakLang(${i})" data-i="${i}">🔊 发音 <span class="src-badge">🌐</span></button>`;
+    const helloWrite = hasVariants
+      ? lang.variants.map(v => v.text).join(' / ')
+      : lang.helloWrite;
+    const romaji = hasVariants
+      ? lang.variants.map(v => v.romaji).join(' / ')
+      : lang.romaji;
+    const phonetic = hasVariants
+      ? lang.variants.map(v => v.phonetic).join(' · ')
+      : lang.phonetic;
+
+    return `
+    <div class="lang-card" onclick="toggleCard(${i})" id="card-${i}">
+      <div class="lang-name">
+        <span class="flag">${lang.flag}</span>
+        ${lang.name}
+        <span class="speakers">👥 ${lang.speakers}</span>
+      </div>
+      <div class="hello-row">
+        <span class="hello-write">${helloWrite}</span>
+      </div>
+      <div class="hello-row" style="margin-top:0;">
+        <span class="hello-romaji">${romaji}</span>
+        <span class="hello-phonetic">${phonetic}</span>
+      </div>
+      <div class="hello-row">
+        ${playButtons}
+      </div>
+      <div class="lang-detail">
+        <p>📖 ${lang.intro}</p>
+        ${hasVariants ? '<p style="margin-top:6px;"><b>男女说法区别：</b></p>' + lang.variants.map(v => `<p style="padding-left:12px;font-size:0.85em;">• ${v.label}：<b>${v.text}</b> — ${v.note}</p>`).join('') : ''}
+        <p style="margin-top:6px;">
+          <span class="tag tag-family">🗺️ ${lang.family}</span>
+          <span class="tag tag-country">📍 ${lang.countries}</span>
+          <span class="tag tag-speakers">👥 ${lang.speakers}</span>
+        </p>
+      </div>
+      <div class="expand-hint">▼ 点击展开详解</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCard(i) {
+  const card = document.getElementById(`card-${i}`);
+  card.classList.toggle('expanded');
+}
+
+// ==================== TTS 语音 — 双引擎 ====================
+// 主引擎: Google翻译TTS (覆盖所有语言，发音标准)
+// 备选: 浏览器原生SpeechSynthesis (系统有对应语音时优先)
+
+let currentAudio = null;
+let speakingLangId = null;
+let voiceCache = {};
+
+function getGoogleTTSUrl(langCode, text) {
+  return 'https://translate.google.com/translate_tts?ie=UTF-8&q='
+    + encodeURIComponent(text)
+    + '&tl=' + langCode
+    + '&client=tw-ob';
+}
+
+function speakViaGoogle(lang, onStart, onEnd, pitchRatio) {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+  const url = getGoogleTTSUrl(lang.googleLang, lang.googleTTS);
+  const audio = new Audio(url);
+  currentAudio = audio;
+
+  // Timeout: if Google TTS doesn't load in 5s, fall back to SSML
+  const timeout = setTimeout(() => {
+    if (currentAudio === audio) {
+      audio.src = '';
+      currentAudio = null;
+      speakViaSSML(lang, onStart, onEnd);
+    }
+  }, 5000);
+
+  audio.onerror = () => {
+    clearTimeout(timeout);
+    if (currentAudio === audio) currentAudio = null;
+    speakViaSSML(lang, onStart, onEnd);
+  };
+  audio.oncanplaythrough = () => {
+    clearTimeout(timeout);
+    if (onStart) onStart();
+    audio.play().catch(() => {
+      speakViaSSML(lang, onStart, onEnd);
+    });
+  };
+  audio.onended = () => {
+    clearTimeout(timeout);
+    if (currentAudio === audio) currentAudio = null;
+    if (onEnd) onEnd();
+  };
+  audio.load();
+}
+
+function playWithPitchShift(audio, ratio, onEnd) {
+  // 用 XMLHttpRequest 获取音频数据 (比 fetch 更兼容跨域)
+  const url = audio.src;
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', url, true);
+  xhr.responseType = 'arraybuffer';
+  xhr.onload = function() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      ctx.resume().then(() => {
+        ctx.decodeAudioData(xhr.response, function(buffer) {
+          const source = ctx.createBufferSource();
+          source.buffer = buffer;
+          source.playbackRate.value = ratio;
+          source.connect(ctx.destination);
+          source.start(0);
+          source.onended = function() {
+            ctx.close();
+            currentAudio = null;
+            if (onEnd) onEnd();
+          };
+        }, function() {
+          // decode failed, play original
+          audio.play();
+          audio.onended = function() { currentAudio = null; if (onEnd) onEnd(); };
+        });
+      }).catch(function() {
+        audio.play();
+        audio.onended = function() { currentAudio = null; if (onEnd) onEnd(); };
+      });
+    } catch(e) {
+      audio.play();
+      audio.onended = function() { currentAudio = null; if (onEnd) onEnd(); };
+    }
+  };
+  xhr.onerror = function() {
+    // XHR failed, play original
+    audio.play();
+    audio.onended = function() { currentAudio = null; if (onEnd) onEnd(); };
+  };
+  xhr.send();
+}
+
+function speakViaSSML(lang, onStart, onEnd) {
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(lang.audioText);
+  utterance.lang = lang.audioLang;
+  utterance.rate = 0.85;
+  utterance.pitch = 1.0;
+  utterance.onstart = () => { if (onStart) onStart(); };
+  utterance.onend = () => { if (onEnd) onEnd(); };
+  utterance.onerror = () => { if (onEnd) onEnd(); };
+  window.speechSynthesis.speak(utterance);
+}
+
+function speakLang(i) {
+  const lang = LANGUAGES[i];
+  const btn = document.querySelector(`.play-btn[data-i="${i}"]`);
+  if (!btn) return;
+
+  // Toggle off if already playing
+  if (speakingLangId === i) {
+    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+    window.speechSynthesis.cancel();
+    document.querySelectorAll('.play-btn').forEach(b => b.classList.remove('playing'));
+    speakingLangId = null;
+    return;
+  }
+
+  // Cancel any current playback
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  window.speechSynthesis.cancel();
+  document.querySelectorAll('.play-btn').forEach(b => b.classList.remove('playing'));
+
+  const onStart = () => { btn.classList.remove('loading'); btn.classList.add('playing'); speakingLangId = i; };
+  const onEnd = () => { btn.classList.remove('playing'); speakingLangId = null; };
+
+  // Try Google TTS first (reliable for all languages)
+  btn.classList.add('loading');
+  speakViaGoogle(lang, onStart, () => {
+    btn.classList.remove('loading');
+    onEnd();
+  });
+}
+
+function speakVariant(langIdx, variantIdx) {
+  const lang = LANGUAGES[langIdx];
+  const variant = lang.variants[variantIdx];
+  if (!variant) return;
+
+  const btn = document.querySelector(`.play-btn[data-lang="${langIdx}"][data-variant="${variantIdx}"]`);
+  if (!btn) return;
+
+  // Toggle off if already playing this
+  if (speakingLangId === langIdx + '-' + variantIdx) {
+    if (currentAudio) { if (currentAudio._ctx) currentAudio._ctx.close(); else currentAudio.pause(); currentAudio = null; }
+    window.speechSynthesis.cancel();
+    document.querySelectorAll('.play-btn').forEach(b => b.classList.remove('playing'));
+    speakingLangId = null;
+    return;
+  }
+
+  if (currentAudio) { if (currentAudio._ctx) currentAudio._ctx.close(); else currentAudio.pause(); currentAudio = null; }
+  window.speechSynthesis.cancel();
+  document.querySelectorAll('.play-btn').forEach(b => b.classList.remove('playing'));
+
+  const onStart = () => { btn.classList.remove('loading'); btn.classList.add('playing'); speakingLangId = langIdx + '-' + variantIdx; };
+  const onEnd = () => { btn.classList.remove('playing'); speakingLangId = null; };
+
+  btn.classList.add('loading');
+
+  const url = getGoogleTTSUrl(lang.googleLang, variant.text);
+  const audio = new Audio(url);
+  currentAudio = audio; // will be replaced by {_ctx, _src} if pitch-shift succeeds
+
+  const timeout = setTimeout(() => {
+    if (currentAudio === audio) { currentAudio = null; speakViaSSML({ audioText: variant.text, audioLang: lang.audioLang }, onStart, onEnd); }
+  }, 5000);
+
+  audio.onerror = () => { clearTimeout(timeout); if (currentAudio === audio) currentAudio = null; speakViaSSML({ audioText: variant.text, audioLang: lang.audioLang }, onStart, onEnd); };
+
+  audio.oncanplaythrough = () => {
+    clearTimeout(timeout); btn.classList.remove('loading'); if (onStart) onStart();
+
+    // 一律先 play() — 在用户手势链内，Chrome 允许播放
+    audio.play().catch(() => { speakViaSSML({ audioText: variant.text, audioLang: lang.audioLang }, onStart, onEnd); });
+    audio.onended = () => { currentAudio = null; if (onEnd) onEnd(); };
+
+    // 男声：额外尝试变声（异步，成不成都已经 play 了）
+    if (variant.label.includes('♂')) {
+      tryPitchShift(audio, 0.65);
+    }
+  };
+  audio.load();
+}
+
+function tryPitchShift(audio, ratio) {
+  // 异步变声 — 不阻塞主播放
+  try {
+    const url = audio.src;
+    if (!url) return;
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'arraybuffer';
+    xhr.onloadend = function() {
+      if (xhr.status === 200 && xhr.response && xhr.response.byteLength > 1000) {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          ctx.resume().then(function() {
+            ctx.decodeAudioData(xhr.response, function(buffer) {
+              // 把原 audio 切到很小的音量，用变声版替代
+              audio.volume = 0.01;
+              const source = ctx.createBufferSource();
+              source.buffer = buffer;
+              source.playbackRate.value = ratio;
+              source.connect(ctx.destination);
+              source.start(0);
+              currentAudio = { _ctx: ctx, _src: source };
+              source.onended = function() { ctx.close(); currentAudio = null; };
+            }, function() {});
+          }).catch(function() {});
+        } catch(e) {}
+      }
+    };
+    xhr.send();
+  } catch(e) {}
+}
+
+// Pre-warm: get list of available SSML voices for status display
+let availableVoices = [];
+if (window.speechSynthesis) {
+  window.speechSynthesis.getVoices(); // trigger async load
+  setTimeout(() => {
+    availableVoices = window.speechSynthesis.getVoices();
+  }, 500);
+}
+
+// ==================== 考试 ====================
+let examState = {
+  answered: false,
+  currentIndex: 0,
+  correctCount: 0,
+  questions: [],
+  wrongIds: [],  // store question indices for review
+};
+
+const LABELS = ['A', 'B', 'C', 'D'];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function initExam() {
+  // Generate 15 questions (one per language, plus maybe repeats)
+  const all = [...LANGUAGES];
+  // For variety, use all languages as questions in random order
+  const questions = shuffle(all.map((lang, idx) => ({
+    langIndex: idx,
+    langId: lang.id,
+    langName: lang.name,
+    flag: lang.flag,
+    helloWrite: lang.helloWrite,
+    audioLang: lang.audioLang,
+    audioText: lang.audioText,
+  })));
+
+  examState = {
+    answered: false,
+    currentIndex: 0,
+    correctCount: 0,
+    questions,
+    wrongIds: [],
+  };
+
+  renderDots();
+  showQuestion();
+}
+
+function renderDots() {
+  const container = document.getElementById('studyDots');
+  container.innerHTML = examState.questions.map((q, i) => {
+    let cls = '';
+    if (i < examState.currentIndex) cls = 'done';
+    else if (i === examState.currentIndex) cls = 'current';
+    return `<span class="study-dot ${cls}"></span>`;
+  }).join('');
+}
+
+function showQuestion() {
+  const q = examState.questions[examState.currentIndex];
+  if (!q) { finishExam(); return; }
+
+  examState.answered = false;
+  document.getElementById('examFeedback').textContent = '';
+  document.getElementById('examFeedback').className = 'exam-feedback';
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('playBtn').className = 'exam-play-big';
+
+  // Build options: 1 correct + 3 random others
+  const correctLang = LANGUAGES[q.langIndex];
+  const others = LANGUAGES
+    .filter((_, i) => i !== q.langIndex)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 3);
+
+  const options = shuffle([
+    { langIndex: q.langIndex, name: correctLang.name, flag: correctLang.flag, write: correctLang.helloWrite, correct: true },
+    ...others.map(l => ({ langIndex: LANGUAGES.indexOf(l), name: l.name, flag: l.flag, write: l.helloWrite, correct: false }))
+  ]);
+
+  const container = document.getElementById('examOptions');
+  container.innerHTML = options.map((opt, i) => `
+    <div class="exam-option" onclick="selectOption(${i})" data-opt-index="${i}" data-correct="${opt.correct}">
+      <span class="opt-letter">${LABELS[i]}</span>
+      <span>
+        <div class="opt-write">${opt.flag} ${opt.write}</div>
+        <div class="opt-lang">${opt.name}</div>
+      </span>
+    </div>
+  `).join('');
+
+  document.getElementById('examQuestion').textContent = `🎧 这段问候是哪种语言？（${examState.currentIndex + 1}/${examState.questions.length}）`;
+  document.getElementById('examScore').textContent = `${examState.correctCount} / ${examState.questions.length}`;
+
+  // Update progress bar
+  const pct = examState.currentIndex / examState.questions.length * 100;
+  document.getElementById('examProgressFill').style.width = pct + '%';
+
+  renderDots();
+
+  // Auto play
+  setTimeout(() => playExamAudio(), 400);
+}
+
+function playExamAudio() {
+  const q = examState.questions[examState.currentIndex];
+  if (!q) return;
+  const lang = LANGUAGES[q.langIndex];
+
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  window.speechSynthesis.cancel();
+
+  const btn = document.getElementById('playBtn');
+  btn.className = 'exam-play-big loading';
+
+  const url = getGoogleTTSUrl(lang.googleLang, lang.googleTTS);
+  const audio = new Audio(url);
+  currentAudio = audio;
+
+  const timeout = setTimeout(() => {
+    if (currentAudio === audio) {
+      currentAudio = null;
+      audio.src = '';
+      const utterance = new SpeechSynthesisUtterance(lang.audioText);
+      utterance.lang = lang.audioLang;
+      utterance.rate = 0.85;
+      utterance.onstart = () => { btn.className = 'exam-play-big playing'; };
+      utterance.onend = () => { btn.className = 'exam-play-big'; };
+      window.speechSynthesis.speak(utterance);
+    }
+  }, 5000);
+
+  audio.onerror = () => {
+    clearTimeout(timeout);
+    currentAudio = null;
+    // Fallback to SSML
+    const utterance = new SpeechSynthesisUtterance(lang.audioText);
+    utterance.lang = lang.audioLang;
+    utterance.rate = 0.85;
+    utterance.onstart = () => { btn.className = 'exam-play-big playing'; };
+    utterance.onend = () => { btn.className = 'exam-play-big'; };
+    window.speechSynthesis.speak(utterance);
+  };
+
+  audio.oncanplaythrough = () => {
+    clearTimeout(timeout);
+    btn.className = 'exam-play-big playing';
+    audio.play().catch(() => {
+      btn.className = 'exam-play-big';
+    });
+  };
+  audio.onended = () => {
+    clearTimeout(timeout);
+    currentAudio = null;
+    btn.className = 'exam-play-big';
+  };
+  audio.load();
+}
+
+function selectOption(optIndex) {
+  if (examState.answered) return;
+
+  const opts = document.querySelectorAll('.exam-option');
+  const selected = opts[optIndex];
+  const isCorrect = selected.dataset.correct === 'true';
+
+  examState.answered = true;
+  opts.forEach(o => o.classList.add('disabled'));
+
+  const feedback = document.getElementById('examFeedback');
+
+  if (isCorrect) {
+    selected.classList.add('correct');
+    examState.correctCount++;
+    feedback.textContent = '✅ 正确！太棒了！🎉';
+    feedback.className = 'exam-feedback correct';
+  } else {
+    selected.classList.add('wrong');
+    // highlight correct answer
+    opts.forEach(o => { if (o.dataset.correct === 'true') o.classList.add('correct'); });
+    feedback.textContent = '❌ 再听一次，记住它吧！';
+    feedback.className = 'exam-feedback wrong';
+    examState.wrongIds.push(examState.currentIndex);
+  }
+
+  document.getElementById('examScore').textContent = `${examState.correctCount} / ${examState.questions.length}`;
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function nextQuestion() {
+  if (examState.currentIndex < examState.questions.length - 1) {
+    examState.currentIndex++;
+    showQuestion();
+  } else {
+    finishExam();
+  }
+}
+
+function finishExam() {
+  const total = examState.questions.length;
+  const correct = examState.correctCount;
+  const pct = Math.round(correct / total * 100);
+
+  const container = document.getElementById('examOptions');
+  container.innerHTML = '';
+  document.getElementById('playBtn').style.display = 'none';
+  document.getElementById('examQuestion').textContent = '';
+  document.querySelector('.exam-listen-hint').style.display = 'none';
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('examProgressFill').style.width = '100%';
+
+  const fb = document.getElementById('examFeedback');
+
+  if (pct >= 80) {
+    fb.className = 'exam-feedback correct';
+    fb.innerHTML = `🎊 恭喜你！得分 ${correct}/${total}（${pct}%）<br>你已经掌握了十几种语言的问候！<br>🎓 你已是"十国外语人才"！`;
+
+    // Show certificate after a brief delay
+    setTimeout(showCertificate, 1200);
+  } else {
+    fb.className = 'exam-feedback wrong';
+    fb.innerHTML = `得分 ${correct}/${total}（${pct}%），再练练吧！<br>💪 80分以上可获得国际问候语认证奖状！`;
+    document.getElementById('nextBtn').disabled = false;
+    document.getElementById('nextBtn').textContent = '🔄 再试一次';
+    document.getElementById('nextBtn').onclick = resetExam;
+  }
+
+  renderDots();
+}
+
+// ==================== 奖状 ====================
+function showCertificate() {
+  const overlay = document.getElementById('certOverlay');
+  overlay.classList.add('show');
+
+  document.getElementById('certName').textContent = '🏅 超级语言学习者';
+
+  const qs = examState.questions;
+  document.getElementById('certLangCount').textContent = qs.length;
+
+  // List all languages
+  const langsDiv = document.getElementById('certLangs');
+  langsDiv.innerHTML = [...new Set(qs.map(q => LANGUAGES[q.langIndex].name))]
+    .map(name => `<span class="cert-lang-tag">${name}</span>`).join('');
+
+  document.getElementById('certNo').textContent = String(Date.now()).slice(-8);
+  document.getElementById('certDate').textContent = new Date().toLocaleDateString('zh-CN');
+}
+
+function closeCert() {
+  document.getElementById('certOverlay').classList.remove('show');
+}
+
+function downloadCertImage() {
+  const cert = document.getElementById('certContent');
+  // Use html2canvas approach - but since we can't include library, we'll just screenshot instructions
+  alert('💾 截屏保存：请直接截屏（手机/电脑均可），即可保存您的专属奖状！');
+}
+
+// ==================== 标签切换 ====================
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab[onclick*="${tab}"]`).classList.add('active');
+
+  document.getElementById('tab-learn').style.display = tab === 'learn' ? 'block' : 'none';
+  document.getElementById('tab-exam').style.display = tab === 'exam' ? 'block' : 'none';
+
+  if (tab === 'exam' && examState.questions.length === 0) {
+    initExam();
+  }
+}
+
+function resetExam() {
+  document.getElementById('nextBtn').textContent = '下一题 →';
+  document.getElementById('nextBtn').onclick = nextQuestion;
+  document.getElementById('playBtn').style.display = 'flex';
+  initExam();
+}
+
+// ==================== 初始化 ====================
+renderLangCards();
+initExam();
+</script>
+</body>
+</html>
