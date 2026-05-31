@@ -1,0 +1,36 @@
+# 十国外语 · 自动生成 TTS 语音数据
+name: Generate TTS Audio
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'languages.html'
+      - 'generate-audio.js'
+      - '.github/workflows/generate-audio.yml'
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Generate audio data
+        run: node generate-audio.js
+
+      - name: Commit audio-data.js
+        run: |
+          if [ -f audio-data.js ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add audio-data.js
+            git diff --staged --quiet || git commit -m "🤖 Auto-generate TTS audio data"
+            git push
+          fi
