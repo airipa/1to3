@@ -134,12 +134,13 @@ async function main() {
   console.log(`\n📊 结果: ${ok}/${LANGS.length} 成功`);
   if (failed.length) console.log(`❌ 失败: ${failed.map(l => l.label || l.id).join(', ')}`);
 
-  // 生成 JS
+  // 生成 JS — 用 IIFE 赋值给 HELLO10_AUDIO（避免 const 重复声明错误）
   if (ok > 0) {
+    // 加 th 别名 = th_m（考试时用 th 查找）
+    if (results['th_m']) results['th'] = results['th_m'];
     const js = `// 自动生成的语音数据
 // 生成时间: ${new Date().toISOString()}
-const HELLO10_AUDIO = ${JSON.stringify(results, null, 2)};
-`;
+(function(){ HELLO10_AUDIO = ${JSON.stringify(results, null, 2)}; })();`;
     fs.writeFileSync(OUTPUT_JS, js, 'utf-8');
     console.log(`✅ 已生成: ${OUTPUT_JS}`);
 
