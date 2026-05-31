@@ -253,59 +253,60 @@ function playEmbedded(id, onEnd, isMale) {
   } catch(e) { return false; }
 }
 
-// 男声变调：createMediaElementSource 只降音高，速度不变
-// 每次新建 audio 元素，避免 "已连接" 报错
+// 男声变调：fetch → decodeAudioData → BufferSource.detune，速度不变
 function playMaleWithDetune(dataUri, onEnd) {
-  var el = document.createElement('audio');
-  el.preload = 'auto';
-  var ctx = null;
-  var started = false;
+  var done = false;
+  function finish() { if (!done) { done = true; if (onEnd) onEnd(); } }
 
-  function playNormal() {
-    if (started) return;
-    started = true;
-    el.playbackRate = 1.0;
-    el.play();
-    el.onended = function() { if (onEnd) onEnd(); };
-  }
+  try {
+    // base64 → Blob → Object URL
+    var raw = atob(dataUri.split(',')[1]);
+    var len = raw.length;
+    var buf = new ArrayBuffer(len);
+    var arr = new Uint8Array(buf);
+    for (var i = 0; i < len; i++) arr[i] = raw.charCodeAt(i);
+    var blob = new Blob([buf], {type: 'audio/mpeg'});
+    var url = URL.createObjectURL(blob);
 
-  function playWithDetune() {
-    if (started) return;
-    try {
-      ctx = new (window.AudioContext || window.webkitAudioContext)();
-      ctx.resume().then(function() {
-        if (started) return;
-        try {
-          var src = ctx.createMediaElementSource(el);
-          src.detune.value = -700;   // 降 700 cents，速度不变
+    // fetch 解码
+    fetch(url)
+      .then(function(r) { return r.arrayBuffer(); })
+      .then(function(mp3buf) {
+        if (done) return;
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        return ctx.resume().then(function() {
+          return new Promise(function(resolve, reject) {
+            ctx.decodeAudioData(mp3buf, resolve, reject);
+          });
+        }).then(function(audioBuffer) {
+          if (done) return;
+          var src = ctx.createBufferSource();
+          src.buffer = audioBuffer;
+          src.playbackRate.value = 1.0;  // 速度不变！
+          src.detune.value = -700;        // 只降音高
           src.connect(ctx.destination);
-          started = true;
-          el.play();
-          el.onended = function() {
+          src.start(0);
+          src.onended = function() {
+            URL.revokeObjectURL(url);
             try { ctx.close(); } catch(e) {}
-            if (onEnd) onEnd();
+            finish();
           };
-        } catch(e) {
-          playNormal();
-        }
-      }).catch(function() {
-        playNormal();
+        });
+      })
+      .catch(function() {
+        URL.revokeObjectURL(url);
+        // 降级：女声原速播放
+        var el = getAudio(); el.src = dataUri; el.currentTime = 0; el.play();
+        el.onended = finish;
       });
-    } catch(e) {
-      playNormal();
-    }
+  } catch(e) {
+    // 降级：女声原速播放
+    var el = getAudio(); el.src = dataUri; el.currentTime = 0; el.play();
+    el.onended = finish;
   }
 
-  // 如果已加载完，直接变调
-  el.addEventListener('canplaythrough', function() {
-    if (!started) playWithDetune();
-  });
-
-  el.src = dataUri;
-  if (el.readyState >= 3) playWithDetune();
-
-  // 超时兜底：3 秒还没变调就原速播放
-  setTimeout(playNormal, 3000);
+  // 6秒兜底：确保不会卡住按钮状态
+  setTimeout(finish, 6000);
 }
 
 // Play via SpeechSynthesis
