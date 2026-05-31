@@ -262,32 +262,27 @@ function playMaleVoice(dataUri, onEnd) {
     var buf = new ArrayBuffer(raw.length);
     var arr = new Uint8Array(buf);
     for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
-    // AudioContext 解码
     var ctx = new (window.AudioContext || window.webkitAudioContext)();
     ctx.resume().then(function() {
       ctx.decodeAudioData(buf, function(ab) {
         var src = ctx.createBufferSource();
         src.buffer = ab;
         src.playbackRate.value = 1.0;   // 速度不变
-        src.detune.value = -600;         // 降 600 cents = 5 个半音 → 明显男声
+        src.detune.value = -700;         // 降 700 cents → 6 个半音 → 低沉男声
         src.connect(ctx.destination);
         src.start(0);
         src.onended = function() { try { ctx.close(); } catch(e) {} if (onEnd) onEnd(); };
       }, function() {
-        // 解码失败 → 用最慢的 playbackRate 凑合
-        var el = getAudio();
-        el.src = dataUri;
-        el.currentTime = 0;
-        el.playbackRate = 0.72;
-        el.play();
+        // 解码失败 → 正常速度播放（无变调）
+        var el = getAudio(); el.src = dataUri; el.currentTime = 0; el.play();
         el.onended = function() { if (onEnd) onEnd(); };
       });
     }).catch(function() {
-      var el = getAudio(); el.src = dataUri; el.currentTime = 0; el.playbackRate = 0.72; el.play();
+      var el = getAudio(); el.src = dataUri; el.currentTime = 0; el.play();
       el.onended = function() { if (onEnd) onEnd(); };
     });
   } catch(e) {
-    var el = getAudio(); el.src = dataUri; el.currentTime = 0; el.playbackRate = 0.72; el.play();
+    var el = getAudio(); el.src = dataUri; el.currentTime = 0; el.play();
     el.onended = function() { if (onEnd) onEnd(); };
   }
 }
