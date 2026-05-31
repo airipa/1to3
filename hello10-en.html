@@ -235,12 +235,13 @@ let audioEl = null;
 function getAudio() { if (!audioEl) { audioEl = new Audio(); audioEl.preload = 'auto'; try { document.body.appendChild(audioEl); } catch(e) {} } return audioEl; }
 
 // Play embedded audio (base64 data URI) — returns true if successful
-function playEmbedded(id, onEnd) {
+function playEmbedded(id, onEnd, rate) {
   if (!HELLO10_AUDIO || !HELLO10_AUDIO[id]) return false;
   try {
     const el = getAudio();
     el.src = HELLO10_AUDIO[id];
     el.currentTime = 0;
+    el.playbackRate = rate || 1.0;
     let done = false;
     el.onended = () => { if (!done) { done = true; if (onEnd) onEnd(); } };
     el.onerror = () => { if (!done) { done = true; if (onEnd) onEnd(); } };
@@ -265,10 +266,10 @@ function playSSML(text, lang, pitch, onEnd) {
 }
 
 // Unified play: embedded audio → SpeechSynthesis
-function play(id, text, lang, pitch, onEnd) {
+function play(id, text, lang, pitch, onEnd, rate) {
   if (isSpeaking) { try { window.speechSynthesis.cancel(); } catch(e) {} }
   isSpeaking = true;
-  if (!playEmbedded(id, () => { isSpeaking = false; if (onEnd) onEnd(); })) {
+  if (!playEmbedded(id, () => { isSpeaking = false; if (onEnd) onEnd(); }, rate)) {
     playSSML(text, lang, pitch, () => { isSpeaking = false; if (onEnd) onEnd(); });
   }
 }
@@ -286,8 +287,10 @@ function sayVar(li, vi, btn) {
   const lang = L[li];
   const pitch = v.label.includes('♀') ? 1.3 : 0.7;
   const vid = lang.id + '_' + (v.label.includes('♂') ? 'm' : 'f');
+  // Thai male: playbackRate 0.7 to lower the female TTS voice to sound male
+  const rate = v.label.includes('♂') ? 0.7 : 1.0;
   btn.classList.add('loading');
-  play(vid, v.text, lang.gl, pitch, () => btn.classList.remove('loading'));
+  play(vid, v.text, lang.gl, pitch, () => btn.classList.remove('loading'), rate);
 }
 
 // Warm up speech engine on first interaction
