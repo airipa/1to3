@@ -238,66 +238,16 @@ function getAudio() { if (!audioEl) { audioEl = new Audio(); audioEl.preload = '
 function playEmbedded(id, onEnd, rate) {
   if (!HELLO10_AUDIO || !HELLO10_AUDIO[id]) return false;
   try {
-    // 男声变调：用 Web Audio API 独立控制音高和速度
-    if (rate && rate !== 1.0) {
-      playWithPitchShift(HELLO10_AUDIO[id], rate, onEnd);
-      return true;
-    }
     const el = getAudio();
     el.src = HELLO10_AUDIO[id];
     el.currentTime = 0;
+    if (rate) el.playbackRate = rate;
     let done = false;
     el.onended = () => { if (!done) { done = true; if (onEnd) onEnd(); } };
     el.onerror = () => { if (!done) { done = true; if (onEnd) onEnd(); } };
     el.play().catch(() => { if (onEnd) onEnd(); });
     return true;
   } catch(e) { return false; }
-}
-
-// Web Audio API 变调 — detune 降低音高，速度不变（~3/4 八度 → 男声）
-function playWithPitchShift(dataUri, pitchRatio, onEnd) {
-  try {
-    // base64 → ArrayBuffer
-    var binary = atob(dataUri.split(',')[1]);
-    var len = binary.length;
-    var bytes = new Uint8Array(len);
-    for (var i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
-
-    var ctx = new (window.AudioContext || window.webkitAudioContext)();
-    ctx.resume().then(function() {
-      ctx.decodeAudioData(bytes.buffer, function(buffer) {
-        var source = ctx.createBufferSource();
-        source.buffer = buffer;
-        source.playbackRate.value = 1.0;  // 不改变速度
-        source.detune.value = -900;        // 降 900 cents → 显著男声
-        source.connect(ctx.destination);
-        source.start(0);
-        source.onended = function() {
-          try { ctx.close(); } catch(e) {}
-          if (onEnd) onEnd();
-        };
-      }, function() {
-        // decodeAudioData 失败 → 直接原速播放
-        fallbackPlay(dataUri, onEnd);
-      });
-    }).catch(function() {
-      fallbackPlay(dataUri, onEnd);
-    });
-  } catch(e) {
-    fallbackPlay(dataUri, onEnd);
-  }
-}
-
-// 备用：直接播放（不变调）
-function fallbackPlay(dataUri, onEnd) {
-  try {
-    var el = getAudio();
-    el.src = dataUri;
-    el.currentTime = 0;
-    el.playbackRate = 0.6; // 至少降速让音高低一点
-    el.play();
-    el.onended = function() { if (onEnd) onEnd(); };
-  } catch(e) { if (onEnd) onEnd(); }
 }
 
 // Play via SpeechSynthesis
@@ -337,8 +287,8 @@ function sayVar(li, vi, btn) {
   const lang = L[li];
   const pitch = v.label.includes('♀') ? 1.3 : 0.7;
   const vid = lang.id + '_' + (v.label.includes('♂') ? 'm' : 'f');
-  // Thai male: playbackRate 0.7 to lower the female TTS voice to sound male
-  const rate = v.label.includes('♂') ? 0.7 : 1.0;
+  // Thai male: playbackRate 0.85 → pitch drops ~3 semitones, speed barely changes
+  const rate = v.label.includes('♂') ? 0.85 : 1.0;
   btn.classList.add('loading');
   play(vid, v.text, lang.gl, pitch, () => btn.classList.remove('loading'), rate);
 }
