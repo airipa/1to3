@@ -235,19 +235,60 @@ let audioEl = null;
 function getAudio() { if (!audioEl) { audioEl = new Audio(); audioEl.preload = 'auto'; try { document.body.appendChild(audioEl); } catch(e) {} } return audioEl; }
 
 // Play embedded audio (base64 data URI) — returns true if successful
-function playEmbedded(id, onEnd, rate) {
+function playEmbedded(id, onEnd, isMale) {
   if (!HELLO10_AUDIO || !HELLO10_AUDIO[id]) return false;
   try {
+    if (isMale) {
+      playMaleWithDetune(HELLO10_AUDIO[id], onEnd);
+      return true;
+    }
     const el = getAudio();
     el.src = HELLO10_AUDIO[id];
     el.currentTime = 0;
-    if (rate) el.playbackRate = rate;
     let done = false;
     el.onended = () => { if (!done) { done = true; if (onEnd) onEnd(); } };
     el.onerror = () => { if (!done) { done = true; if (onEnd) onEnd(); } };
     el.play().catch(() => { if (onEnd) onEnd(); });
     return true;
   } catch(e) { return false; }
+}
+
+// 男声变调：用 createMediaElementSource 只降音高不降速度
+function playMaleWithDetune(dataUri, onEnd) {
+  try {
+    // 关键：必须新建 audio 元素（共用元素已被 AudioContext 占用就报错）
+    var el = new Audio();
+    el.preload = 'auto';
+    try { document.body.appendChild(el); } catch(e) {}
+    el.src = dataUri;
+    el.currentTime = 0;
+
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    ctx.resume().then(function() {
+      var source = ctx.createMediaElementSource(el);
+      source.playbackRate.value = 1.0;   // 速度不变
+      source.detune.value = -800;         // 降 800 cents → 低沉男声
+      var gain = ctx.createGain();
+      gain.gain.value = 1.0;
+      source.connect(gain);
+      gain.connect(ctx.destination);
+
+      el.play();
+      el.onended = function() {
+        try { ctx.close(); } catch(e) {}
+        try { document.body.removeChild(el); } catch(e) {}
+        if (onEnd) onEnd();
+      };
+    }).catch(function() {
+      // detune 失败 → 降速硬上
+      el.playbackRate = 0.6;
+      el.play();
+      el.onended = function() { try { document.body.removeChild(el); } catch(e) {} if (onEnd) onEnd(); };
+    });
+  } catch(e) {
+    var el2 = getAudio(); el2.src = dataUri; el2.currentTime = 0; el2.playbackRate = 0.6; el2.play();
+    el2.onended = function() { if (onEnd) onEnd(); };
+  }
 }
 
 // Play via SpeechSynthesis
@@ -266,10 +307,10 @@ function playSSML(text, lang, pitch, onEnd) {
 }
 
 // Unified play: embedded audio → SpeechSynthesis
-function play(id, text, lang, pitch, onEnd, rate) {
+function play(id, text, lang, pitch, onEnd, isMale) {
   if (isSpeaking) { try { window.speechSynthesis.cancel(); } catch(e) {} }
   isSpeaking = true;
-  if (!playEmbedded(id, () => { isSpeaking = false; if (onEnd) onEnd(); }, rate)) {
+  if (!playEmbedded(id, () => { isSpeaking = false; if (onEnd) onEnd(); }, isMale)) {
     playSSML(text, lang, pitch, () => { isSpeaking = false; if (onEnd) onEnd(); });
   }
 }
@@ -287,9 +328,9 @@ function sayVar(li, vi, btn) {
   const lang = L[li];
   const pitch = v.label.includes('♀') ? 1.3 : 0.7;
   const vid = lang.id + '_' + (v.label.includes('♂') ? 'm' : 'f');
-  const rate = v.label.includes('♂') ? 0.88 : 1.0;
+  const isMale = v.label.includes('♂');
   btn.classList.add('loading');
-  play(vid, v.text, lang.gl, pitch, () => btn.classList.remove('loading'), rate);
+  play(vid, v.text, lang.gl, pitch, () => btn.classList.remove('loading'), isMale);
 }
 
 // Warm up speech engine on first interaction
