@@ -199,10 +199,7 @@ let isSpeaking = false;
 // Detect available SSML voices (updated after load)
 let ttsVoices = [];
 function refreshVoices() { ttsVoices = window.speechSynthesis.getVoices(); }
-if (window.speechSynthesis) {
-  refreshVoices();
-  window.speechSynthesis.onvoiceschanged = refreshVoices;
-}
+if (window.speechSynthesis) { refreshVoices(); window.speechSynthesis.onvoiceschanged = refreshVoices; }
 
 function hasVoiceFor(langCode) {
   const prefix = langCode.substring(0, 2);
@@ -225,13 +222,24 @@ function speakSSML(text, langCode, pitch) {
     u.pitch = pitch || 1.0;
 
     let done = false;
-    const finish = () => { if (!done) { done = true; resolve(); } };
+    let t1 = null, t2 = null;
+    const finish = () => {
+      if (!done) { done = true; if (t1) clearTimeout(t1); if (t2) clearTimeout(t2); resolve(); }
+    };
     u.onend = finish;
     u.onerror = finish;
 
-    // Timeout: SS engine stuck? resolve anyway
-    const tid = setTimeout(finish, 5000);
-    u.onstart = () => clearTimeout(tid);
+    // Timeout 1: if engine is stuck (onstart never fires)
+    t1 = setTimeout(() => {
+      // Engine stuck: cancel and resolve
+      window.speechSynthesis.cancel();
+      finish();
+    }, 3000);
+    u.onstart = () => {
+      clearTimeout(t1); t1 = null;
+      // Timeout 2: speech started but onend may never fire (Chrome bug)
+      t2 = setTimeout(finish, 6000);
+    };
 
     window.speechSynthesis.speak(u);
   });
@@ -256,34 +264,41 @@ function speakAudio(url) {
 // High-level: speak text in given language
 async function speak(text, langCode, googleLang, googleText, pitch) {
   isSpeaking = true;
-
-  // Try SpeechSynthesis first (instant, no network)
-  if (hasVoiceFor(langCode)) {
-    await speakSSML(text, langCode, pitch);
-  } else {
-    // Fallback to Google TTS
-    const url = gTTS(googleText || text, googleLang);
-    await speakAudio(url);
+  ensureWarmSS();
+  try {
+    if (hasVoiceFor(langCode)) {
+      await speakSSML(text, langCode, pitch);
+    } else {
+      const url = gTTS(googleText || text, googleLang);
+      await speakAudio(url);
+    }
+  } catch(e) {
+    // ignore
   }
-
   isSpeaking = false;
 }
 
 async function sayLang(i, btn) {
   const lang = L[i];
   if (isSpeaking) { window.speechSynthesis.cancel(); isSpeaking = false; return; }
+  ensureWarmSS();
   btn.classList.add('loading');
-  await speak(lang.gt, lang.gl, lang.gl, lang.gt, 1.0);
+  try {
+    await speak(lang.gt, lang.gl, lang.gl, lang.gt, 1.0);
+  } catch(e) {}
   btn.classList.remove('loading');
 }
 
 async function sayLangVar(li, vi, btn) {
   const v = L[li].variants[vi];
   if (!v || isSpeaking) { window.speechSynthesis.cancel(); isSpeaking = false; return; }
+  ensureWarmSS();
   const lang = L[li];
   const pitch = v.label.includes('♀') ? 1.3 : 0.7;
   btn.classList.add('loading');
-  await speak(v.text, lang.gl, lang.gl, v.text, pitch);
+  try {
+    await speak(v.text, lang.gl, lang.gl, v.text, pitch);
+  } catch(e) {}
   btn.classList.remove('loading');
 }
 
@@ -416,24 +431,30 @@ function resetExam() {
 }
 
 // ==================== WARMUP ====================
-// Critical for Chrome: unlock SpeechSynthesis + preload voices
-(function warmup() {
-  if (!window.speechSynthesis) return;
+// Chrome requires a user gesture before SpeechSynthesis works.
+// We warmup on the first click by speaking a short word.
+let warmedUp = false;
+
+function refreshVoices() { ttsVoices = window.speechSynthesis.getVoices(); }
+if (window.speechSynthesis) {
   refreshVoices();
+  window.speechSynthesis.onvoiceschanged = refreshVoices;
+}
+
+// Called on first user click to unlock the engine
+function ensureWarmSS() {
+  if (warmedUp || !window.speechSynthesis) return;
+  warmedUp = true;
+  window.speechSynthesis.cancel();
+  // Speak a short word to "unlock" — must be non-empty with normal volume
   try {
-    const u = new SpeechSynthesisUtterance(' ');
-    u.volume = 0;
+    const u = new SpeechSynthesisUtterance('go');
+    u.volume = 1;
     window.speechSynthesis.speak(u);
   } catch(e) {}
-  // Re-warm on first user click (Chrome autoplay policy)
-  document.addEventListener('click', () => {
-    try {
-      const u = new SpeechSynthesisUtterance(' ');
-      u.volume = 0;
-      window.speechSynthesis.speak(u);
-    } catch(e) {}
-  }, { once: true });
-})();
+  // Refresh voices list
+  setTimeout(refreshVoices, 100);
+}
 
 // ==================== INIT ====================
 renderCards();
