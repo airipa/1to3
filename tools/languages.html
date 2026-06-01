@@ -25,10 +25,10 @@ h1 { font-size: 2.2em; background: linear-gradient(135deg,var(--p),var(--a)); -w
 .hw { font-size: 1.5em; font-weight: 600; color: var(--p); overflow-wrap: anywhere; }
 .rj { font-size: 0.9em; color: #888; font-style: italic; }
 .ph { font-size: 0.85em; color: #aaa; font-family: 'Times New Roman',serif; }
-.pb { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border-radius: 20px; border: none; cursor: pointer; background: var(--p); color: #fff; font-size: 0.8em; transition: all 0.2s; user-select: none; }
+.pb { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; border: none; cursor: pointer; background: var(--p); color: #fff; font-size: 0.78em; transition: all 0.2s; user-select: none; }
 .pb:hover { background: #5a4bd1; }
 .pb.loading { background: #b8b5e0; pointer-events: none; }
-.pb.ok { background: #00b894; }
+.pb .badge { font-size: 0.65em; background: rgba(255,255,255,0.25); padding: 1px 6px; border-radius: 8px; margin-left: 3px; }
 .dt { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; border-top: 0 solid #eee; margin-top: 0; }
 .cd.on .dt { max-height: 420px; border-top-width: 1px; margin-top: 14px; padding-top: 14px; }
 .dt p { font-size: 0.9em; color: #555; line-height: 1.7; margin-bottom: 6px; }
@@ -80,6 +80,10 @@ h1 { font-size: 2.2em; background: linear-gradient(135deg,var(--p),var(--a)); -w
 .ctf { font-size: 0.8em; color: #aaa; margin-top: 20px; line-height: 1.6; }
 .csl { position: absolute; top: 30px; right: 30px; width: 70px; height: 70px; border-radius: 50%; background: var(--a); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2em; font-weight: 800; transform: rotate(15deg); box-shadow: 0 3px 10px rgba(253,121,168,0.3); }
 .cc { margin-top: 20px; padding: 12px 40px; border-radius: 30px; border: none; background: var(--p); color: #fff; font-size: 1em; font-weight: 600; cursor: pointer; }
+.astatus { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 12px; font-size: 0.7em; margin-left: 6px; font-weight: 500; }
+.astatus.emb { background: #e6fff8; color: #00b894; }
+.astatus.ssml { background: #fff8e1; color: #f39c12; }
+.astatus.none { background: #ffebee; color: #d63031; }
 @media (max-width:600px) {
   .wrap { padding: 12px; }
   h1 { font-size: 1.6em; }
@@ -136,8 +140,40 @@ h1 { font-size: 2.2em; background: linear-gradient(135deg,var(--p),var(--a)); -w
   </div>
 </div>
 
+<!-- ===== 嵌入音频加载 ===== -->
 <script>
-// ==================== DATA ====================
+// HELLO10_AUDIO 会在 audio-data.js 加载后被赋值
+// 可以通过 <script src="audio-data.js"> 或 XHR 两种方式加载
+// 支持页面在根目录、子目录、GitHub Pages 项目站等场景
+var HELLO10_AUDIO = {};
+
+(function() {
+  if (Object.keys(HELLO10_AUDIO).length > 0) return;
+  // 计算可能路径：当前目录 → 父目录(tools) → 根目录
+  var paths = [];
+  var dir = window.location.pathname.replace(/\/[^/]*$/, '');
+  if (dir) paths.push(dir + '/audio-data.js');
+  if (dir.match(/\/tools\/?$/)) paths.push(dir.replace(/\/tools\/?$/, '') + '/audio-data.js');
+  paths.push('/audio-data.js');
+  paths = paths.filter(function(v, i, a) { return a.indexOf(v) === i; });
+
+  function load(i) {
+    if (i >= paths.length) return;
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', paths[i], true);
+    xhr.onload = function() {
+      if (xhr.status === 200) { try { eval(xhr.responseText); } catch(e) {} }
+      if (!HELLO10_AUDIO || Object.keys(HELLO10_AUDIO).length === 0) load(i + 1);
+    };
+    xhr.onerror = function() { load(i + 1); };
+    xhr.send();
+  }
+  if (!HELLO10_AUDIO || Object.keys(HELLO10_AUDIO).length === 0) load(0);
+})();
+</script>
+
+<script>
+// ==================== LANGUAGE DATA ====================
 const L = [
   {id:'zh',name:'Chinese (Mandarin)',flag:'🇨🇳',hello:'你好',romaji:'Nǐ hǎo',phonetic:'/ni³⁵ xɑʊ²¹⁴/',speakers:'~1.3B',countries:'China, Singapore',family:'Sino-Tibetan',intro:'Mandarin is the most spoken language in the world. It has 4 tones — same syllable, different tone, different meaning. "Nǐ hǎo" literally means "you good."',gl:'zh-CN',gt:'你好'},
   {id:'en',name:'English',flag:'🇬🇧',hello:'Hello',romaji:'Hə-LŌ',phonetic:'/həˈloʊ/',speakers:'~1.5B',countries:'UK, US, Canada, Australia, 100+',family:'Germanic',intro:'The global lingua franca. "Hello" originated from 14th century "hallo" and became the standard greeting with the telephone in the 1870s.',gl:'en',gt:'Hello'},
@@ -145,7 +181,7 @@ const L = [
   {id:'hi',name:'Hindi',flag:'🇮🇳',hello:'नमस्ते',romaji:'Na-mas-té',phonetic:'/nəməsteː/',speakers:'~600M',countries:'India, Fiji',family:'Indo-Aryan',intro:'India\'s primary official language. "Namaste" (नमस्ते) comes from Sanskrit, meaning "I bow to you." Said with palms together (Anjali Mudra).',gl:'hi',gt:'नमस्ते'},
   {id:'ar',name:'Arabic',flag:'🇸🇦',hello:'السلام عليكم',romaji:'As-salāmu ʿalaykum',phonetic:'/as.sa.laː.mu ʕa.laj.kum/',speakers:'~420M',countries:'Saudi Arabia, Egypt, UAE, 22 countries',family:'Afro-Asiatic',intro:'The language of the Quran, written right-to-left. "As-salāmu ʿalaykum" means "peace be upon you." The reply is "Wa ʿalaykumu s-salām."',gl:'ar',gt:'السلام عليكم'},
   {id:'pt',name:'Portuguese',flag:'🇧🇷',hello:'Olá',romaji:'Ô-lá',phonetic:'/ɔˈla/',speakers:'~260M',countries:'Brazil, Portugal, Angola, 9 countries',family:'Romance',intro:'Similar to Spanish but "softer." "Olá" has the same origin as Spanish "Hola." Brazilian Portuguese has more open vowels.',gl:'pt',gt:'Olá'},
-  {id:'bn',name:'Bengali',flag:'🇧🇩',hello:'নমস্কার',romaji:'Nô-mos-kār',phonetic:'/nɔmɔʃkaːr/',speakers:'~230M',countries:'Bangladesh, West Bengal (India)',family:'Indo-Aryan',intro:'Beautiful flowing script. "Nômoshkār" shares the same Sanskrit root as Hindi\'s "Namaste." The 1952 Language Movement fought for language rights.',gl:'bn',gt:'নমস্কার'},
+  {id:'bn',name:'Bengali',flag:'🇧🇩',hello:'নমস্কার',romaji:'Nô-mos-kār',phonetic:'/nɔmɔʃkaːr/',speakers:'~230M',countries:'Bangladesh, West Bengal (India)',family:'Indo-Aryan',intro:'Beautiful flowing script. "Nômoshkār" shares the same Sanskrit root as Hindi\'s "Namaste." The 1952 Language Movement fought for language rights.',gl:'bn',gt:'নমস্কार'},
   {id:'ru',name:'Russian',flag:'🇷🇺',hello:'Здравствуйте',romaji:'ZDRAV-stvooy-tye',phonetic:'/ˈzdrastvʊjtʲe/',speakers:'~250M',countries:'Russia, Belarus, Kazakhstan',family:'Slavic',intro:'Uses Cyrillic. "Zdravstvuyte" is formal, meaning "be healthy." Friends use "Privet" (Привет). Six grammatical cases.',gl:'ru',gt:'Здравствуйте'},
   {id:'ja',name:'Japanese',flag:'🇯🇵',hello:'こんにちは',romaji:'Kon-ni-chi-wa',phonetic:'/konnitɕiwa/',speakers:'~130M',countries:'Japan',family:'Japonic',intro:'"Konnichiwa" originally "today is." Particle "は" reads "wa." Three scripts: hiragana, katakana, kanji.',gl:'ja',gt:'こんにちは'},
   {id:'ko',name:'Korean',flag:'🇰🇷',hello:'안녕하세요',romaji:'An-nyeong-ha-se-yo',phonetic:'/an.njʌŋ.ha.se.jo/',speakers:'~80M',countries:'South Korea, North Korea, China',family:'Koreanic',intro:'Uses Hangul (한글), created by King Sejong in 1443. "Annyeonghaseyo" means "are you at peace?" ~60% vocabulary from Chinese.',gl:'ko',gt:'안녕하세요'},
@@ -165,14 +201,17 @@ function renderCards() {
   root.innerHTML = '<div class="gr">' + L.map((lang, i) => {
     const hv = lang.variants && lang.variants.length;
     const pb = hv ? lang.variants.map((v, vi) =>
-      `<span class="pb" onclick="event.stopPropagation();sayLangVar(${i},${vi},this)" data-li="${i}" data-vi="${vi}">🔊 ${v.label}</span>`
-    ).join('') : `<span class="pb" onclick="event.stopPropagation();sayLang(${i},this)" data-i="${i}">🔊 Listen</span>`;
+      `<span class="pb" onclick="event.stopPropagation();sayVar(${i},${vi},this)" data-li="${i}" data-vi="${vi}">🔊 ${v.label}</span>`
+    ).join('') : `<span class="pb" onclick="event.stopPropagation();sayHello(${i},this)" data-i="${i}">🔊 Listen</span>`;
     const hw = hv ? lang.variants.map(v => v.text).join(' / ') : lang.hello;
     const rj = hv ? lang.variants.map(v => v.romaji).join(' · ') : lang.romaji;
     const ph = hv ? lang.variants.map(v => v.phonetic).join(' · ') : lang.phonetic;
     const det = hv ? '<p style="margin-top:4px;"><b>Male vs Female:</b></p>' + lang.variants.map(v =>
       `<p style="padding-left:12px;font-size:0.85em;">• ${v.label}: <b>${v.text}</b> — ${v.note}</p>`
     ).join('') : '';
+    // Show audio source badge
+    const aid = lang.variants ? lang.variants[0]?.text : lang.gt;
+    const hasEmbed = !!(HELLO10_AUDIO && (HELLO10_AUDIO[lang.id] || (lang.variants && lang.variants.some((_,vi) => HELLO10_AUDIO[lang.id+'_'+vi]))));
     return `<div class="cd" onclick="toggleCd(${i})" id="cd-${i}">
       <div class="nm"><span>${lang.flag}</span> ${lang.name} <span class="spk">👥 ${lang.speakers}</span></div>
       <div class="hr"><span class="hw">${hw}</span></div>
@@ -187,120 +226,136 @@ function renderCards() {
 }
 function toggleCd(i) { document.getElementById(`cd-${i}`).classList.toggle('on'); }
 
-// ==================== SPEECH ENGINE ====================
-// Hybrid: SpeechSynthesis (local, fast) → Google TTS Audio (network, fallback)
-// Strategy to prevent Chrome SpeechSynthesis from getting stuck:
-// 1. Cancel + re-create engine between calls
-// 2. Short timeout (5s) — if stuck, switch to Google TTS
-// 3. Warm-up on page load and first click
-
+// ==================== AUDIO ENGINE ====================
+// Three-tier: ① Embedded audio (perfect) ② SpeechSynthesis (any environment)
 let isSpeaking = false;
+let audioEl = null;
 
-// Detect available SSML voices (updated after load)
-let ttsVoices = [];
-function refreshVoices() { ttsVoices = window.speechSynthesis.getVoices(); }
-if (window.speechSynthesis) { refreshVoices(); window.speechSynthesis.onvoiceschanged = refreshVoices; }
+// Get a single shared audio element
+function getAudio() { if (!audioEl) { audioEl = new Audio(); audioEl.preload = 'auto'; try { document.body.appendChild(audioEl); } catch(e) {} } return audioEl; }
 
-function hasVoiceFor(langCode) {
-  const prefix = langCode.substring(0, 2);
-  return ttsVoices.some(v => v.lang.startsWith(prefix));
-}
-
-// Google TTS audio URL
-function gTTS(text, lang) {
-  return 'https://translate.google.com/translate_tts?ie=UTF-8&q='
-    + encodeURIComponent(text) + '&tl=' + lang + '&client=tw-ob&_=' + Date.now();
-}
-
-// Play via SpeechSynthesis — returns a promise
-function speakSSML(text, langCode, pitch) {
-  return new Promise(resolve => {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = langCode;
-    u.rate = 0.88;
-    u.pitch = pitch || 1.0;
-
-    let done = false;
-    let t1 = null, t2 = null;
-    const finish = () => {
-      if (!done) { done = true; if (t1) clearTimeout(t1); if (t2) clearTimeout(t2); resolve(); }
-    };
-    u.onend = finish;
-    u.onerror = finish;
-
-    // Timeout 1: if engine is stuck (onstart never fires)
-    t1 = setTimeout(() => {
-      // Engine stuck: cancel and resolve
-      window.speechSynthesis.cancel();
-      finish();
-    }, 3000);
-    u.onstart = () => {
-      clearTimeout(t1); t1 = null;
-      // Timeout 2: speech started but onend may never fire (Chrome bug)
-      t2 = setTimeout(finish, 6000);
-    };
-
-    window.speechSynthesis.speak(u);
-  });
-}
-
-// Play via Google TTS Audio — returns a promise
-function speakAudio(url) {
-  return new Promise(resolve => {
-    try {
-      const el = new Audio(url);
-      let done = false;
-      const finish = () => { if (!done) { done = true; resolve(); } };
-      el.oncanplaythrough = () => { el.play().catch(finish); };
-      el.onerror = finish;
-      el.onended = finish;
-      setTimeout(finish, 6000);
-      el.load();
-    } catch(e) { resolve(); }
-  });
-}
-
-// High-level: speak text in given language
-async function speak(text, langCode, googleLang, googleText, pitch) {
-  isSpeaking = true;
-  ensureWarmSS();
+// Play embedded audio (base64 data URI) — returns true if successful
+function playEmbedded(id, onEnd, isMale) {
+  if (!HELLO10_AUDIO || !HELLO10_AUDIO[id]) return false;
   try {
-    if (hasVoiceFor(langCode)) {
-      await speakSSML(text, langCode, pitch);
-    } else {
-      const url = gTTS(googleText || text, googleLang);
-      await speakAudio(url);
+    if (isMale) {
+      playMaleWithDetune(HELLO10_AUDIO[id], onEnd);
+      return true;
     }
-  } catch(e) {
-    // ignore
-  }
-  isSpeaking = false;
+    const el = getAudio();
+    el.src = HELLO10_AUDIO[id];
+    el.currentTime = 0;
+    let done = false;
+    el.onended = () => { if (!done) { done = true; if (onEnd) onEnd(); } };
+    el.onerror = () => { if (!done) { done = true; if (onEnd) onEnd(); } };
+    el.play().catch(() => { if (onEnd) onEnd(); });
+    return true;
+  } catch(e) { return false; }
 }
 
-async function sayLang(i, btn) {
-  const lang = L[i];
-  if (isSpeaking) { window.speechSynthesis.cancel(); isSpeaking = false; return; }
-  ensureWarmSS();
-  btn.classList.add('loading');
+// 男声变调：fetch → decodeAudioData → BufferSource.detune，速度不变
+function playMaleWithDetune(dataUri, onEnd) {
+  var done = false;
+  function finish() { if (!done) { done = true; if (onEnd) onEnd(); } }
+
   try {
-    await speak(lang.gt, lang.gl, lang.gl, lang.gt, 1.0);
-  } catch(e) {}
-  btn.classList.remove('loading');
+    // base64 → Blob → Object URL
+    var raw = atob(dataUri.split(',')[1]);
+    var len = raw.length;
+    var buf = new ArrayBuffer(len);
+    var arr = new Uint8Array(buf);
+    for (var i = 0; i < len; i++) arr[i] = raw.charCodeAt(i);
+    var blob = new Blob([buf], {type: 'audio/mpeg'});
+    var url = URL.createObjectURL(blob);
+
+    // fetch 解码
+    fetch(url)
+      .then(function(r) { return r.arrayBuffer(); })
+      .then(function(mp3buf) {
+        if (done) return;
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        return ctx.resume().then(function() {
+          return new Promise(function(resolve, reject) {
+            ctx.decodeAudioData(mp3buf, resolve, reject);
+          });
+        }).then(function(audioBuffer) {
+          if (done) return;
+          var src = ctx.createBufferSource();
+          src.buffer = audioBuffer;
+          src.playbackRate.value = 1.0;  // 速度不变！
+          src.detune.value = -700;        // 只降音高
+          src.connect(ctx.destination);
+          src.start(0);
+          src.onended = function() {
+            URL.revokeObjectURL(url);
+            try { ctx.close(); } catch(e) {}
+            finish();
+          };
+        });
+      })
+      .catch(function() {
+        URL.revokeObjectURL(url);
+        // 降级：女声原速播放
+        var el = getAudio(); el.src = dataUri; el.currentTime = 0; el.play();
+        el.onended = finish;
+      });
+  } catch(e) {
+    // 降级：女声原速播放
+    var el = getAudio(); el.src = dataUri; el.currentTime = 0; el.play();
+    el.onended = finish;
+  }
+
+  // 6秒兜底：确保不会卡住按钮状态
+  setTimeout(finish, 6000);
 }
 
-async function sayLangVar(li, vi, btn) {
+// Play via SpeechSynthesis
+function playSSML(text, lang, pitch, onEnd) {
+  try { window.speechSynthesis.cancel(); } catch(e) {}
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang;
+  u.rate = 0.88;
+  u.pitch = pitch || 1.0;
+  let done = false;
+  u.onend = () => { if (!done) { done = true; if (onEnd) onEnd(); } };
+  u.onerror = () => { if (!done) { done = true; if (onEnd) onEnd(); } };
+  const t = setTimeout(() => { if (!done) { done = true; if (onEnd) onEnd(); } }, 5000);
+  u.onstart = () => { clearTimeout(t); };
+  window.speechSynthesis.speak(u);
+}
+
+// Unified play: embedded audio → SpeechSynthesis
+function play(id, text, lang, pitch, onEnd, isMale) {
+  if (isSpeaking) { try { window.speechSynthesis.cancel(); } catch(e) {} }
+  isSpeaking = true;
+  if (!playEmbedded(id, () => { isSpeaking = false; if (onEnd) onEnd(); }, isMale)) {
+    playSSML(text, lang, pitch, () => { isSpeaking = false; if (onEnd) onEnd(); });
+  }
+}
+
+function sayHello(i, btn) {
+  const lang = L[i];
+  if (isSpeaking) { try { window.speechSynthesis.cancel(); } catch(e) {} isSpeaking = false; return; }
+  btn.classList.add('loading');
+  play(lang.id, lang.gt, lang.gl, 1.0, () => btn.classList.remove('loading'));
+}
+
+function sayVar(li, vi, btn) {
   const v = L[li].variants[vi];
-  if (!v || isSpeaking) { window.speechSynthesis.cancel(); isSpeaking = false; return; }
-  ensureWarmSS();
+  if (!v || isSpeaking) { try { window.speechSynthesis.cancel(); } catch(e) {} isSpeaking = false; return; }
   const lang = L[li];
   const pitch = v.label.includes('♀') ? 1.3 : 0.7;
+  const vid = lang.id + '_' + (v.label.includes('♂') ? 'm' : 'f');
+  const isMale = v.label.includes('♂');
   btn.classList.add('loading');
-  try {
-    await speak(v.text, lang.gl, lang.gl, v.text, pitch);
-  } catch(e) {}
-  btn.classList.remove('loading');
+  play(vid, v.text, lang.gl, pitch, () => btn.classList.remove('loading'), isMale);
 }
+
+// Warm up speech engine on first interaction
+document.addEventListener('click', function warm() {
+  try { const u = new SpeechSynthesisUtterance(' '); window.speechSynthesis.speak(u); } catch(e) {}
+  document.removeEventListener('click', warm);
+}, { once: true });
 
 // ==================== TAB ====================
 function switchTab(t, el) {
@@ -319,9 +374,9 @@ function shuffle(a) { const r = [...a]; for(let i=r.length-1;i>0;i--){const j=Ma
 function initExam() {
   const qs = shuffle(L.map((lang, i) => ({ i, id: lang.id, name: lang.name, flag: lang.flag, text: lang.hello, gl: lang.gl, gt: lang.gt })));
   Object.assign(es, { answered: false, idx: 0, correct: 0, questions: qs, wrong: [] });
-  renderDots();
-  showQ();
+  renderDots(); showQ();
 }
+
 function renderDots() {
   document.getElementById('dots').innerHTML = es.questions.map((q, i) => {
     let c = ''; if (i < es.idx) c = 'done'; else if (i === es.idx) c = 'now';
@@ -336,20 +391,17 @@ function showQ() {
   document.getElementById('fb').textContent = '';
   document.getElementById('fb').className = 'fb';
   document.getElementById('nextBtn').disabled = true;
-
   const others = L.filter((_, i) => i !== q.i).sort(() => Math.random() - 0.5).slice(0, 3);
   const opts = shuffle([
     { i: q.i, name: q.name, flag: q.flag, text: q.text, correct: true },
     ...others.map(l => ({ i: L.indexOf(l), name: l.name, flag: l.flag, text: l.hello, correct: false }))
   ]);
-
   document.getElementById('options').innerHTML = opts.map((o, idx) =>
     `<div class="op" onclick="pick(${idx})" data-correct="${o.correct}">
       <span class="ol">${LAB[idx]}</span>
       <span><div class="ow">${o.flag} ${o.text}</div><div class="on2">${o.name}</div></span>
     </div>`
   ).join('');
-
   document.getElementById('qtext').textContent = `🎧 What language is this? (${es.idx + 1}/${es.questions.length})`;
   document.getElementById('score').textContent = `${es.correct} / ${es.questions.length}`;
   document.getElementById('pbar').style.width = (es.idx / es.questions.length * 100) + '%';
@@ -357,10 +409,10 @@ function showQ() {
   setTimeout(playExamAudio, 400);
 }
 
-async function playExamAudio() {
+function playExamAudio() {
   const q = es.questions[es.idx];
   if (!q) return;
-  await speak(q.gt, q.gl, q.gl, q.gt, 1.0);
+  play(q.id, q.gt, q.gl, 1.0, () => {});
 }
 
 function pick(idx) {
@@ -385,8 +437,7 @@ function pick(idx) {
 }
 
 function nextQ() {
-  if (es.idx < es.questions.length - 1) { es.idx++; showQ(); }
-  else finishExam();
+  if (es.idx < es.questions.length - 1) { es.idx++; showQ(); } else finishExam();
 }
 
 function finishExam() {
@@ -400,7 +451,7 @@ function finishExam() {
   const fb = document.getElementById('fb');
   if (pct >= 80) {
     fb.className = 'fb ok';
-    fb.innerHTML = `🎊 Score: ${correct}/${total} (${pct}%)<br>You\'re a certified multi-language greeter! 🎓`;
+    fb.innerHTML = `🎊 Score: ${correct}/${total} (${pct}%)<br>You're a certified multi-language greeter! 🎓`;
     setTimeout(showCert, 1200);
   } else {
     fb.className = 'fb no';
@@ -428,32 +479,6 @@ function resetExam() {
   document.getElementById('nextBtn').textContent = 'Next →';
   document.getElementById('nextBtn').onclick = nextQ;
   initExam();
-}
-
-// ==================== WARMUP ====================
-// Chrome requires a user gesture before SpeechSynthesis works.
-// We warmup on the first click by speaking a short word.
-let warmedUp = false;
-
-function refreshVoices() { ttsVoices = window.speechSynthesis.getVoices(); }
-if (window.speechSynthesis) {
-  refreshVoices();
-  window.speechSynthesis.onvoiceschanged = refreshVoices;
-}
-
-// Called on first user click to unlock the engine
-function ensureWarmSS() {
-  if (warmedUp || !window.speechSynthesis) return;
-  warmedUp = true;
-  window.speechSynthesis.cancel();
-  // Speak a short word to "unlock" — must be non-empty with normal volume
-  try {
-    const u = new SpeechSynthesisUtterance('go');
-    u.volume = 1;
-    window.speechSynthesis.speak(u);
-  } catch(e) {}
-  // Refresh voices list
-  setTimeout(refreshVoices, 100);
 }
 
 // ==================== INIT ====================
