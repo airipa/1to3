@@ -273,9 +273,15 @@ function sayVar(li, vi, btn) {
   if (isSpeaking) { try { window.speechSynthesis.cancel(); } catch(e) {} isSpeaking = false; return; }
   var lang = L[li];
   var vid = lang.id + (v.label.includes('♂') ? '_m' : '_f');
-  var pitch = v.label.includes('♀') ? 1.3 : 0.7;
   btn.classList.add('loading');
-  speak(vid, v.text, lang.gl, pitch, function() { btn.classList.remove('loading'); });
+
+  if (v.label.includes('♂')) {
+    // 泰语男声：不用嵌入音频（女声），直接 SpeechSynthesis 降 pitch 变男声
+    isSpeaking = true;
+    playSSML(v.text, lang.gl, 0.5, function() { isSpeaking = false; btn.classList.remove('loading'); });
+  } else {
+    speak(vid, v.text, lang.gl, 1.3, function() { btn.classList.remove('loading'); });
+  }
 }
 
 document.addEventListener('click', function warm() {
