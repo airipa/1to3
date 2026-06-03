@@ -141,13 +141,12 @@ h1 { font-size: 2.2em; background: linear-gradient(135deg,var(--p),var(--a)); -w
   </div>
 </div>
 
-<!-- ===== 嵌入音频加载 ===== -->
+<!-- 嵌入音频加载：audio-data.js 设置 window.HELLO10_AUDIO -->
 <script>
-// HELLO10_AUDIO 会在 audio-data.js 加载后被赋值
-var HELLO10_AUDIO = {};
-
 (function() {
-  if (Object.keys(HELLO10_AUDIO).length > 0) return;
+  // 判断是否已通过 <script src="audio-data.js"> 加载
+  if (window.HELLO10_AUDIO && Object.keys(window.HELLO10_AUDIO).length > 0) return;
+  // 否则 XHR 自动寻找 audio-data.js
   var paths = [];
   var dir = window.location.pathname.replace(/\/[^/]*$/, '');
   if (dir) paths.push(dir + '/audio-data.js');
@@ -160,13 +159,17 @@ var HELLO10_AUDIO = {};
     var xhr = new XMLHttpRequest();
     xhr.open('GET', paths[i], true);
     xhr.onload = function() {
-      if (xhr.status === 200) { try { eval(xhr.responseText); } catch(e) {} }
-      if (!HELLO10_AUDIO || Object.keys(HELLO10_AUDIO).length === 0) load(i + 1);
+      if (xhr.status === 200) {
+        try { eval(xhr.responseText); } catch(e) {}
+      }
+      if (!window.HELLO10_AUDIO || Object.keys(window.HELLO10_AUDIO).length === 0) {
+        load(i + 1);
+      }
     };
     xhr.onerror = function() { load(i + 1); };
     xhr.send();
   }
-  if (!HELLO10_AUDIO || Object.keys(HELLO10_AUDIO).length === 0) load(0);
+  load(0);
 })();
 </script>
 
@@ -290,49 +293,16 @@ function playMaleThai(vid, onEnd) {
   var done = false;
   function finish() { if (!done) { done = true; isSpeaking = false; if (onEnd) onEnd(); } }
 
-  // 新 audio 元素 + canplaythrough 后再创建 AudioContext 连接
   try {
-    var el = new Audio();
-    el.preload = 'auto';
+    var el = getAudio();
     el.src = data[vid];
-
-    var started = false;
-    function connectDetune() {
-      if (started || done) return;
-      started = true;
-      try {
-        var ctx = new (window.AudioContext || window.webkitAudioContext)();
-        ctx.resume().then(function() {
-          if (done) { try{ctx.close()}catch(e){} return; }
-          try {
-            var src = ctx.createMediaElementSource(el);
-            src.playbackRate.value = 1.0;   // 速度不变！
-            src.detune.value = -700;         // 只降音高
-            src.connect(ctx.destination);
-            el.play();
-            el.onended = function() { try{ctx.close()}catch(e){} finish(); };
-          } catch(e2) {
-            // 连接失败 → 原速播放
-            el.playbackRate = 1.0; el.play(); el.onended = finish;
-          }
-        }).catch(function() {
-          el.playbackRate = 1.0; el.play(); el.onended = finish;
-        });
-      } catch(e3) {
-        el.playbackRate = 1.0; el.play(); el.onended = finish;
-      }
-    }
-
-    // 已就绪或等待就绪
-    if (el.readyState >= 3) { connectDetune(); }
-    else { el.addEventListener('canplaythrough', connectDetune); }
-
-    el.load();
-    // 兜底：4秒后原速
-    setTimeout(function() { if (!started && !done) { started = true; el.playbackRate = 1.0; el.play(); el.onended = finish; } }, 4000);
+    el.currentTime = 0;
+    el.playbackRate = 0.6;
+    el.onended = finish;
+    el.onerror = finish;
+    el.play().catch(finish);
   } catch(e) { finish(); }
-  // 总超时保护
-  setTimeout(finish, 8000);
+  setTimeout(finish, 6000);
 }
 
 document.addEventListener('click', function warm() {
