@@ -195,17 +195,32 @@ function toggleCd(i) { document.getElementById('cd-'+i).classList.toggle('on'); 
 
 // ==================== 音频 ====================
 var isSpeaking = false;
-var audioEl = null;
-function getAudio() { if (!audioEl) { audioEl = new Audio(); audioEl.preload = 'auto'; } return audioEl; }
+
+// 缓存 base64 → Blob URL（避免重复解码）
+var blobCache = {};
+
+function b64ToBlob(b64) {
+  if (blobCache[b64]) return blobCache[b64];
+  try {
+    var parts = b64.split(',');
+    var raw = atob(parts[1]);
+    var len = raw.length;
+    var arr = new Uint8Array(len);
+    for (var i = 0; i < len; i++) arr[i] = raw.charCodeAt(i);
+    var blob = new Blob([arr], {type: 'audio/mpeg'});
+    var url = URL.createObjectURL(blob);
+    blobCache[b64] = url;
+    return url;
+  } catch(e) { return null; }
+}
 
 function playEmbedded(id, onEnd) {
-  // 兼容 audio-data.js 的各种输出格式
   var data = window.HELLO10_AUDIO || (typeof HELLO10_AUDIO !== 'undefined' ? HELLO10_AUDIO : null);
   if (!data || !data[id]) return false;
   try {
-    var el = getAudio();
-    el.src = data[id];
-    el.currentTime = 0;
+    var url = b64ToBlob(data[id]);
+    if (!url) return false;
+    var el = new Audio(url);
     var done = false;
     el.onended = function() { if (!done) { done = true; if (onEnd) onEnd(); } };
     el.onerror = function() { if (!done) { done = true; if (onEnd) onEnd(); } };
@@ -232,30 +247,30 @@ function speak(id, text, lang, pitch, onEnd) {
   if (isSpeaking) { try { window.speechSynthesis.cancel(); } catch(e) {} }
   isSpeaking = true;
 
+  var ssmlTimer = null;
   var done = false;
-  var embedTimer = null;
 
   function finish() {
     if (done) return;
     done = true;
-    if (embedTimer) clearTimeout(embedTimer);
+    if (ssmlTimer) clearTimeout(ssmlTimer);
     try { window.speechSynthesis.cancel(); } catch(e) {}
     isSpeaking = false;
     if (onEnd) onEnd();
   }
 
-  var hasEmbedded = playEmbedded(id, finish);
+  // 尝试嵌入音频（Blob URL）
+  var hasEmbed = playEmbedded(id, finish);
 
-  if (hasEmbedded) {
-    // 嵌入音频已启动。3秒没出声 → 切换 SpeechSynthesis
-    embedTimer = setTimeout(function() {
-      if (!done) {
-        try { getAudio().pause(); } catch(e) {}
-        playSSML(text, lang, pitch, finish);
-      }
-    }, 2500);
-  } else {
+  if (!hasEmbed) {
+    // 无嵌入音频 → 直接 SpeechSynthesis
     playSSML(text, lang, pitch, finish);
+  } else {
+    // 有嵌入音频 → playEmbedded 的 onended/onerror 会触发 finish
+    // 安全兜底：3.5 秒后强制完成（防止卡死按钮状态）
+    ssmlTimer = setTimeout(function() {
+      if (!done) { done = true; try { window.speechSynthesis.cancel(); } catch(e) {} isSpeaking = false; if (onEnd) onEnd(); }
+    }, 3500);
   }
 }
 
