@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌍 学十国外语 · 问好</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root { --p: #6c5ce7; --p2: #a29bfe; --a: #fd79a8; --g: #fdcb6e; --d: #2d3436; --c: #ffffff; --b: #f0f2f5; }
+body { font-family: -apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif; background: var(--b); color: var(--d); }
+.wrap { max-width: 820px; margin: 0 auto; padding: 20px 16px 60px; }
+header { text-align: center; padding: 30px 0 10px; }
+h1 { font-size: 2.2em; background: linear-gradient(135deg,var(--p),var(--a)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.sub { color: #888; font-size: 0.95em; margin-top: 6px; }
+.t { display: flex; justify-content: center; gap: 10px; margin: 20px 0 25px; }
+.tb { padding: 10px 28px; border-radius: 30px; border: none; font-size: 0.95em; cursor: pointer; font-weight: 600; transition: all 0.2s; background: #fff; color: #999; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.tb.on { background: var(--p); color: #fff; box-shadow: 0 4px 15px rgba(108,92,231,0.35); }
+.gr { display: grid; grid-template-columns: repeat(auto-fill,minmax(340px,1fr)); gap: 18px; }
+.cd { background: var(--c); border-radius: 18px; padding: 22px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); transition: all 0.25s; cursor: pointer; border-left: 5px solid var(--p); }
+.cd:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+.cd.on { border-left-color: var(--a); }
+.nm { font-size: 1.3em; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.nm .spk { font-size: 0.5em; font-weight: 400; color: #999; margin-left: auto; }
+.hr { margin: 12px 0 6px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.hw { font-size: 1.5em; font-weight: 600; color: var(--p); overflow-wrap: anywhere; }
+.rj { font-size: 0.9em; color: #888; font-style: italic; }
+.ph { font-size: 0.85em; color: #aaa; font-family: 'Times New Roman',serif; }
+.pb { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; border: none; cursor: pointer; background: var(--p); color: #fff; font-size: 0.78em; transition: all 0.2s; user-select: none; }
+.pb:hover { background: #5a4bd1; }
+.pb.loading { background: #b8b5e0; pointer-events: none; }
+.dt { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; border-top: 0 solid #eee; margin-top: 0; }
+.cd.on .dt { max-height: 420px; border-top-width: 1px; margin-top: 14px; padding-top: 14px; }
+.dt p { font-size: 0.9em; color: #555; line-height: 1.7; margin-bottom: 6px; }
+.tg { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.75em; margin: 3px 4px; font-weight: 500; }
+.tg-f { background: #dfe6e9; color: #555; }
+.tg-c { background: #ffeaa7; color: #856404; }
+.tg-s { background: #74b9ff; color: #fff; }
+.eh { font-size: 0.75em; color: #ccc; margin-top: 8px; }
+.ex { background: var(--c); border-radius: 20px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; }
+.xp { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.xb { flex: 1; height: 6px; background: #eee; border-radius: 3px; margin: 0 15px; overflow: hidden; }
+.xf { height: 100%; background: linear-gradient(90deg,var(--p),var(--a)); border-radius: 3px; transition: width 0.4s; }
+.xs { font-weight: 700; color: var(--p); }
+.dot { display: flex; justify-content: center; gap: 6px; margin-bottom: 20px; }
+.dt2 { width: 14px; height: 14px; border-radius: 50%; background: #ddd; transition: all 0.3s; }
+.dt2.done { background: var(--p); }
+.dt2.now { background: var(--g); transform: scale(1.3); }
+.xh { font-size: 0.85em; color: #999; margin-bottom: 10px; }
+.xp2 { width: 80px; height: 80px; border-radius: 50%; border: none; background: linear-gradient(135deg,var(--p),var(--p2)); color: #fff; font-size: 2em; cursor: pointer; margin: 10px auto 18px; box-shadow: 0 6px 20px rgba(108,92,231,0.3); transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; user-select: none; }
+.xp2:hover { transform: scale(1.08); }
+.xq { font-size: 1.1em; color: #555; margin-bottom: 20px; font-weight: 500; }
+.xo { display: grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap: 10px; margin: 20px 0; }
+.op { padding: 14px 18px; border-radius: 14px; border: 2px solid #eee; background: #fff; cursor: pointer; transition: all 0.2s; font-size: 0.95em; text-align: left; display: flex; align-items: center; gap: 10px; }
+.op:hover { border-color: var(--p2); background: #f8f7ff; }
+.op .ol { width: 28px; height: 28px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8em; color: #888; flex-shrink: 0; }
+.op .ow { font-size: 1.2em; font-weight: 600; color: var(--d); }
+.op .on2 { font-size: 0.75em; color: #999; margin-top: 2px; }
+.op.ok { border-color: #00b894; background: #e6fff8; }
+.op.ok .ol { background: #00b894; color: #fff; }
+.op.no { border-color: #ff7675; background: #fff5f5; }
+.op.no .ol { background: #ff7675; color: #fff; }
+.op.ds { pointer-events: none; opacity: 0.7; }
+.fb { margin: 15px 0; font-size: 1em; font-weight: 600; min-height: 30px; }
+.fb.ok { color: #00b894; }
+.fb.no { color: #ff7675; }
+.eb { padding: 12px 40px; border-radius: 30px; border: none; font-size: 1em; font-weight: 600; cursor: pointer; background: var(--p); color: #fff; transition: all 0.2s; }
+.eb:hover { background: #5a4bd1; }
+.eb:disabled { background: #ccc; cursor: not-allowed; }
+.eb.s2 { background: #f0f0f0; color: #666; }
+.co { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+.co.on { display: flex; }
+.ct { background: #fff; border-radius: 24px; padding: 40px 36px; max-width: 600px; width: 100%; text-align: center; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.2); border: 6px double var(--g); }
+.cb2 { font-size: 4em; margin-bottom: 10px; }
+.ctt { font-size: 1.8em; font-weight: 800; color: var(--d); letter-spacing: 2px; }
+.cts { color: #999; margin: 8px 0 20px; font-size: 0.95em; }
+.ctn { font-size: 1.4em; font-weight: 700; color: var(--p); margin: 10px 0; padding: 10px 0; border-top: 2px dashed #eee; border-bottom: 2px dashed #eee; }
+.ctl { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 18px 0; }
+.ctlg { padding: 4px 14px; border-radius: 20px; background: #f0edff; color: var(--p); font-size: 0.8em; font-weight: 500; }
+.ctf { font-size: 0.8em; color: #aaa; margin-top: 20px; line-height: 1.6; }
+.csl { position: absolute; top: 30px; right: 30px; width: 70px; height: 70px; border-radius: 50%; background: var(--a); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2em; font-weight: 800; transform: rotate(15deg); box-shadow: 0 3px 10px rgba(253,121,168,0.3); }
+.cc { margin-top: 20px; padding: 12px 40px; border-radius: 30px; border: none; background: var(--p); color: #fff; font-size: 1em; font-weight: 600; cursor: pointer; }
+@media (max-width:600px) {
+  .wrap { padding: 12px; }
+  h1 { font-size: 1.6em; }
+  .gr { grid-template-columns: 1fr; }
+  .xo { grid-template-columns: 1fr; }
+  .ct { padding: 28px 20px; }
+  .csl { width: 50px; height: 50px; font-size: 1.3em; top: 20px; right: 20px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🌏 十国外语 · 问好</h1>
+    <div class="sub">一句"你好"走遍全球 — 听说读写 · 一站掌握</div>
+  </header>
+  <div class="t">
+    <div class="tb on" onclick="switchTab('learn',this)">📖 学习</div>
+    <div class="tb" onclick="switchTab('exam',this)">✏️ 考试</div>
+  </div>
+  <div id="tab-learn"></div>
+  <div id="tab-exam" style="display:none;">
+    <div class="ex">
+      <div class="xp">
+        <span style="font-weight:600;">🎯 挑战</span>
+        <div class="xb"><div class="xf" id="pbar" style="width:0%"></div></div>
+        <span class="xs" id="score">0 / 0</span>
+      </div>
+      <div class="dot" id="dots"></div>
+      <div class="xh">🔊 点击按钮听发音，选出对应的语言</div>
+      <div class="xp2" id="playBtn" onclick="playExamAudio()">🔊</div>
+      <div class="xq" id="qtext">这段问候属于哪种语言？</div>
+      <div class="xo" id="options"></div>
+      <div class="fb" id="fb"></div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="eb" id="nextBtn" onclick="nextQ()" disabled>下一题 →</button>
+        <button class="eb s2" onclick="resetExam()">🔄 重新开始</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="co" id="cert">
+  <div class="ct">
+    <div class="csl">🎓</div>
+    <div class="cb2">🏆</div>
+    <div class="ctt">🌟 十国外语人才</div>
+    <div class="cts">— 国际问候语能力认证 —</div>
+    <div class="ctn" id="cname">🏅 超级语言学习者</div>
+    <p style="color:#666;font-size:0.9em;margin:10px 0;">
+      经考核，已掌握以下语言的问候语，<br>
+      能够通过听音辨识语言及其文字，达到"十国外语"水平。
+    </p>
+    <div class="ctl" id="clangs"></div>
+    <div style="display:flex;justify-content:space-between;margin-top:15px;font-size:0.75em;color:#aaa;">
+      <span>证书编号: HELLO-10-<span id="cno"></span></span>
+      <span>签发日期: <span id="cdate"></span></span>
+    </div>
+    <div class="ctf">🎉 行万里路，从一句"你好"开始。<br>Keep learning, keep exploring!</div>
+    <button class="cc" onclick="closeCert()">🎊 太棒了！</button>
+  </div>
+</div>
+
+<!-- audio-data.js 由 generate-audio.js 生成，格式为 window.HELLO10_AUDIO = {...} -->
+<!-- 如果没有该文件或加载失败，自动降级到浏览器 SpeechSynthesis -->
+<script src="audio-data.js"></script>
+
+<script>
+// ==================== 语言数据 ====================
+var L = [
+  {id:'zh',name:'中文（普通话）',flag:'🇨🇳',hello:'你好',romaji:'Nǐ hǎo',phonetic:'/ni³⁵ xɑʊ²¹⁴/',speakers:'约13亿',countries:'中国、新加坡、马来西亚',family:'汉藏语系',intro:'汉语普通话是世界使用人数最多的语言。声调系统（4个声调）是其最大特色，同一个音节不同声调意思完全不同。"你好"是最基础的问候语，两个字分别读作第三声。',gl:'zh-CN',gt:'你好'},
+  {id:'en',name:'英语',flag:'🇬🇧',hello:'Hello',romaji:'Hə-LŌ',phonetic:'/həˈloʊ/',speakers:'约15亿',countries:'英美加澳等100+国',family:'日耳曼语系',intro:'英语是全球最通用的国际语言。"Hello" 源自14世纪的"hallo"，19世纪电话发明后成为标准问候语。简单易学，元音发音清晰。',gl:'en',gt:'Hello'},
+  {id:'es',name:'西班牙语',flag:'🇪🇸',hello:'Hola',romaji:'Ó-la',phonetic:'/ˈola/',speakers:'约5.8亿',countries:'西班牙、墨西哥、阿根廷等21国',family:'罗曼语系',intro:'西班牙语是21国的官方语言。"Hola" 源自拉丁语"illa"，H不发音。联合国六种工作语言之一。',gl:'es',gt:'Hola'},
+  {id:'hi',name:'印地语',flag:'🇮🇳',hello:'नमस्ते',romaji:'Na-mas-té',phonetic:'/nəməsteː/',speakers:'约6亿',countries:'印度、斐济',family:'印度-雅利安语系',intro:'印度最主要的官方语言。"नमस्ते"(Namaste) 源自梵语，意为"我向你鞠躬"。双手合十说这句话是标准姿势。',gl:'hi',gt:'नमस्ते'},
+  {id:'ar',name:'阿拉伯语',flag:'🇸🇦',hello:'السلام عليكم',romaji:'As-salāmu ʿalaykum',phonetic:'/as.sa.laː.mu ʕa.laj.kum/',speakers:'约4.2亿',countries:'沙特、埃及、阿联酋等22国',family:'闪含语系',intro:'《古兰经》的语言，从右向左书写。"السلام عليكم" 意为"愿平安降临你"，回应是"وعليكم السلام"。',gl:'ar',gt:'السلام عليكم'},
+  {id:'pt',name:'葡萄牙语',flag:'🇧🇷',hello:'Olá',romaji:'Ô-lá',phonetic:'/ɔˈla/',speakers:'约2.6亿',countries:'巴西、葡萄牙、安哥拉等9国',family:'罗曼语系',intro:'与西班牙语很像但发音更"柔和"。巴西葡萄牙语的发音更开放，葡萄牙本土的发音更内敛。',gl:'pt',gt:'Olá'},
+  {id:'bn',name:'孟加拉语',flag:'🇧🇩',hello:'নমস্কার',romaji:'Nô-mos-kār',phonetic:'/nɔmɔʃkaːr/',speakers:'约2.3亿',countries:'孟加拉国、印度西孟加拉邦',family:'印度-雅利安语系',intro:'孟加拉语以优美的书写闻名。"নমস্কার"与印地语"नमस्ते"同源。孟加拉国独立战争（1971年）就是为保护语言权利而战。',gl:'bn',gt:'নমস্কার'},
+  {id:'ru',name:'俄语',flag:'🇷🇺',hello:'Здравствуйте',romaji:'ZDRAV-stvooy-tye',phonetic:'/ˈzdrastvʊjtʲe/',speakers:'约2.5亿',countries:'俄罗斯、白俄罗斯、哈萨克斯坦等',family:'斯拉夫语系',intro:'使用西里尔字母。"Здравствуйте"字面意思是"祝你健康"。日常朋友间用"Привет"（Pri-vét）。俄语有6个格的变化。',gl:'ru',gt:'Здравствуйте'},
+  {id:'ja',name:'日语',flag:'🇯🇵',hello:'こんにちは',romaji:'Kon-ni-chi-wa',phonetic:'/konnitɕiwa/',speakers:'约1.3亿',countries:'日本',family:'日本语系（孤立语）',intro:'"こんにちは"原意为"今天好"。助词"は"读作"wa"。日语有平假名、片假名和汉字三种文字混合书写。',gl:'ja',gt:'こんにちは'},
+  {id:'ko',name:'韩语',flag:'🇰🇷',hello:'안녕하세요',romaji:'An-nyeong-ha-se-yo',phonetic:'/an.njʌŋ.ha.se.jo/',speakers:'约8000万',countries:'韩国、朝鲜、中国延边',family:'朝鲜语系（孤立语）',intro:'韩语是表音文字（谚文），由世宗大王于1443年创造。"안녕하세요"意为"安好吗？"。词汇约60%来自汉字词。',gl:'ko',gt:'안녕하세요'},
+  {id:'de',name:'德语',flag:'🇩🇪',hello:'Guten Tag',romaji:'GU-ten TAHK',phonetic:'/ˈɡuːtən taːk/',speakers:'约1.3亿',countries:'德国、奥地利、瑞士等',family:'日耳曼语系',intro:'欧洲使用人数最多的母语。"Guten Tag"意为"好的一天"。名词分阴阳中三性，首字母必须大写。',gl:'de',gt:'Guten Tag'},
+  {id:'fr',name:'法语',flag:'🇫🇷',hello:'Bonjour',romaji:'Bohn-ZHOOR',phonetic:'/bɔ̃ʒuʁ/',speakers:'约3亿',countries:'法国、加拿大、比利时、瑞士等29国',family:'罗曼语系',intro:'被称为"爱情的语言"，联合国第一份文件就是法语。"Bonjour"由"bon"（好）+"jour"（日）组成。傍晚后用"Bonsoir"。',gl:'fr',gt:'Bonjour'},
+  {id:'vi',name:'越南语',flag:'🇻🇳',hello:'Xin chào',romaji:'Sin chào',phonetic:'/sin tɕaːw˨˩/',speakers:'约9800万',countries:'越南',family:'南亚语系',intro:'使用拉丁字母附加大量声调符号（6个声调）。"Xin chào"是最简单的问候。吸收了大量的汉语借词（汉越词）。',gl:'vi',gt:'Xin chào'},
+  {id:'it',name:'意大利语',flag:'🇮🇹',hello:'Ciao',romaji:'CHOW',phonetic:'/tʃaːo/',speakers:'约8500万',countries:'意大利、瑞士提契诺州',family:'罗曼语系',intro:'"Ciao"原为威尼斯方言"schiavo"（您的仆人），现已成全球通用的问候语，既可问候又可告别。',gl:'it',gt:'Ciao'},
+  {id:'th',name:'泰语',flag:'🇹🇭',hello:'สวัสดี',romaji:'sà-wàt-dii',phonetic:'/sà.wàt.dīː/',speakers:'约7200万',countries:'泰国',family:'台-卡岱语系',intro:'泰语有5个声调。"สวัสดี"(sawatdee) 意为"吉祥如意"，说时双手合十(Wai手势)。<br>♂ 男士结尾加 <b>ครับ</b>(kráp) — 高短音<br>♀ 女士结尾加 <b>ค่ะ</b>(khâ) — 降调',gl:'th',gt:'สวัสดีครับ',variants:[
+    {label:'♂ 男士',text:'สวัสดีครับ',romaji:'sà-wàt-dii kráp',phonetic:'/sà.wàt.dīː kráp/',note:'ครับ(kráp)高短音，收尾不送气'},
+    {label:'♀ 女士',text:'สวัสดีค่ะ',romaji:'sà-wàt-dii khâ',phonetic:'/sà.wàt.dīː khâ/',note:'ค่ะ(khâ)降调，语气柔和'}
+  ]},
+];
+
+// ==================== 渲染卡片 ====================
+function renderCards() {
+  document.getElementById('tab-learn').innerHTML = '<div class="gr">' + L.map(function(lang, i) {
+    var hv = lang.variants && lang.variants.length;
+    var pb = hv ? lang.variants.map(function(v, vi) {
+      return '<span class="pb" onclick="event.stopPropagation();sayVar('+i+','+vi+',this)" data-li="'+i+'" data-vi="'+vi+'">🔊 '+v.label+'</span>';
+    }).join('') : '<span class="pb" onclick="event.stopPropagation();sayHello('+i+',this)" data-i="'+i+'">🔊 发音</span>';
+    var hw = hv ? lang.variants.map(function(v){return v.text;}).join(' / ') : lang.hello;
+    var rj = hv ? lang.variants.map(function(v){return v.romaji;}).join(' · ') : lang.romaji;
+    var ph = hv ? lang.variants.map(function(v){return v.phonetic;}).join(' · ') : lang.phonetic;
+    var det = hv ? '<p style="margin-top:4px;"><b>男女说法区别：</b></p>' + lang.variants.map(function(v){
+      return '<p style="padding-left:12px;font-size:0.85em;">• '+v.label+'：<b>'+v.text+'</b> — '+v.note+'</p>';
+    }).join('') : '';
+    return '<div class="cd" onclick="toggleCd('+i+')" id="cd-'+i+'">' +
+      '<div class="nm"><span>'+lang.flag+'</span> '+lang.name+' <span class="spk">👥 '+lang.speakers+'</span></div>' +
+      '<div class="hr"><span class="hw">'+hw+'</span></div>' +
+      '<div class="hr" style="margin-top:0;"><span class="rj">'+rj+'</span><span class="ph">'+ph+'</span></div>' +
+      '<div class="hr">'+pb+'</div>' +
+      '<div class="dt"><p>📖 '+lang.intro+'</p>'+det+
+        '<p><span class="tg tg-f">🗺️ '+lang.family+'</span><span class="tg tg-c">📍 '+lang.countries+'</span><span class="tg tg-s">👥 '+lang.speakers+'</span></p></div>' +
+      '<div class="eh">▼ 点击展开详解</div></div>';
+  }).join('') + '</div>';
+}
+function toggleCd(i) { document.getElementById('cd-'+i).classList.toggle('on'); }
+
+// ==================== 音频 ====================
+var isSpeaking = false;
+var audioEl = null;
+function getAudio() { if (!audioEl) { audioEl = new Audio(); audioEl.preload = 'auto'; } return audioEl; }
+
+function playEmbedded(id, onEnd) {
+  // 兼容 audio-data.js 的各种输出格式
+  var data = window.HELLO10_AUDIO || (typeof HELLO10_AUDIO !== 'undefined' ? HELLO10_AUDIO : null);
+  if (!data || !data[id]) return false;
+  try {
+    var el = getAudio();
+    el.src = data[id];
+    el.currentTime = 0;
+    var done = false;
+    el.onended = function() { if (!done) { done = true; if (onEnd) onEnd(); } };
+    el.onerror = function() { if (!done) { done = true; if (onEnd) onEnd(); } };
+    el.play().catch(function(){ if (onEnd) onEnd(); });
+    return true;
+  } catch(e) { return false; }
+}
+
+function playSSML(text, lang, pitch, onEnd) {
+  try { window.speechSynthesis.cancel(); } catch(e) {}
+  var u = new SpeechSynthesisUtterance(text);
+  u.lang = lang;
+  u.rate = 0.88;
+  u.pitch = pitch || 1.0;
+  var done = false;
+  u.onend = function() { if (!done) { done = true; if (onEnd) onEnd(); } };
+  u.onerror = function() { if (!done) { done = true; if (onEnd) onEnd(); } };
+  var t = setTimeout(function() { if (!done) { done = true; if (onEnd) onEnd(); } }, 5000);
+  u.onstart = function() { clearTimeout(t); };
+  window.speechSynthesis.speak(u);
+}
+
+function speak(id, text, lang, pitch, onEnd) {
+  if (isSpeaking) { try { window.speechSynthesis.cancel(); } catch(e) {} }
+  isSpeaking = true;
+  if (!playEmbedded(id, function() { isSpeaking = false; if (onEnd) onEnd(); })) {
+    playSSML(text, lang, pitch, function() { isSpeaking = false; if (onEnd) onEnd(); });
+  }
+}
+
+function sayHello(i, btn) {
+  var lang = L[i];
+  if (isSpeaking) { try { window.speechSynthesis.cancel(); } catch(e) {} isSpeaking = false; return; }
+  btn.classList.add('loading');
+  speak(lang.id, lang.gt, lang.gl, 1.0, function() { btn.classList.remove('loading'); });
+}
+
+function sayVar(li, vi, btn) {
+  var v = L[li].variants[vi];
+  if (!v) { return; }
+  if (isSpeaking) { try { window.speechSynthesis.cancel(); } catch(e) {} isSpeaking = false; return; }
+  var lang = L[li];
+  var vid = lang.id + (v.label.includes('♂') ? '_m' : '_f');
+  var pitch = v.label.includes('♀') ? 1.3 : 0.7;
+  btn.classList.add('loading');
+  speak(vid, v.text, lang.gl, pitch, function() { btn.classList.remove('loading'); });
+}
+
+document.addEventListener('click', function warm() {
+  try { var u = new SpeechSynthesisUtterance(' '); window.speechSynthesis.speak(u); } catch(e) {}
+  document.removeEventListener('click', warm);
+}, { once: true });
+
+// ==================== 标签 ====================
+function switchTab(t, el) {
+  document.querySelectorAll('.tb').forEach(function(b){b.classList.remove('on');});
+  el.classList.add('on');
+  document.getElementById('tab-learn').style.display = t === 'learn' ? '' : 'none';
+  document.getElementById('tab-exam').style.display = t === 'exam' ? '' : 'none';
+  if (t === 'exam' && es.questions.length === 0) initExam();
+}
+
+// ==================== 考试 ====================
+var es = { answered: false, idx: 0, correct: 0, questions: [], wrong: [] };
+var LAB = ['A','B','C','D'];
+function shuffle(a) { var r = [].concat(a); for(var i=r.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=r[i];r[i]=r[j];r[j]=t;} return r; }
+
+function initExam() {
+  var qs = shuffle(L.map(function(lang, i) { return { i:i, id:lang.id, name:lang.name, flag:lang.flag, text:lang.hello, gl:lang.gl, gt:lang.gt }; }));
+  es.answered = false; es.idx = 0; es.correct = 0; es.questions = qs; es.wrong = [];
+  renderDots(); showQ();
+}
+
+function renderDots() {
+  var h = '';
+  for (var i = 0; i < es.questions.length; i++) {
+    var c = ''; if (i < es.idx) c = 'done'; else if (i === es.idx) c = 'now';
+    h += '<span class="dt2 '+c+'"></span>';
+  }
+  document.getElementById('dots').innerHTML = h;
+}
+
+function showQ() {
+  var q = es.questions[es.idx];
+  if (!q) { finishExam(); return; }
+  es.answered = false;
+  document.getElementById('fb').textContent = '';
+  document.getElementById('fb').className = 'fb';
+  document.getElementById('nextBtn').disabled = true;
+
+  var others = L.filter(function(_,i){return i!==q.i;}).sort(function(){return Math.random()-0.5;}).slice(0,3);
+  var opts = shuffle([{i:q.i,name:q.name,flag:q.flag,text:q.text,correct:true}].concat(
+    others.map(function(l){ return {i:L.indexOf(l),name:l.name,flag:l.flag,text:l.hello,correct:false}; })
+  ));
+
+  document.getElementById('options').innerHTML = opts.map(function(o,idx){
+    return '<div class="op" onclick="pick('+idx+')" data-correct="'+o.correct+'">' +
+      '<span class="ol">'+LAB[idx]+'</span>' +
+      '<span><div class="ow">'+o.flag+' '+o.text+'</div><div class="on2">'+o.name+'</div></span></div>';
+  }).join('');
+
+  document.getElementById('qtext').textContent = '🎧 这段问候属于哪种语言？（'+(es.idx+1)+'/'+es.questions.length+'）';
+  document.getElementById('score').textContent = es.correct + ' / ' + es.questions.length;
+  document.getElementById('pbar').style.width = (es.idx / es.questions.length * 100) + '%';
+  renderDots();
+  setTimeout(playExamAudio, 400);
+}
+
+function playExamAudio() {
+  var q = es.questions[es.idx];
+  if (!q) return;
+  speak(q.id, q.gt, q.gl, 1.0, function(){});
+}
+
+function pick(idx) {
+  if (es.answered) return;
+  var opts = document.querySelectorAll('.op');
+  var sel = opts[idx];
+  var correct = sel.dataset.correct === 'true';
+  es.answered = true;
+  for (var i = 0; i < opts.length; i++) opts[i].classList.add('ds');
+  var fb = document.getElementById('fb');
+  if (correct) {
+    sel.classList.add('ok'); es.correct++;
+    fb.textContent = '✅ 正确！太棒了！🎉'; fb.className = 'fb ok';
+  } else {
+    sel.classList.add('no');
+    for (var i = 0; i < opts.length; i++) { if (opts[i].dataset.correct === 'true') opts[i].classList.add('ok'); }
+    fb.textContent = '❌ 再听一次，记住它吧！'; fb.className = 'fb no';
+    es.wrong.push(es.idx);
+  }
+  document.getElementById('score').textContent = es.correct + ' / ' + es.questions.length;
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function nextQ() {
+  if (es.idx < es.questions.length - 1) { es.idx++; showQ(); } else finishExam();
+}
+
+function finishExam() {
+  var total = es.questions.length, correct = es.correct, pct = Math.round(correct / total * 100);
+  document.getElementById('options').innerHTML = '';
+  document.getElementById('playBtn').style.display = 'none';
+  document.getElementById('qtext').textContent = '';
+  document.querySelector('.xh').style.display = 'none';
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('pbar').style.width = '100%';
+  var fb = document.getElementById('fb');
+  if (pct >= 80) {
+    fb.className = 'fb ok';
+    fb.innerHTML = '🎊 恭喜你！得分 '+correct+'/'+total+'（'+pct+'%）<br>你已是"十国外语人才"！🎓';
+    setTimeout(showCert, 1200);
+  } else {
+    fb.className = 'fb no';
+    fb.innerHTML = '得分 '+correct+'/'+total+'（'+pct+'%）<br>💪 80分以上可获得国际问候语认证奖状！';
+    document.getElementById('nextBtn').disabled = false;
+    document.getElementById('nextBtn').textContent = '🔄 再试一次';
+    document.getElementById('nextBtn').onclick = resetExam;
+  }
+  renderDots();
+}
+
+function showCert() {
+  document.getElementById('cname').textContent = '🏅 超级语言学习者';
+  var names = {};
+  es.questions.forEach(function(q){ names[L[q.i].name] = true; });
+  document.getElementById('clangs').innerHTML = Object.keys(names).map(function(n){
+    return '<span class="ctlg">'+n+'</span>';
+  }).join('');
+  document.getElementById('cno').textContent = String(Date.now()).slice(-8);
+  document.getElementById('cdate').textContent = new Date().toLocaleDateString('zh-CN');
+  document.getElementById('cert').classList.add('on');
+}
+function closeCert() { document.getElementById('cert').classList.remove('on'); }
+function resetExam() {
+  document.getElementById('playBtn').style.display = 'inline-flex';
+  document.querySelector('.xh').style.display = '';
+  document.getElementById('nextBtn').disabled = false;
+  document.getElementById('nextBtn').textContent = '下一题 →';
+  document.getElementById('nextBtn').onclick = nextQ;
+  initExam();
+}
+
+// ==================== 初始化 ====================
+renderCards();
+initExam();
+</script>
+</body>
+</html>
