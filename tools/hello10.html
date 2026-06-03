@@ -290,17 +290,49 @@ function playMaleThai(vid, onEnd) {
   var done = false;
   function finish() { if (!done) { done = true; isSpeaking = false; if (onEnd) onEnd(); } }
 
-  // 直接用 audio 元素 + playbackRate 降音高，100% 可靠
+  // 新 audio 元素 + canplaythrough 后再创建 AudioContext 连接
   try {
-    var el = getAudio();
+    var el = new Audio();
+    el.preload = 'auto';
     el.src = data[vid];
-    el.currentTime = 0;
-    el.playbackRate = 0.65;  // 降速 35%，音高明显变低 → 男声感
-    el.onended = finish;
-    el.onerror = finish;
-    el.play().catch(finish);
+
+    var started = false;
+    function connectDetune() {
+      if (started || done) return;
+      started = true;
+      try {
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        ctx.resume().then(function() {
+          if (done) { try{ctx.close()}catch(e){} return; }
+          try {
+            var src = ctx.createMediaElementSource(el);
+            src.playbackRate.value = 1.0;   // 速度不变！
+            src.detune.value = -700;         // 只降音高
+            src.connect(ctx.destination);
+            el.play();
+            el.onended = function() { try{ctx.close()}catch(e){} finish(); };
+          } catch(e2) {
+            // 连接失败 → 原速播放
+            el.playbackRate = 1.0; el.play(); el.onended = finish;
+          }
+        }).catch(function() {
+          el.playbackRate = 1.0; el.play(); el.onended = finish;
+        });
+      } catch(e3) {
+        el.playbackRate = 1.0; el.play(); el.onended = finish;
+      }
+    }
+
+    // 已就绪或等待就绪
+    if (el.readyState >= 3) { connectDetune(); }
+    else { el.addEventListener('canplaythrough', connectDetune); }
+
+    el.load();
+    // 兜底：4秒后原速
+    setTimeout(function() { if (!started && !done) { started = true; el.playbackRate = 1.0; el.play(); el.onended = finish; } }, 4000);
   } catch(e) { finish(); }
-  setTimeout(finish, 6000);
+  // 总超时保护
+  setTimeout(finish, 8000);
 }
 
 document.addEventListener('click', function warm() {
