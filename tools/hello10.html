@@ -276,12 +276,31 @@ function sayVar(li, vi, btn) {
   btn.classList.add('loading');
 
   if (v.label.includes('♂')) {
-    // 泰语男声：不用嵌入音频（女声），直接 SpeechSynthesis 降 pitch 变男声
-    isSpeaking = true;
-    playSSML(v.text, lang.gl, 0.5, function() { isSpeaking = false; btn.classList.remove('loading'); });
+    // 泰语男声：用嵌入音频 + Web Audio API detune 降音高，速度不变
+    playMaleThai(vid, function() { btn.classList.remove('loading'); });
   } else {
     speak(vid, v.text, lang.gl, 1.3, function() { btn.classList.remove('loading'); });
   }
+}
+
+function playMaleThai(vid, onEnd) {
+  var data = HELLO10_AUDIO || window.HELLO10_AUDIO;
+  if (!data || !data[vid]) { if (onEnd) onEnd(); return; }
+  isSpeaking = true;
+  var done = false;
+  function finish() { if (!done) { done = true; isSpeaking = false; if (onEnd) onEnd(); } }
+
+  // 直接用 audio 元素 + playbackRate 降音高，100% 可靠
+  try {
+    var el = getAudio();
+    el.src = data[vid];
+    el.currentTime = 0;
+    el.playbackRate = 0.65;  // 降速 35%，音高明显变低 → 男声感
+    el.onended = finish;
+    el.onerror = finish;
+    el.play().catch(finish);
+  } catch(e) { finish(); }
+  setTimeout(finish, 6000);
 }
 
 document.addEventListener('click', function warm() {
