@@ -209,7 +209,7 @@ function playEmbedded(id, onEnd) {
     var done = false;
     el.onended = function() { if (!done) { done = true; if (onEnd) onEnd(); } };
     el.onerror = function() { if (!done) { done = true; if (onEnd) onEnd(); } };
-    el.play().catch(function(){ if (onEnd) onEnd(); });
+    el.play().catch(function(){ if (!done) { done = true; if (onEnd) onEnd(); } });
     return true;
   } catch(e) { return false; }
 }
@@ -231,8 +231,31 @@ function playSSML(text, lang, pitch, onEnd) {
 function speak(id, text, lang, pitch, onEnd) {
   if (isSpeaking) { try { window.speechSynthesis.cancel(); } catch(e) {} }
   isSpeaking = true;
-  if (!playEmbedded(id, function() { isSpeaking = false; if (onEnd) onEnd(); })) {
-    playSSML(text, lang, pitch, function() { isSpeaking = false; if (onEnd) onEnd(); });
+
+  var done = false;
+  var embedTimer = null;
+
+  function finish() {
+    if (done) return;
+    done = true;
+    if (embedTimer) clearTimeout(embedTimer);
+    try { window.speechSynthesis.cancel(); } catch(e) {}
+    isSpeaking = false;
+    if (onEnd) onEnd();
+  }
+
+  var hasEmbedded = playEmbedded(id, finish);
+
+  if (hasEmbedded) {
+    // 嵌入音频已启动。3秒没出声 → 切换 SpeechSynthesis
+    embedTimer = setTimeout(function() {
+      if (!done) {
+        try { getAudio().pause(); } catch(e) {}
+        playSSML(text, lang, pitch, finish);
+      }
+    }, 2500);
+  } else {
+    playSSML(text, lang, pitch, finish);
   }
 }
 
