@@ -17,37 +17,32 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 #hud-color-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);flex-shrink:0}
 #canvas-wrapper{position:relative;border:2px solid var(--border);border-radius:6px;box-shadow:0 0 40px var(--glow),inset 0 0 40px rgba(0,0,0,0.6);overflow:hidden}
 canvas#gc{display:block}
-.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(5,13,5,0.72);gap:14px;z-index:10;border-radius:4px;backdrop-filter:blur(2px)}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(5,13,5,0.72);gap:14px;z-index:10;border-radius:4px;backdrop-filter:blur(2px);overflow-y:auto;padding:20px}
 .overlay h1{font-size:44px;color:var(--accent);text-shadow:0 0 30px rgba(212,160,23,0.5),0 4px 8px rgba(0,0,0,0.8);letter-spacing:8px}
 .overlay h2{font-size:28px;color:#ef4444;text-shadow:0 0 20px rgba(239,68,68,0.5)}
 .overlay p{font-size:15px;color:var(--fg);opacity:.85;line-height:2;text-align:center;max-width:400px}
 .overlay .score-info{font-size:20px;color:var(--accent)}
 .high-score{font-size:14px;color:#92400e}
-
-/* ===== 颜色选择器 ===== */
 .color-section{display:flex;flex-direction:column;align-items:center;gap:8px;margin:4px 0}
 .color-section .cs-label{font-size:16px;color:var(--fg);opacity:.85;letter-spacing:2px}
 .color-section .cs-row{display:flex;align-items:center;gap:12px}
-#color-picker-wrap{position:relative;cursor:pointer;touch-action:none;padding:4px 0}
-#color-picker{border-radius:10px;border:3px solid rgba(255,255,255,0.15);display:block;box-shadow:0 2px 12px rgba(0,0,0,0.5)}
-#color-indicator{position:absolute;top:0;width:14px;height:28px;border:2px solid #fff;border-radius:4px;transform:translateX(-50%);box-shadow:0 0 6px rgba(0,0,0,.8);pointer-events:none;transition:left .03s}
-#color-preview{width:36px;height:36px;border-radius:8px;border:3px solid rgba(255,255,255,0.2);flex-shrink:0;transition:background-color .1s;box-shadow:0 2px 8px rgba(0,0,0,0.4)}
+.cpick-wrap{position:relative;cursor:pointer;touch-action:none;padding:4px 0}
+.cpick-canvas{border-radius:10px;border:3px solid rgba(255,255,255,0.15);display:block;box-shadow:0 2px 12px rgba(0,0,0,0.5)}
+.cpick-indicator{position:absolute;top:0;width:14px;height:28px;border:2px solid #fff;border-radius:4px;transform:translateX(-50%);box-shadow:0 0 6px rgba(0,0,0,.8);pointer-events:none;transition:left .03s}
+.cpick-preview{width:36px;height:36px;border-radius:8px;border:3px solid rgba(255,255,255,0.2);flex-shrink:0;transition:background-color .1s;box-shadow:0 2px 8px rgba(0,0,0,0.4)}
 .color-section .cs-hint{font-size:12px;color:#888;letter-spacing:1px}
-
 .btn{padding:10px 30px;font-family:inherit;font-size:16px;border:2px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;border-radius:6px;transition:all .2s;letter-spacing:3px}
 .btn:hover{background:var(--accent);color:var(--bg);box-shadow:0 0 20px rgba(212,160,23,0.4);transform:translateY(-1px)}
 .btn:active{transform:translateY(1px)}
 .btn-group{display:flex;gap:14px;margin-top:4px}
 .btn-secondary{border-color:#666;color:#888}
 .btn-secondary:hover{background:#666;color:var(--bg);box-shadow:0 0 15px rgba(100,100,100,0.3)}
-
 #death-info{display:flex;flex-direction:column;align-items:center;gap:8px}
 #death-food-row{display:flex;align-items:center;gap:12px}
 #death-food-visual{border-radius:4px;border:3px solid #ef4444;animation:deathPulse .8s ease-in-out infinite;box-shadow:0 0 20px rgba(239,68,68,0.5)}
 #death-text{font-size:17px;color:#ef4444}
 #death-self-visual{width:40px;height:40px;border-radius:50%;border:3px solid #ef4444;animation:deathPulse .8s ease-in-out infinite;box-shadow:0 0 20px rgba(239,68,68,0.5);display:none}
 @keyframes deathPulse{0%,100%{transform:scale(1);box-shadow:0 0 20px rgba(239,68,68,0.5)}50%{transform:scale(1.3);box-shadow:0 0 35px rgba(239,68,68,0.8)}}
-
 #touch-controls{display:none;margin-top:12px;grid-template-columns:56px 56px 56px;grid-template-rows:56px 56px;gap:5px}
 .touch-btn{width:56px;height:56px;font-size:20px;border:2px solid var(--border);background:var(--card);color:var(--fg);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
 .touch-btn:active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
@@ -60,15 +55,7 @@ canvas#gc{display:block}
 .overlay>*:nth-child(6){animation-delay:.35s}.overlay>*:nth-child(7){animation-delay:.42s}
 .overlay>*:nth-child(8){animation-delay:.49s}
 .hidden{display:none!important}
-@media(max-width:660px){
-  #hud{font-size:13px;gap:8px}
-  .overlay h1{font-size:28px;letter-spacing:4px}
-  .overlay h2{font-size:22px}.overlay p{font-size:13px}
-  .btn{padding:8px 20px;font-size:14px}
-  canvas#gc{max-width:100vw;height:auto!important}
-  #color-picker{width:160px!important}
-  .color-section .cs-label{font-size:14px}
-}
+@media(max-width:660px){#hud{font-size:13px;gap:8px}.overlay h1{font-size:28px;letter-spacing:4px}.overlay h2{font-size:22px}.overlay p{font-size:13px}.btn{padding:8px 20px;font-size:14px}canvas#gc{max-width:100vw;height:auto!important}.cpick-canvas{width:160px!important}.color-section .cs-label{font-size:14px}}
 </style>
 </head>
 <body>
@@ -83,26 +70,22 @@ canvas#gc{display:block}
   </div>
   <div id="canvas-wrapper">
     <canvas id="gc"></canvas>
-
-    <!-- 主菜单 -->
     <div id="menu-overlay" class="overlay">
       <h1>贪吃龙</h1>
       <p>方向键 / WASD 控制龙的移动<br>穿墙而过 从另一边出现<br>吃像素食物后身体变长变宽<br>龙头吃食物得分 身体碰食物失败<br>食物越大分越高 身体也越宽越危险</p>
       <div class="color-section">
         <div class="cs-label">选择龙的肤色</div>
         <div class="cs-row">
-          <div id="color-picker-wrap">
-            <canvas id="color-picker" width="240" height="20"></canvas>
-            <div id="color-indicator"></div>
+          <div class="cpick-wrap" id="cpw0">
+            <canvas class="cpick-canvas" id="cpc0" width="240" height="20"></canvas>
+            <div class="cpick-indicator" id="cpi0"></div>
           </div>
-          <div id="color-preview"></div>
+          <div class="cpick-preview" id="cpp0"></div>
         </div>
         <div class="cs-hint">点击或拖拽光谱条选色</div>
       </div>
       <button class="btn" id="start-btn">开始游戏</button>
     </div>
-
-    <!-- 游戏结束 -->
     <div id="over-overlay" class="overlay hidden">
       <h2>游戏结束</h2>
       <div id="death-info" class="hidden">
@@ -118,11 +101,11 @@ canvas#gc{display:block}
       <div class="color-section">
         <div class="cs-label">调整龙的肤色</div>
         <div class="cs-row">
-          <div id="color-picker-wrap2">
-            <canvas id="color-picker2" width="240" height="20"></canvas>
-            <div id="color-indicator2"></div>
+          <div class="cpick-wrap" id="cpw1">
+            <canvas class="cpick-canvas" id="cpc1" width="240" height="20"></canvas>
+            <div class="cpick-indicator" id="cpi1"></div>
           </div>
-          <div id="color-preview2"></div>
+          <div class="cpick-preview" id="cpp1"></div>
         </div>
       </div>
       <div class="btn-group">
@@ -131,7 +114,6 @@ canvas#gc{display:block}
       </div>
     </div>
   </div>
-
   <div id="touch-controls">
     <button class="touch-btn" id="tc-up">▲</button>
     <button class="touch-btn" id="tc-left">◄</button>
@@ -188,36 +170,27 @@ let state='menu';
 let dragon,dir,nextDir,foods,score,growQueue,speed,lastTick;
 let particles,bgStars,flashAlpha,screenShake,deathTimer,maxWidth;
 let deathFood=null,deathSelf=false,deathSegIdx=-1;
+let stepCounter=0; // 全局步数计数器
 
 /* ===== 龙颜色 ===== */
 let dragonHue=120;
-
-/* 根据 hue 生成龙的各部位颜色 */
 function headColor(){return `hsl(${dragonHue},78%,55%)`;}
 function headGlow(){return `hsl(${dragonHue},85%,60%)`;}
-function bodyColor(ratio){
-  const s=70-ratio*35, l=45-ratio*33;
-  return `hsl(${dragonHue},${s}%,${l}%)`;
-}
-function bodyGlow(idx){
-  return `hsla(${dragonHue},85%,60%,${.2-idx*.05})`;
-}
+function bodyColor(ratio){return `hsl(${dragonHue},${70-ratio*35}%,${45-ratio*33}%)`;}
+function bodyGlowAlpha(idx){return .2-idx*.05;}
 
-/* ===== 颜色选择器系统 ===== */
-/* 两组选择器：菜单和结束界面，共享 dragonHue */
+/* ===== 颜色选择器 ===== */
 const cpConfigs=[
-  {canvasId:'color-picker',indicatorId:'color-indicator',previewId:'color-preview',wrapId:'color-picker-wrap'},
-  {canvasId:'color-picker2',indicatorId:'color-indicator2',previewId:'color-preview2',wrapId:'color-picker-wrap2'},
+  {wrapId:'cpw0',canvasId:'cpc0',indId:'cpi0',prevId:'cpp0'},
+  {wrapId:'cpw1',canvasId:'cpc1',indId:'cpi1',prevId:'cpp1'},
 ];
 
 function drawSpectrum(cpCtx,w,h){
   const grad=cpCtx.createLinearGradient(0,0,w,0);
-  /* 可见光光谱：红→橙→黄→绿→青→蓝→紫→红 */
   const stops=[
-    [0,'#ff0000'],[0.08,'#ff4500'],[0.16,'#ff8c00'],[0.24,'#ffd700'],
-    [0.32,'#adff2f'],[0.40,'#00ff00'],[0.48,'#00fa9a'],[0.56,'#00ced1'],
-    [0.64,'#0000ff'],[0.72,'#4b0082'],[0.80,'#8b00ff'],[0.88,'#ff00ff'],
-    [1.00,'#ff0000']
+    [0,'#ff0000'],[.08,'#ff4500'],[.16,'#ff8c00'],[.24,'#ffd700'],
+    [.32,'#adff2f'],[.40,'#00ff00'],[.48,'#00fa9a'],[.56,'#00ced1'],
+    [.64,'#0000ff'],[.72,'#4b0082'],[.80,'#8b00ff'],[.88,'#ff00ff'],[1,'#ff0000']
   ];
   for(const[s,c]of stops)grad.addColorStop(s,c);
   cpCtx.fillStyle=grad;
@@ -229,21 +202,26 @@ function drawSpectrum(cpCtx,w,h){
   cpCtx.closePath();cpCtx.fill();
 }
 
-/* 初始化所有颜色选择器 */
+function syncAllIndicators(){
+  for(const cfg of cpConfigs){
+    const cpCanvas=document.getElementById(cfg.canvasId);
+    const indicator=document.getElementById(cfg.indId);
+    const preview=document.getElementById(cfg.prevId);
+    const left=(dragonHue/360)*cpCanvas.width;
+    indicator.style.left=left+'px';
+    const c=`hsl(${dragonHue},78%,55%)`;
+    indicator.style.backgroundColor=c;
+    preview.style.backgroundColor=c;
+    hudDot.style.backgroundColor=c;
+  }
+}
+
 function initColorPickers(){
   for(const cfg of cpConfigs){
     const cpCanvas=document.getElementById(cfg.canvasId);
     const cpCtx=cpCanvas.getContext('2d');
-    const indicator=document.getElementById(cfg.indicatorId);
-    const preview=document.getElementById(cfg.previewId);
     const wrap=document.getElementById(cfg.wrapId);
-
     drawSpectrum(cpCtx,cpCanvas.width,cpCanvas.height);
-
-    /* 初始位置 */
-    updateIndicator(indicator,preview,cpCanvas);
-
-    /* 交互 */
     let picking=false;
     function doPick(e){
       const rect=cpCanvas.getBoundingClientRect();
@@ -259,24 +237,7 @@ function initColorPickers(){
     wrap.addEventListener('touchmove',e=>{e.preventDefault();if(picking)doPick(e);},{passive:false});
     wrap.addEventListener('touchend',()=>{picking=false;});
   }
-}
-
-function updateIndicator(indicator,preview,cpCanvas){
-  const left=(dragonHue/360)*cpCanvas.width;
-  indicator.style.left=left+'px';
-  const c=`hsl(${dragonHue},78%,55%)`;
-  indicator.style.backgroundColor=c;
-  preview.style.backgroundColor=c;
-  hudDot.style.backgroundColor=c;
-}
-
-function syncAllIndicators(){
-  for(const cfg of cpConfigs){
-    const cpCanvas=document.getElementById(cfg.canvasId);
-    const indicator=document.getElementById(cfg.indicatorId);
-    const preview=document.getElementById(cfg.previewId);
-    updateIndicator(indicator,preview,cpCanvas);
-  }
+  syncAllIndicators();
 }
 
 initColorPickers();
@@ -426,7 +387,8 @@ function spawnFood(){
 
 /* ===== 初始化 ===== */
 function initGame(){
-  dragon=[{x:Math.floor(COLS/2),y:Math.floor(ROWS/2),t:1}];
+  stepCounter=0;
+  dragon=[{x:Math.floor(COLS/2),y:Math.floor(ROWS/2),t:1,birth:0}];
   dir={x:1,y:0};nextDir={x:1,y:0};
   foods=[];score=0;growQueue=0;maxWidth=1;
   speed=BASE_SPEED;particles=[];
@@ -439,19 +401,41 @@ function initGame(){
 
 /* ===== 移动 ===== */
 function moveDragon(){
+  stepCounter++;
   dir={...nextDir};
   const head=dragon[0];
-  const nh={x:(head.x+dir.x+COLS)%COLS,y:(head.y+dir.y+ROWS)%ROWS,t:head.t};
+  const nh={x:(head.x+dir.x+COLS)%COLS,y:(head.y+dir.y+ROWS)%ROWS,t:head.t,birth:stepCounter};
 
-  const skipCount=Math.max(3,nh.t+1);
-  for(let i=skipCount;i<dragon.length;i++){
-    if(segsCollide(nh,dragon[i])){
-      deathSelf=true;deathSegIdx=i;deathFood=null;doGameOver();return;
+  /*
+   * ===== 核心：基于年龄的自身碰撞检测 =====
+   * 
+   * 问题：宽龙头转向时，新头部位置会与紧邻的身体段自然重叠，
+   * 这是"胖龙转弯"的正常物理现象，不应判定为碰撞。
+   * 
+   * 解决方案：每个段记录自己的 birth（出生步数），
+   * 只有"年龄足够大"的段才参与碰撞检测。
+   * 
+   * 阈值 = max(头部宽度, 身体段宽度) × 2 + 4
+   * 
+   * 原理：宽龙头需要更多步数才能"远离"刚走过的路径，
+   * 所以阈值与宽度成正比。年龄不够的段是头部"刚经过"的路径，
+   * 不应碰撞。年龄足够大的段是龙"绕回来"碰到的远处身体，
+   * 应该碰撞。
+   */
+  for(let i=1;i<dragon.length;i++){
+    const seg=dragon[i];
+    const segAge=stepCounter-(seg.birth||0);
+    const threshold=Math.max(nh.t,seg.t||1)*2+4;
+    if(segAge<threshold)continue; // 年龄不够，跳过
+    if(segsCollide(nh,seg)){
+      deathSelf=true;deathSegIdx=i;deathFood=null;
+      doGameOver();return;
     }
   }
 
   dragon.unshift(nh);
 
+  /* 头部碰食物（吃掉） */
   let eaten=null,ei=-1;
   for(let i=0;i<foods.length;i++){
     const f=foods[i];
@@ -469,6 +453,7 @@ function moveDragon(){
 
   if(growQueue>0)growQueue--;else dragon.pop();
 
+  /* 身体碰食物 → 仅 dangerous 食物致死 */
   for(let i=1;i<dragon.length;i++){
     for(const f of foods){
       if(f.dangerous&&segHitsRect(dragon[i],f.x,f.y,f.w,f.h)){
@@ -507,7 +492,6 @@ function doGameOver(){
     deathInfoEl.classList.remove('hidden');
   }
 
-  /* 同步结束界面的颜色选择器 */
   syncAllIndicators();
   setTimeout(()=>overOvl.classList.remove('hidden'),700);
 }
@@ -582,9 +566,10 @@ function drawDeathFoodHighlight(now){
   ctx.restore();
   const blink=now%1000<600;
   if(blink){
-    ctx.save();ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';
-    ctx.fillStyle='#ef4444';ctx.fillText('碰撞!',cx,df.y*CELL-20);
-    ctx.beginPath();ctx.moveTo(cx-5,df.y*CELL-16);ctx.lineTo(cx+5,df.y*CELL-16);ctx.lineTo(cx,df.y*CELL-9);ctx.closePath();ctx.fill();
+    ctx.save();ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';
+    ctx.fillStyle='#ef4444';ctx.shadowBlur=6;ctx.shadowColor='rgba(239,68,68,0.8)';
+    ctx.fillText('碰撞!',cx,df.y*CELL-18);
+    ctx.beginPath();ctx.moveTo(cx-6,df.y*CELL-14);ctx.lineTo(cx+6,df.y*CELL-14);ctx.lineTo(cx,df.y*CELL-6);ctx.closePath();ctx.fill();
     ctx.restore();
   }
 }
@@ -595,12 +580,14 @@ function drawDeathSelfHighlight(now){
   const pulse=.6+Math.sin(now*.01)*.4;
   for(const pos of vis){
     ctx.save();ctx.strokeStyle=`rgba(239,68,68,${pulse})`;ctx.lineWidth=3;
+    ctx.shadowBlur=10;ctx.shadowColor='rgba(239,68,68,0.6)';
     ctx.strokeRect(pos.x*CELL-2,pos.y*CELL-2,pos.w*CELL+4,pos.h*CELL+4);ctx.restore();
   }
   const v=vis[0];const cx=(v.x+v.w/2)*CELL;
   if(now%1000<600){
-    ctx.save();ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';
-    ctx.fillStyle='#ef4444';ctx.fillText('碰撞!',cx,v.y*CELL-8);ctx.restore();
+    ctx.save();ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';
+    ctx.fillStyle='#ef4444';ctx.shadowBlur=6;ctx.shadowColor='rgba(239,68,68,0.8)';
+    ctx.fillText('碰撞!',cx,v.y*CELL-8);ctx.restore();
   }
 }
 
@@ -659,7 +646,6 @@ function drawHeadAt(seg,pos,now){
   ctx.fillRect(px+2,py+2,pw-4,Math.max(2,ph*.12));
   ctx.fillRect(px+2,py+2,Math.max(2,pw*.12),ph-4);
 
-  /* 龙角 - 金色 */
   const hornW=Math.max(2,Math.floor(t*1.2)),hornH=Math.max(3,Math.floor(t*1.8));
   ctx.fillStyle='#fbbf24';
   const d=dir;
@@ -668,7 +654,6 @@ function drawHeadAt(seg,pos,now){
   else if(d.y===-1){ctx.fillRect(px-hornH+1,py+1,hornH,hornW);ctx.fillRect(px+ph-1,py+1,hornH,hornW);}
   else{ctx.fillRect(px-hornH+1,py+ph-hornW-1,hornH,hornW);ctx.fillRect(px+ph-1,py+ph-hornW-1,hornH,hornW);}
 
-  /* 眼睛 */
   const eyeS=Math.max(2,Math.ceil(t*.8)),pupilS=Math.max(1,Math.ceil(t*.5));
   const ins=Math.max(2,Math.floor(t*.6));
   let e1x,e1y,e2x,e2y;
@@ -681,7 +666,6 @@ function drawHeadAt(seg,pos,now){
   const po=Math.floor((eyeS-pupilS)/2);
   ctx.fillRect(e1x+po,e1y+po,pupilS,pupilS);ctx.fillRect(e2x+po,e2y+po,pupilS,pupilS);
 
-  /* 火焰呼吸 - 橙黄色不受龙颜色影响 */
   const ba=.45+Math.sin(now*.012)*.25;
   const fl=2*t+Math.sin(now*.018)*2*t;
   const fh=Math.max(3,Math.floor(t*1.5));
@@ -703,7 +687,7 @@ function drawBodyAt(seg,pos,idx,len,now){
   const px=pos.x*CELL,py=pos.y*CELL,pw=pos.w*CELL,ph=pos.h*CELL;
   const ratio=idx/Math.max(len-1,1);
 
-  if(idx<4){ctx.shadowBlur=5-idx;ctx.shadowColor=bodyGlow(idx);}
+  if(idx<4){ctx.shadowBlur=5-idx;ctx.shadowColor=`hsla(${dragonHue},85%,60%,${bodyGlowAlpha(idx)})`;}
   ctx.fillStyle=bodyColor(ratio);
   rrect(ctx,px+1,py+1,pw-2,ph-2,2);ctx.fill();
   ctx.shadowBlur=0;
