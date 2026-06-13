@@ -34,9 +34,9 @@ canvas#gc{display:block}
 
 /* 选项开关 */
 .option-row{display:flex;align-items:center;gap:12px;margin:2px 0}
-.option-row label{font-size:15px;color:var(--fg);opacity:.9;cursor:pointer;letter-spacing:1px;max-width:260px;line-height:1.5}
-.toggle-wrap{position:relative;width:48px;height:26px;flex-shrink:0;cursor:pointer}
-.toggle-wrap input{display:none}
+.option-row .opt-label{font-size:15px;color:var(--fg);opacity:.9;cursor:pointer;letter-spacing:1px;max-width:260px;line-height:1.5}
+.toggle-wrap{position:relative;width:48px;height:26px;flex-shrink:0;cursor:pointer;display:inline-block}
+.toggle-wrap input{position:absolute;opacity:0;width:0;height:0}
 .toggle-track{position:absolute;inset:0;background:#1a2e1a;border-radius:13px;border:2px solid #2a3e2a;transition:all .25s}
 .toggle-track::after{content:'';position:absolute;left:2px;top:2px;width:18px;height:18px;background:#555;border-radius:50%;transition:all .25s}
 .toggle-wrap input:checked+.toggle-track{background:#1a4a1a;border-color:#4ade80}
@@ -66,7 +66,7 @@ canvas#gc{display:block}
 .overlay>*:nth-child(6){animation-delay:.35s}.overlay>*:nth-child(7){animation-delay:.42s}
 .overlay>*:nth-child(8){animation-delay:.49s}.overlay>*:nth-child(9){animation-delay:.56s}
 .hidden{display:none!important}
-@media(max-width:660px){#hud{font-size:13px;gap:8px}.overlay h1{font-size:28px;letter-spacing:4px}.overlay h2{font-size:22px}.overlay p{font-size:13px}.btn{padding:8px 20px;font-size:14px}canvas#gc{max-width:100vw;height:auto!important}.cpick-canvas{width:160px!important}.color-section .cs-label{font-size:14px}.option-row label{font-size:13px}}
+@media(max-width:660px){#hud{font-size:13px;gap:8px}.overlay h1{font-size:28px;letter-spacing:4px}.overlay h2{font-size:22px}.overlay p{font-size:13px}.btn{padding:8px 20px;font-size:14px}canvas#gc{max-width:100vw;height:auto!important}.cpick-canvas{width:160px!important}.color-section .cs-label{font-size:14px}.option-row .opt-label{font-size:13px}}
 </style>
 </head>
 <body>
@@ -87,11 +87,12 @@ canvas#gc{display:block}
       <h1>贪吃龙</h1>
       <p>方向键 / WASD 控制龙的移动<br>穿墙而过 从另一边出现<br>吃像素食物后身体变长变宽<br>龙头吃食物得分 身体碰食物失败<br>食物越大分越高 身体也越宽越危险</p>
       <div class="option-row">
-        <div class="toggle-wrap" id="toggle-lock">
+        <!-- label 包裹整个开关，点击轨道也能切换 -->
+        <label class="toggle-wrap" for="lock-width-cb">
           <input type="checkbox" id="lock-width-cb">
           <div class="toggle-track"></div>
-        </div>
-        <label for="lock-width-cb">头部保持最大食物宽度，不再变小</label>
+        </label>
+        <label class="opt-label" for="lock-width-cb">头部保持最大食物宽度，不再变小</label>
       </div>
       <div class="color-section">
         <div class="cs-label">选择龙的肤色</div>
@@ -195,7 +196,7 @@ let dragon,dir,nextDir,foods,score,growQueue,speed,lastTick;
 let particles,bgStars,flashAlpha,screenShake,deathTimer,maxWidth;
 let deathFood=null,deathSelf=false,deathSegIdx=-1;
 let stepCounter=0;
-let lockHeadWidth=false; // 头部保持最大宽度
+let lockHeadWidth=false;
 
 /* ===== 龙颜色 ===== */
 let dragonHue=120;
@@ -321,7 +322,6 @@ function segHitsRect(seg,rx,ry,rw,rh){
   return false;
 }
 
-/* 食物安全期 */
 function foodOverlapsBody(food){
   for(let i=1;i<dragon.length;i++)if(segHitsRect(dragon[i],food.x,food.y,food.w,food.h))return true;
   return false;
@@ -412,7 +412,6 @@ function spawnFood(){
 /* ===== 初始化 ===== */
 function initGame(){
   stepCounter=0;
-  /* 读取选项状态 */
   lockHeadWidth=lockWidthCb.checked;
   dragon=[{x:Math.floor(COLS/2),y:Math.floor(ROWS/2),t:1,birth:0}];
   dir={x:1,y:0};nextDir={x:1,y:0};
@@ -432,7 +431,6 @@ function moveDragon(){
   const head=dragon[0];
   const nh={x:(head.x+dir.x+COLS)%COLS,y:(head.y+dir.y+ROWS)%ROWS,t:head.t,birth:stepCounter};
 
-  /* 基于年龄的自身碰撞检测 */
   for(let i=1;i<dragon.length;i++){
     const seg=dragon[i];
     const segAge=stepCounter-(seg.birth||0);
@@ -445,7 +443,6 @@ function moveDragon(){
 
   dragon.unshift(nh);
 
-  /* 头部碰食物 */
   let eaten=null,ei=-1;
   for(let i=0;i<foods.length;i++){
     const f=foods[i];
@@ -453,11 +450,6 @@ function moveDragon(){
   }
   if(eaten){
     const foodT=Math.max(eaten.w,eaten.h);
-    /*
-     * 核心选项逻辑：
-     * - lockHeadWidth=false（默认）：头部宽度变为当前食物宽度
-     * - lockHeadWidth=true：头部宽度只增不减，保持吃过的最大食物宽度
-     */
     if(lockHeadWidth){
       dragon[0].t=Math.max(dragon[0].t,foodT);
     }else{
@@ -472,7 +464,6 @@ function moveDragon(){
 
   if(growQueue>0)growQueue--;else dragon.pop();
 
-  /* 身体碰食物 */
   for(let i=1;i<dragon.length;i++){
     for(const f of foods){
       if(f.dangerous&&segHitsRect(dragon[i],f.x,f.y,f.w,f.h)){
@@ -665,7 +656,6 @@ function drawHeadAt(seg,pos,now){
   ctx.fillRect(px+2,py+2,pw-4,Math.max(2,ph*.12));
   ctx.fillRect(px+2,py+2,Math.max(2,pw*.12),ph-4);
 
-  /* 龙角 */
   const hornW=Math.max(2,Math.floor(t*1.2)),hornH=Math.max(3,Math.floor(t*1.8));
   ctx.fillStyle='#fbbf24';
   const d=dir;
@@ -674,7 +664,6 @@ function drawHeadAt(seg,pos,now){
   else if(d.y===-1){ctx.fillRect(px-hornH+1,py+1,hornH,hornW);ctx.fillRect(px+ph-1,py+1,hornH,hornW);}
   else{ctx.fillRect(px-hornH+1,py+ph-hornW-1,hornH,hornW);ctx.fillRect(px+ph-1,py+ph-hornW-1,hornH,hornW);}
 
-  /* 眼睛 */
   const eyeS=Math.max(2,Math.ceil(t*.8)),pupilS=Math.max(1,Math.ceil(t*.5));
   const ins=Math.max(2,Math.floor(t*.6));
   let e1x,e1y,e2x,e2y;
@@ -687,7 +676,6 @@ function drawHeadAt(seg,pos,now){
   const po=Math.floor((eyeS-pupilS)/2);
   ctx.fillRect(e1x+po,e1y+po,pupilS,pupilS);ctx.fillRect(e2x+po,e2y+po,pupilS,pupilS);
 
-  /* 火焰 */
   const ba=.45+Math.sin(now*.012)*.25;
   const fl=2*t+Math.sin(now*.018)*2*t;
   const fh=Math.max(3,Math.floor(t*1.5));
@@ -703,7 +691,6 @@ function drawHeadAt(seg,pos,now){
   else if(d.y===-1)ctx.fillRect(px+pw/2-fh2/2,py-fl-4,fh2,fl+4);
   else ctx.fillRect(px+pw/2-fh2/2,py+ph,fh2,fl+4);
 
-  /* 头部锁定宽度标记（小皇冠图标） */
   if(lockHeadWidth&&t>1){
     ctx.fillStyle='rgba(251,191,36,0.6)';
     const csz=Math.max(4,Math.floor(t*2.5));
