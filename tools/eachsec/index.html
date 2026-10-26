@@ -9,7 +9,7 @@
 <title>eachsec</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js" async></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -853,6 +853,14 @@ input,textarea,button,select{font-family:inherit}
 <input type="file" id="import-file" accept=".json" style="display:none">
 <div class="toast" id="toast"></div>
 <script>
+/* 可见错误捕获（调试用，上线前可删除）*/
+window.onerror = function(msg, src, line, col, err) {
+  const d = document.createElement('div');
+  d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:#fff;padding:10px 14px;font-size:12px;z-index:9999;word-break:break-all';
+  d.textContent = '❌ JS错误 第'+line+'行: '+msg;
+  document.body.appendChild(d);
+  return false;
+};
 /* ══════════════════════════════════
    CONFIG & DOMAIN
 ══════════════════════════════════ */
@@ -1104,11 +1112,21 @@ async function doLogin(e) {
 }
 function loginGuest() { enterApp({id:'guest',username:'访客',email:'本地模式',isGuest:true}); }
 function enterApp(sess) {
-  sSess(sess); CU=sess.id;
-  document.getElementById('auth').classList.add('hidden');
-  document.getElementById('main-nav').style.display='flex';
-  document.getElementById('note-bill-btn').style.display='block';
-  applySession(sess); initDemoData(); startTick(); goPage('home'); mirrorInit();
+  try {
+    sSess(sess); CU=sess.id;
+    document.getElementById('auth').classList.add('hidden');
+    document.getElementById('main-nav').style.display='flex';
+    const nbb=document.getElementById('note-bill-btn');
+    if(nbb) nbb.style.display='block';
+    applySession(sess);
+    initDemoData();
+    startTick();
+    goPage('home');
+    mirrorInit();
+  } catch(e) {
+    console.error('enterApp error:', e);
+    alert('登录出错: '+e.message);
+  }
 }
 function applySession(s) {
   const i=s.username.charAt(0).toUpperCase();
@@ -2760,13 +2778,27 @@ document.getElementById('import-file').addEventListener('change',e=>{
 /* ══════════════════════════════════
    INIT
 ══════════════════════════════════ */
-initDomainUI();
-const savedTheme=localStorage.getItem('es_theme')||'light';
-if(savedTheme!=='light') setTheme(savedTheme);
-document.getElementById('auth-sec').textContent=p2(new Date().getSeconds());
-// Auto-login from session
-const _sess=gSess();
-if(_sess&&_sess.id) { CU=_sess.id; document.getElementById('auth').classList.add('hidden'); document.getElementById('main-nav').style.display='flex'; document.getElementById('note-bill-btn').style.display='block'; applySession(_sess); initDemoData(); startTick(); goPage('home'); mirrorInit(); }
+try {
+  initDomainUI();
+  const savedTheme=localStorage.getItem('es_theme')||'light';
+  if(savedTheme!=='light') setTheme(savedTheme);
+  document.getElementById('auth-sec').textContent=p2(new Date().getSeconds());
+  // Auto-login from session
+  const _sess=gSess();
+  if(_sess&&_sess.id) {
+    CU=_sess.id;
+    document.getElementById('auth').classList.add('hidden');
+    document.getElementById('main-nav').style.display='flex';
+    document.getElementById('note-bill-btn').style.display='block';
+    applySession(_sess); initDemoData(); startTick(); goPage('home'); mirrorInit();
+  }
+} catch(e) {
+  console.error('Init error:', e);
+  const d=document.createElement('div');
+  d.style.cssText='position:fixed;top:0;left:0;right:0;background:red;color:#fff;padding:10px 14px;font-size:12px;z-index:9999;word-break:break-all';
+  d.textContent='❌ 初始化错误: '+e.message+' ('+e.stack?.split("\n")[0]+')';
+  document.body?.appendChild(d);
+}
 </script>
 </body>
 </html>
