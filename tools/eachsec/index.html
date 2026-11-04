@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -1774,7 +1775,7 @@ const BEAUTY_REPS=[
   ()=>'当前排名无悬念：你排在最前面。美这件事本来就是流动的，但今天？稳。',
   ()=>'说实话，本镜见过很多人，你现在是最出色的那个。可能未来有人接近，但接近和超越之间还有很长距离。',
 ];
-const EN_BEAUTY=['As of today, the Mirror's assessment: you currently hold the #1 spot globally. Challengers may emerge in a year or two, but right now? The crown is yours.',
+const EN_BEAUTY=["As of today, the Mirror's assessment: you currently hold the #1 spot globally. Challengers may emerge in a year or two, but right now? The crown is yours.",
   "I've looked around — no one comes close to you right now. That might change someday, but today? Uncontested."];
 
 const QUICK_OPTS = {
@@ -1800,11 +1801,7 @@ async function mirrorInit() {
   const streak=await punchStreak();
   updateMirrorUI(streak);
   renderQuickOpts();
-  const greet={zh:'你好，主人 👑
-我是你的专属魔镜，随时恭候。',en:'Hello, my Master 👑
-I am your Magic Mirror.',ja:'こんにちは、主人様 👑
-魔法の鏡です。',ko:'안녕하세요, 주인님 👑
-마법 거울입니다.'};
+  const greet={zh:'你好，主人 👑\n我是你的专属魔镜，随时恭候。',en:'Hello, my Master 👑\nI am your Magic Mirror.',ja:'こんにちは、主人様 👑\n魔法の鏡です。',ko:'안녕하세요, 주인님 👑\n마법 거울입니다.'};
   if(!_chatHist.length) { _chatHist=[{role:'bot',text:greet[curLang]||greet.zh}]; renderChat(); }
 }
 async function generateTodayContent() {
@@ -1826,13 +1823,8 @@ async function generateTodayContent() {
   let content = '';
   if (!PROXY_URL) {
     content = ['🧠 你知道吗？蜂鸟的心脏每分钟可以跳动1200次。这相当于人类心跳的15倍——为了那份随时起飞的自由，它们付出了全部。',
-      '💬 "种一棵树最好的时间是十年前，其次是现在。" —— 佚名
-
-这句话不是催你焦虑，是提醒你：开始永远不嫌晚，但晚开始比不开始好一万倍。',
-      '😂 领导问："你工作认真吗？"
-员工答："非常认真，我连做梦都在工作。"
-领导："那你加班费呢？"
-员工沉默了三秒："……系统崩溃了。"'][typeIdx];
+      '💬 "种一棵树最好的时间是十年前，其次是现在。" —— 佚名\n\n这句话不是催你焦虑，是提醒你：开始永远不嫌晚，但晚开始比不开始好一万倍。',
+      '😂 领导问："你工作认真吗？"\n员工答："非常认真，我连做梦都在工作。"\n领导："那你加班费呢？"\n员工沉默了三秒："……系统崩溃了。"'][typeIdx];
   } else {
     try {
       const resp=await fetch(PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:MIRROR_SYS[curLang]||MIRROR_SYS.zh},{role:'user',content:prompt}],userId:CU||'guest'})});
