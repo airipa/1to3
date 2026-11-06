@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -57,6 +56,11 @@
   --nm-i:inset 3px 3px 8px #e8b0c8,inset -3px -3px 8px #fff;
   --nm-rs:3px 3px 7px #e8b0c8,-3px -3px 7px #fff;
 }
+/* native date/time pickers follow the app theme, not the OS */
+:root{color-scheme:light}
+[data-theme=dark],[data-theme=ocean]{color-scheme:dark}
+[data-theme=rose]{color-scheme:light}
+input[type=date],input[type=datetime-local]{color:var(--t1);-webkit-text-fill-color:var(--t1);min-height:1.4em}
 html{-webkit-text-size-adjust:100%;background:var(--bg)}
 body{font-family:"Noto Sans SC",system-ui,sans-serif;background:var(--bg);color:var(--t1);min-height:100dvh;overflow:hidden;-webkit-font-smoothing:antialiased}
 input,textarea,button,select{font-family:inherit}
@@ -178,7 +182,7 @@ input,textarea,button,select{font-family:inherit}
 .form-scroll{flex:1;overflow-y:auto;padding:12px 14px 32px;-webkit-overflow-scrolling:touch}
 .fi-lbl{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;margin-top:14px}
 .fi-lbl:first-child{margin-top:0}
-.fi{width:100%;background:var(--card);border:none;border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--t1);outline:none;box-shadow:var(--nm-r);-webkit-appearance:none;color-scheme:light dark;transition:box-shadow .2s}
+.fi{width:100%;background:var(--card);border:none;border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--t1);outline:none;box-shadow:var(--nm-r);-webkit-appearance:none;transition:box-shadow .2s}
 .fi::placeholder{color:var(--t4)}
 .fi:focus{box-shadow:var(--nm-r),0 0 0 2px var(--acc-dim)}
 .fi-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -677,8 +681,8 @@ input,textarea,button,select{font-family:inherit}
     </div>
     <div class="fi-lbl">日期</div>
     <div class="fi-row">
-      <input class="fi" id="fi-start" type="date" style="color-scheme:light dark">
-      <input class="fi" id="fi-end" type="date" style="color-scheme:light dark" placeholder="截止（选填）">
+      <input class="fi" id="fi-start" type="date" >
+      <input class="fi" id="fi-end" type="date"  placeholder="截止（选填）">
     </div>
     <div class="fi-lbl">标签</div>
     <div class="chip-grp" id="tag-chips">
@@ -697,7 +701,7 @@ input,textarea,button,select{font-family:inherit}
       <div class="opt-body" id="body-remind" style="display:none">
         <div class="opt-row">
           <div class="or-lbl">时间</div>
-          <input type="datetime-local" id="remind-time" style="flex:1;background:none;border:none;font-size:12px;color:var(--t1);font-family:inherit;outline:none;color-scheme:light dark">
+          <input type="datetime-local" id="remind-time" style="flex:1;background:none;border:none;font-size:12px;color:var(--t1);font-family:inherit;outline:none;">
         </div>
         <div class="opt-row">
           <div class="or-lbl">重复</div>
@@ -762,7 +766,7 @@ input,textarea,button,select{font-family:inherit}
       <div class="opt-body" id="body-goal" style="display:none">
         <div class="opt-row">
           <div class="or-lbl">预计实现</div>
-          <input type="date" id="goal-date" style="flex:1;background:none;border:none;font-size:12px;color:var(--t1);font-family:inherit;outline:none;color-scheme:light dark">
+          <input type="date" id="goal-date" style="flex:1;background:none;border:none;font-size:12px;color:var(--t1);font-family:inherit;outline:none;">
         </div>
         <div style="font-size:10px;color:var(--t3);margin:7px 0 5px">目标类型</div>
         <div class="chip-grp">
